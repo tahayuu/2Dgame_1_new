@@ -1,0 +1,3 @@
+;/*FB_PKG_DELIM*/
+
+__d("IGDSArrowCwPanoOutline24Svg.react",["react"],(function(t,n,r,o,a,i,l){"use strict";var e,s=e||(e=o("react"));function u(e){return s.jsxs("svg",babelHelpers.extends({viewBox:"0 0 24 24",width:"1em",height:"1em",fill:"currentColor"},e,{children:[e.title!=null&&s.jsx("title",{children:e.title}),e.children!=null&&s.jsx("defs",{children:e.children}),s.jsx("path",{className:"xbh8q5q xi5qq39 x1owpc8m x1f6yumg x8pzrqk x1iq1zl9",d:"M21.318 8.364a10.003 10.003 0 1 0-2.022 10.475"}),s.jsx("path",{className:"xbh8q5q xi5qq39 x1owpc8m x1f6yumg x8pzrqk x1iq1zl9",d:"M17 8.364 22 8.364 22 3.364"})]}))}u.displayName=u.name+" [from "+i.id+"]",u._isSVG=!0;var c=u;l.default=c}),98);
