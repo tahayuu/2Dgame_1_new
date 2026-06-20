@@ -14,8 +14,8 @@
 // ================================================================
 // 共有内部型
 // ================================================================
-struct ParamDef { const char* name; float defaultValue; bool isBool; };
-struct TypeParamInfo { int count; ParamDef defs[MAX_OBJ_PARAMS]; };
+struct ParamDef { const char* name; float defaultValue; bool isBool; };//パラメータ定義
+struct TypeParamInfo { int count; ParamDef defs[MAX_OBJ_PARAMS]; };//オブジェクトタイプのパラメータ情報
 
 // プロパティパネル定数
 constexpr float PROP_W = 280.0f;
