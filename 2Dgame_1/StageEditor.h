@@ -42,12 +42,12 @@ enum class EditorObjectType {
     CLEAR_BLOCK,            // 33
     CLEAR_BLOCK_X,          // 34
     SWITCH_PLATFORM,        // 35
-    FALLING_TEXT,           // 36
-    EXIT_DOOR,              // 37
-    LAYER_DOOR,             // 38
-    RESPAWN,                // 39
-    SWITCH_BUTTON,          // 40
-    COMMENT_BLOCK,          // 41
+	FALLING_TEXT,           // 36
+	EXIT_DOOR,              // 37
+	LAYER_DOOR,             // 38
+	RESPAWN,                // 39
+	SWITCH_BUTTON,          // 40
+	COMMENT_BLOCK,          // 41
 	CURSOR_BOTTOM,          // 42
 	DEATH_BLOCK,            // 43
 	SPIKE_BOUNCER,          // 44
@@ -55,7 +55,8 @@ enum class EditorObjectType {
 	CRANE_LAUNCH_PAD,       // 46
 	CRANE,                  // 47
 	OJISAN_PUNCH_AREA,      // 48
-	COUNT,                  // 49
+	WARP_HOLE,              // 49
+	COUNT,                  // 50
 };
 
 static constexpr int MAX_OBJ_PARAMS = 6;

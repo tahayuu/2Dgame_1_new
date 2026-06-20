@@ -364,6 +364,16 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		DrawRectangleLinesEx(ed.rect, 3, DARKGRAY);
 	}
 
+	// ワープホール
+	for (int i = 0; i < stage.warpCount; i++) {
+		const auto& warp = stage.warps[i];
+		float cx = warp.rect.x + warp.rect.width / 2;
+		float cy = warp.rect.y + warp.rect.height / 2;
+		float rad = std::min(warp.rect.width, warp.rect.height) / 2;
+		DrawCircle((int)cx, (int)cy, (int)(rad * 0.8f), {100, 200, 255, 200});
+		DrawCircleLines((int)cx, (int)cy, (int)(rad * 0.6f), {150, 220, 255, 255});
+		DrawCircleLines((int)cx, (int)cy, (int)(rad * 0.3f), {150, 220, 255, 255});
+	}
 
 	// ボタンブロック
 	for (int i = 0; i < stage.buttonBlockCount; i++) {

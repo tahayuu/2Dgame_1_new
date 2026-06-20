@@ -723,14 +723,16 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 		}
 
 	}
+	//スイッチによって動作する
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		auto& sp = stage.switchPlatforms[i];
 		if (CheckCollisionRecs(player, sp.SwitchRect)) {
 		 sp.switchedOn = true;
 		}
 		else {
-			//sp.switchedOn = false;
+			sp.switchedOn = false;
 		}
+
 		if (sp.switchedOn) {
 			ResolveSolidX(stage.switchPlatforms[i].rect, player, velocity, prevPlayer);
 		}
@@ -1204,9 +1206,13 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		if (CheckCollisionRecs(player, sp.SwitchRect)) {
 			sp.switchedOn = true;
 		}
-		if (sp.switchedOn && ResolveSolidYPlayer(stage.switchPlatforms[i].rect, player, velocity, prev, stage.gravityReversed)){
+		// 常に当たり判定を行う（switchedOnは床の動きにのみ影響）
+		// Y方向（縦）の当たり判定
+		if (ResolveSolidYPlayer(stage.switchPlatforms[i].rect, player, velocity, prev, stage.gravityReversed)){
 			onGround = true;
 		}
+		// X方向（横）の当たり判定
+		ResolveSolidX(stage.switchPlatforms[i].rect, player, velocity, prev);
 	}
 
 	} // ===== if (stage.currentLayer == 0) 終わり =====
@@ -1331,21 +1337,39 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		auto& cl = stage.craneLaunchPads[i];
 		bool landed = ResolveSolidYPlayer(cl.rect, player, velocity, prev, stage.gravityReversed);
 
-		if (landed) {
-			onGround = true;
-			if (!cl.triggered) {
-				cl.triggered = true;
-				velocity.y = cl.launchVelY;
-				onGround = false;
-				stage.playerLaunched = true;
+			if (landed) {
+				onGround = true;
+				if (!cl.triggered) {
+					cl.triggered = true;
+					velocity.y = cl.launchVelY;
+					onGround = false;
+					stage.playerLaunched = true;
+				}
 			}
+
+
+			}
+
+			// exitDoor判定
+			stage.exitDoorTriggered = -1; // 毎フレーム初期化
+			for (int i = 0; i < stage.exitDoorCount; i++) {
+				if (CheckCollisionRecs(player, stage.exitDoors[i].rect)) {
+					stage.exitDoorTriggered = i;
+					break;
+				}
+			}
+
+			// ワープホール判定
+			stage.warpTriggered = -1;  // 毎フレーム初期化
+			for (int i = 0; i < stage.warpCount; i++) {
+				if (CheckCollisionRecs(player, stage.warps[i].rect) && IsKeyPressed(KEY_W)) {
+					stage.warpTriggered = i;  // ワープホールのインデックスを記録
+					break;  // 最初にマッチしたワープホールでループを抜ける
+				}
+			}
+
+			return onGround;
 		}
-
-		
-	}
-
-	return onGround;
-}
 
 //プレイヤーが氷床に乗っているか判定
 bool IsOnIcePlatform(const Stage& stage,const Rectangle player){
@@ -1409,7 +1433,7 @@ void ElevatorUpdate(Stage& stage, Rectangle& player, Vector2& velocity, float dt
 
 		Rectangle triggerZone = {
 			ev.rect.x,
-			ev.rect.y - 80.0f,
+			ev.rect.y - 20.0f,
 			ev.rect.width,
 			ev.rect.height + 80.0f
 		};

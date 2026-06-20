@@ -300,6 +300,13 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage) {
                 int i = c[t]++;
                 stage.exitDoors[i].rect = o.rect; stage.exitDoors[i].targetStage = (int)o.params[0];
             }break;
+        case EditorObjectType::WARP_HOLE:
+            if (c[t] < Stage::MAX_WARPS) {
+                int i = c[t]++;
+                stage.warps[i].rect = o.rect;
+                stage.warps[i].place = { o.params[0], o.params[1] };
+                stage.warps[i].warped = false;
+            }break;
         case EditorObjectType::LAYER_DOOR:
             if (c[t] < Stage::MAX_LAYERDOORS) {
                 int i = c[t]++; auto& d = stage.layerDoors[i];
@@ -420,8 +427,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage) {
     stage.fallingCount = c[30];  stage.upRisingCount = c[31];
     stage.upDownCount = c[32];   stage.clearsCount = c[33];
     stage.clearsXCount = c[34];  stage.switchPlatformCount = c[35];
-    stage.fallingTextCount = c[36]; stage.exitDoorCount = c[37];
-    stage.layerDoorCount = c[38];
+	stage.fallingTextCount = c[36]; stage.exitDoorCount = c[37];
+	stage.layerDoorCount = c[38];
 	stage.commentBlockCount = c[41];
 	stage.cursorBottomCount = c[42];
 	stage.deathBlockCount = c[43];
@@ -430,6 +437,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage) {
 	stage.craneLaunchPadCount = c[46];
 	stage.craneCount = c[47];
 	stage.ojisanPunchAreaCount = c[48];
+	stage.warpCount = c[49];
 
 	StageThemeLoadAll(stage.theme,
         "assets/images/stage/stage_1/ground1.png",
@@ -658,6 +666,12 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
     for (int i = 0; i < s.exitDoorCount; i++) {
         PlacedObject o = { EditorObjectType::EXIT_DOOR,s.exitDoors[i].rect };
         o.params[0] = (float)s.exitDoors[i].targetStage; ed.objects.push_back(o);
+    }
+    for (int i = 0; i < s.warpCount; i++) {
+        PlacedObject o = { EditorObjectType::WARP_HOLE, s.warps[i].rect };
+        o.params[0] = s.warps[i].place.x;
+        o.params[1] = s.warps[i].place.y;
+        ed.objects.push_back(o);
     }
     for (int i = 0; i < s.layerDoorCount; i++) {
         PlacedObject o = { EditorObjectType::LAYER_DOOR,s.layerDoors[i].frontRect };

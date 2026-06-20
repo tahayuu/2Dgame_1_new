@@ -53,6 +53,7 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {
     /* 46 CRANE_LAUNCH_PAD */ { 1, {{"launchVelY",-900,false}} },
     /* 47 CRANE */ { 5, {{"maxArmLen",200,false},{"detectRangeY",600,false},{"carrySpeedX",250,false},{"carryDir",1,false},{"carryDist",2000,false}}},
     /* 48 OJISAN_PUNCH_AREA     */ { 0, {} },
+    /* 49 WARP_HOLE             */ { 2, {{"destX",0,false},{"destY",0,false}} },
 };
 
 const TypeParamInfo& EdGetTypeInfo(EditorObjectType t) {
@@ -97,7 +98,7 @@ static const char* const EN_NAMES[(int)EditorObjectType::COUNT] = {
     "fallingPlatforms","upRisingPlatforms","upDouwnPlatforms","clearBlocks","clearBlocksX",
     "switchPlatforms","fallingTexts","exitDoors","layerDoors","respawn","switchButtons",
     "commentBlocks","cursorButtons","deathBlocks","spikeBouncers","springs",
-    "craneLaunchPads","cranes","ojisanPunchAreas"
+    "craneLaunchPads","cranes","ojisanPunchAreas","warpHoles"
 };
 
 static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
@@ -110,7 +111,7 @@ static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
     u8"fallingPlatforms",u8"upRisingPlatforms",u8"upDouwnPlatforms",u8"clearBlocks",u8"clearBlocksX",
     u8"switchPlatforms",u8"fallingTexts",u8"exitDoors",u8"layerDoors",u8"respawn",u8"switchButtons",
     u8"commentBlocks",u8"cursorButtons",u8"deathBlocks",u8"spikeBouncers",u8"springs",
-    u8"craneLaunchPads",u8"cranes",u8"ojisanPunchAreas"
+    u8"craneLaunchPads",u8"cranes",u8"ojisanPunchAreas",u8"warpHoles"
 };
 
 const char* GetNameJP(int i) {
@@ -172,6 +173,7 @@ static const Color TYPE_COLORS[(int)EditorObjectType::COUNT] = {
 	{255, 220,   0, 255},     // 46 CraneLaunchPad（明るい黄色）
 	{120, 120, 120, 255},     // 47 Crane（濃いグレー）
 	{255, 120, 120, 255},   // 48 OjisanPunchArea
+	{100, 200, 255, 255},   // 49 WarpHole（明るい水色）
 };
 
 Color GetColor(int i) {
@@ -249,6 +251,14 @@ void DrawObjectIcon(int typeIdx, Rectangle r) {
         float cx = r.x + r.width * 0.5f;
         float cy = r.y + r.height * 0.5f;
         DrawCircle((int)cx, (int)cy, 4.0f, BLACK);
+    }
+    else if (typeIdx == 49) { // WARP_HOLE: 渦巻き形状
+        float cx = r.x + r.width / 2;
+        float cy = r.y + r.height / 2;
+        float rad = (std::min)(r.width, r.height) / 2 - 2;
+        DrawCircle((int)cx, (int)cy, rad, c);
+        DrawCircleLines((int)cx, (int)cy, (int)(rad * 0.7f), BLACK);
+        DrawCircleLines((int)cx, (int)cy, (int)(rad * 0.4f), BLACK);
     }
     else if (typeIdx == (int)EditorObjectType::OJISAN_PUNCH_AREA) {
         DrawRectangleRec(r, ColorAlpha(c, 0.8f));
@@ -410,7 +420,24 @@ void EditorUpdate(StageEditor& ed, float dt) {
         for (int i = 0; i < info.count; i++) {
             Rectangle row = { panel.x + 5, paramY + i * PROP_LINE_H, panel.width - 10, PROP_LINE_H };
             if (CheckCollisionPointRec(mp, row)) {
-                if (info.defs[i].isBool) {
+                // EXIT_DOOR の targetStage パラメータの特別処理
+                if (ed.objects[ed.propSelectedIdx].type == EditorObjectType::EXIT_DOOR &&
+                    strcmp(info.defs[i].name, "targetStage") == 0) {
+                    // ドロップダウンクリック処理（次のステージを選択）
+                    float& val = ed.objects[ed.propSelectedIdx].params[i];
+                    int stageIdx = (int)val;
+                    stageIdx = (stageIdx + 1) % 6;  // 0～5 でループ
+                    val = (float)stageIdx;
+                } 
+                // WARP_HOLE の destX, destY パラメータ編集
+                else if (ed.objects[ed.propSelectedIdx].type == EditorObjectType::WARP_HOLE &&
+                         (strcmp(info.defs[i].name, "destX") == 0 || strcmp(info.defs[i].name, "destY") == 0)) {
+                    ed.propEditingParam = i;
+                    snprintf(ed.propEditBuf, sizeof(ed.propEditBuf), "%.0f",
+                        ed.objects[ed.propSelectedIdx].params[i]);
+                    ed.propEditCursor = (int)strlen(ed.propEditBuf);
+                }
+                else if (info.defs[i].isBool) {
                     // boolパラメータ: クリックで 0↔1 トグル
                     float& val = ed.objects[ed.propSelectedIdx].params[i];
                     val = (val != 0.0f) ? 0.0f : 1.0f;

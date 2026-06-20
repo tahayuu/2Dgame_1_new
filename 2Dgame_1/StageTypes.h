@@ -240,8 +240,15 @@ struct Stage {
 
 	//出口ドア
 	static constexpr int MAX_EXITDOORS = 10;
-    ExitDoor exitDoors[MAX_EXITDOORS];
+	ExitDoor exitDoors[MAX_EXITDOORS];
 	int exitDoorCount;
+	int exitDoorTriggered = -1; // 接触したexitDoorのインデックス（-1=接触なし）
+
+	//ワープホール
+	static constexpr int MAX_WARPS = 10;
+	Warp warps[MAX_WARPS];
+	int warpCount;
+	int warpTriggered = -1; // 接触したwarpHoleのインデックス（-1=接触なし）
 
 	// リスポーン地点（エディタで配置）
 	Vector2 respawnPoint = { 100.0f, 500.0f };

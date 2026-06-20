@@ -12,8 +12,7 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 		"assets/images/stage/stage_1/ground2.png",
 		50.0f);
 	stage.theme.itemBlock = LoadTexture("assets/images/stage/stage_1/itemblock.png");
-    stage.theme.nomalBlock = LoadTexture("assets/images/stage/stage_1/normalblock.png");
-	TraceLog(LOG_INFO, "theme hasTextures: %d", stage.theme.hasTextures);
+	stage.theme.nomalBlock = LoadTexture("assets/images/stage/stage_1/normalblock.png");
 	//普通床
 	stage.platforms[0] = { 0, 600, 2500, 200 };
 	stage.platforms[1] = { 1000, 500, 100, 100 };

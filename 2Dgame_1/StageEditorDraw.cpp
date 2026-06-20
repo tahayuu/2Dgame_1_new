@@ -213,7 +213,23 @@ void DrawPropertyPanel(const StageEditor& ed) {
             const char* txt = bval ? "ON" : "OFF";
             int tw = MeasureText(txt, 11);
             DrawText(txt, (int)(toggleR.x + (toggleR.width - tw) / 2), (int)y + 8, 11, WHITE);
-        } else if (editing) {
+        }
+        // EXIT_DOOR の targetStage パラメータの特別処理
+        else if (sel.type == EditorObjectType::EXIT_DOOR && strcmp(info.defs[i].name, "targetStage") == 0) {
+            int stageIdx = (int)sel.params[i];
+            if (stageIdx < 0) stageIdx = 0;
+            if (stageIdx > 5) stageIdx = 5;  // ステージ数は6（0～5）
+            const char* stageNames[] = { "Stage 0", "Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5" };
+
+            // ドロップダウン風表示
+            Color ddBgCol = hov ? Color{60,100,140,255} : Color{40,80,120,255};
+            Rectangle ddRect = { valX - 4, y + 3, panel.width - 168, PROP_LINE_H - 6 };
+            DrawRectangleRounded(ddRect, 0.2f, 3, ddBgCol);
+            DrawRectangleRoundedLinesEx(ddRect, 0.2f, 3, 1, SKYBLUE);
+            DrawText(stageNames[stageIdx], (int)valX, (int)y + 7, 12, WHITE);
+            DrawText("v", (int)(ddRect.x + ddRect.width - 12), (int)y + 7, 12, LIGHTGRAY);
+        }
+        else if (editing) {
             Rectangle editR = { valX - 4, y + 2, panel.width - 168, PROP_LINE_H - 4 };
             DrawRectangleRec(editR, { 40, 40, 60, 255 });
             DrawRectangleLinesEx(editR, 1, YELLOW);

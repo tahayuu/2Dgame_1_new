@@ -24,6 +24,7 @@ int main() {
     GameState gameState = GameState::START;
     GameState pausePrevState = GameState::PLAYING; // ポーズ前の状態を保持
     int pauseSelectIdx = 0; // 0=ゲームにもどる, 1=タイトルに戻る, 2=ゲーム終了
+    bool pauseTransitionBlocked = false; // ポーズ状態遷移直後の入力ブロック
 
     std::unordered_map<DeathCause, int> deathCounts;
 
@@ -44,6 +45,7 @@ int main() {
     OjisanVisual ojisan;
     InitWindow(screenWidth, screenHeight, "step1_TeST");
     ChangeDirectory(GetApplicationDirectory());
+
 
     PlayerVisualLoad(pv);
     StageVisualLoad(sv);
@@ -131,23 +133,17 @@ int main() {
     // 結合したテキストからコードポイントを生成
     int ojisanCpCount = 0;
     int* ojisanCps = LoadCodepoints(allDialogText.c_str(), &ojisanCpCount);
-    //TraceLog(LOG_INFO, "Loaded codepoints: %d", ojisanCpCount);
 
-    // 最初の10個のコードポイントをログ出力（デバッグ用）
-    /*for (int i = 0; i < (ojisanCpCount < 10 ? ojisanCpCount : 10); i++) {
-        TraceLog(LOG_INFO, "Codepoint[%d] = %d (0x%X)", i, ojisanCps[i], ojisanCps[i]);
-    }*/
 
     // フォントサイズを64に増やして高解像度テクスチャを生成
     Font ojisanFont = LoadFontEx("assets/images/font/YDWaosagi.otf", 64, ojisanCps, ojisanCpCount);
     if (ojisanFont.texture.id == 0) {
-        TraceLog(LOG_ERROR, "Failed to load ojisan font!");
+   
     }
     else {
         GenTextureMipmaps(&ojisanFont.texture);
         SetTextureFilter(ojisanFont.texture, TEXTURE_FILTER_BILINEAR);
-        //TraceLog(LOG_INFO, "Ojisan font texture: %dx%d, glyphs: %d",
-        //    ojisanFont.texture.width, ojisanFont.texture.height, ojisanFont.glyphCount);
+
     }
     UnloadCodepoints(ojisanCps);
 
@@ -155,13 +151,12 @@ int main() {
     int* jpCps = LoadCodepoints(allDialogText.c_str(), &jpCpCount);
     Font jpFont = LoadFontEx("assets/images/font/titlefont.ttf", 64, jpCps, jpCpCount);
     if (jpFont.texture.id == 0) {
-        TraceLog(LOG_ERROR, "Failed to load jp font!");
+     
     }
     else {
         GenTextureMipmaps(&jpFont.texture);
         SetTextureFilter(jpFont.texture, TEXTURE_FILTER_BILINEAR);
-        //TraceLog(LOG_INFO, "JP font texture: %dx%d, glyphs: %d",
-        //    jpFont.texture.width, jpFont.texture.height, jpFont.glyphCount);
+
     }
     UnloadCodepoints(jpCps);
 
@@ -472,14 +467,16 @@ int main() {
 
 
         //プレイ画面
-        if (gameState == GameState::PLAYING) {
+         if (gameState == GameState::PLAYING) {
 
-            //ポーズメニューを開く
-            if (IsKeyPressed(KEY_TAB)) {
-                pausePrevState = gameState;
-                pauseSelectIdx = 0;
-                gameState = GameState::PAUSE;
-            }
+             //ポーズメニューを開く
+             if (IsKeyPressed(KEY_TAB)) {
+             
+                 pausePrevState = gameState;
+                 pauseSelectIdx = 0;
+                 pauseTransitionBlocked = true;  // ★ 状態遷移直後の入力をブロック
+                 gameState = GameState::PAUSE;
+             }
 
             // エディタ終了後の無敵タイマー更新
             if (editorExitInvTimer > 0.0f) {
@@ -490,9 +487,9 @@ int main() {
 
             // V / F1 キーでエディタモードへ（現在のステージをそのまま読み込む）
             if (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1)) {
-                TraceLog(LOG_INFO, "Entering editor from PLAYING state, currentStage=%d", currentStage);
+             
                 EnterStageEditor();
-                TraceLog(LOG_INFO, "Editor entered, gameState=%d", (int)gameState);
+
                 continue;
             }
 
@@ -515,6 +512,15 @@ int main() {
                 isFired = true;
                 fireTimer = 0.0f;
                 stage.playerFired = false;
+            }
+
+            // 大砲発射タイマー更新
+            if (isFired) {
+                fireTimer += dt;
+                if (fireTimer >= fireDuration) {
+                    isFired = false;
+                    fireTimer = 0.0f;
+                }
             }
 
             //発射台タイマー更新
@@ -575,7 +581,11 @@ int main() {
 
             }
             else if (isFired) {
-
+         
+                const float firedRightBoostAccel = 120.0f;
+                if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+                    velocity.x += firedRightBoostAccel * dt;
+                }
             }
             else if (isCraneGrabbed) {
 
@@ -777,8 +787,29 @@ int main() {
                 isCraneGrabbed = false;
                 cause = DeathCause::TRAP;
                 RespawnPlayer();
-            } 
-                // 死亡判定
+            }
+
+            // exitDoor判定：上向きキーでステージ遷移
+            if (stage.exitDoorTriggered >= 0) {
+                if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+                    int targetStage = stage.exitDoors[stage.exitDoorTriggered].targetStage;
+                    selectStage = targetStage;
+                    LoadSelectedStage();  // 新しいステージを読み込む
+                    player = { 100, 500, PLAYER_W, PLAYER_H };
+                    velocity = { 0.0f, 0.0f };
+                    editorExitInvTimer = 1.0f;
+                    gameState = GameState::PLAYING;
+                }
+            }
+            // ワープホール判定：W キーでテレポート
+            if (stage.warpTriggered >= 0) {
+                player.x = stage.warps[stage.warpTriggered].place.x;
+                player.y = stage.warps[stage.warpTriggered].place.y;
+                stage.warpTriggered = -1;  // ワープ後にフラグをリセット
+            }
+
+
+            // 死亡判定
                 bool hitDeathBlock = false;
                 for (int i = 0; i < stage.deathBlockCount; i++) {
                     if (CheckCollisionRecs(player, stage.deathBlocks[i])) {
@@ -799,7 +830,7 @@ int main() {
                     cause = DeathCause::SPIKE;
                     RespawnPlayer();
                 }
-            
+
 
             // コメントブロック判定（当たり判定なし・重なりでコメント発動）
             for (int i = 0; i < stage.commentBlockCount; i++) {
@@ -891,42 +922,52 @@ int main() {
 
         // PAUSE状態の入力処理ブロック
         else if (gameState == GameState::PAUSE) {
-            const int pauseMenuCount = 3;
+            // 状態遷移直後のフレームは入力をブロック
+            if (pauseTransitionBlocked) {
+                pauseTransitionBlocked = false;
 
-            // 上下で選択
-            if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
-                pauseSelectIdx = (pauseSelectIdx + pauseMenuCount - 1) % pauseMenuCount;
-            }
-            if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
-                pauseSelectIdx = (pauseSelectIdx + 1) % pauseMenuCount;
-            }
+            } else {
+    
+                const int pauseMenuCount = 3;
 
-            // ESC / TAB で再開
-            if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_TAB)) {
-                gameState = pausePrevState;
-            }
+                // 上下で選択
+                if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
+                    pauseSelectIdx = (pauseSelectIdx + pauseMenuCount - 1) % pauseMenuCount;
+                }
+                if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
+                    pauseSelectIdx = (pauseSelectIdx + 1) % pauseMenuCount;
+                }
 
-            // ENTER で決定
-            if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-                if (pauseSelectIdx == 0) {
-                    // ゲームに戻る
+                // ESC / TAB で再開
+                if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_TAB)) {
+           
+                    pauseTransitionBlocked = true;  // ★ PAUSE→PLAYING 遷移時もブロック
                     gameState = pausePrevState;
                 }
-                else if (pauseSelectIdx == 1) {
-                    // タイトルに戻る
-                    StageClear(stage);
-                    ojisan.showPunch = false;  // パンチフラグをリセット
-                    enemyManager.Reset();
-                    itemManager.Reset();
-                    deaths = 0;
-                    editorExitInvTimer = 0.0f;
-                    gameState = GameState::START;
-                    isSelectiongStage = false;
-                }
-                else {
-                    // ゲーム終了
-                    CloseWindow();
-                    return 0;
+
+                // ENTER で決定
+                if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+                    if (pauseSelectIdx == 0) {
+                        // ゲームに戻る
+                        pauseTransitionBlocked = true;  // ★
+                        gameState = pausePrevState;
+                    }
+                    else if (pauseSelectIdx == 1) {
+                        // タイトルに戻る
+                        StageClear(stage);
+                        ojisan.showPunch = false;  // パンチフラグをリセット
+                        enemyManager.Reset();
+                        itemManager.Reset();
+                        deaths = 0;
+                        editorExitInvTimer = 0.0f;
+                        gameState = GameState::START;
+                        isSelectiongStage = false;
+                    }
+                    else {
+                        // ゲーム終了
+                        CloseWindow();
+                        return 0;
+                    }
                 }
             }
         }

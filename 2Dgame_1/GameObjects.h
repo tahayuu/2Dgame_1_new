@@ -498,6 +498,7 @@ struct Elevator {
 };
 
 // 触れると壊れるブロック
+// 触れると壊れるブロック
 struct TouchBreakBlock {
     Rectangle rect;
     bool triggered = false;  // プレイヤーが触れたか
@@ -555,6 +556,15 @@ struct Crane {
     Rectangle playerRect = {};   // main.cppから毎フレーム更新するプレイヤー矩形
     CraneState state = CraneState::IDLE;
 };
+
+//ワープホール
+struct Warp {
+    Rectangle rect;
+    Vector2 place;//指定の位置
+    bool warped = false;
+};
+
+
 
 // トゲ描画関数（宣言）
 void DrawSpikes(Rectangle h, float spikeW);

@@ -5,7 +5,7 @@
 #include <random>
 #include <ctime>
 #include <algorithm>
-#include "raylib.h" // for TraceLog
+#include "raylib.h"
 
     // --- helpers ---
 static inline std::string trim(const std::string& s) {
@@ -30,7 +30,6 @@ void DialogManager::LoadFromFile(const std::string& path) {
     lines.clear();
     std::ifstream ifs(path, std::ios::binary);
     if (!ifs.is_open()) {
-        TraceLog(LOG_WARNING, "DialogManager: failed to open %s", path.c_str());
         lastPath.clear();
         return;
     }
@@ -65,7 +64,6 @@ void DialogManager::LoadFromFile(const std::string& path) {
     }
 
     lastPath = path;
-    TraceLog(LOG_INFO, "DialogManager: loaded %d lines from %s", (int)lines.size(), path.c_str());
 }
 
 void DialogManager::Reload() {

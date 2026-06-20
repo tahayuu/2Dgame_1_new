@@ -57,6 +57,7 @@ void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera) {
 	}
 }
 
+
 static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom& cb) {
     auto ActivateOne = [](RollingBall& rb) {
         rb.activated = true;
@@ -715,6 +716,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.rollingBallCount = 0;
 			stage.fallingTextCount = 0;
 			stage.exitDoorCount = 0;
+			stage.warpCount = 0;
 			stage.hasRespawnPoint = false;
 			stage.respawnPoint = { 100.0f, 500.0f };  // ← 追加
 			stage.commentBlockCount = 0;
