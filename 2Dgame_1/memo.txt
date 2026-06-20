@@ -1,0 +1,835 @@
+# Raylib / C++ ゲーム制作メモ
+
+## まず大事なこと
+
+このゲームで大事なのはだいたいこのへん。
+
+* 毎フレーム処理する
+* Update と Draw を分ける
+* 位置、速度、当たり判定で動きを作る
+* カメラの影響を受けるものと、受けないUIを分ける
+* モード管理をちゃんとする
+
+特に、
+**更新処理と描画処理を混ぜない**のが大事。
+
+---
+
+# 1. ゲームループ系
+
+よく使う関数。
+
+```cpp
+InitWindow(...);
+SetTargetFPS(...);
+WindowShouldClose();
+BeginDrawing();
+EndDrawing();
+ClearBackground(...);
+```
+
+基本の流れはこれ。
+
+```cpp
+while (!WindowShouldClose()) {
+    // 更新処理
+    // 入力、移動、当たり判定など
+
+    BeginDrawing();
+    ClearBackground(...);
+
+    // 描画処理
+    // 画像、文字、UIなど
+
+    EndDrawing();
+}
+```
+
+## メモ
+
+* Update はゲームの中身を変える処理
+* Draw は画面に見せる処理
+* 入力、移動、当たり判定は Update 側
+* 画像や文字を描くのは Draw 側
+* ここを混ぜるとあとで分かりにくくなる
+
+---
+
+# 2. 入力処理
+
+使う関数。
+
+```cpp
+IsKeyPressed(...);
+IsKeyDown(...);
+```
+
+## IsKeyPressed
+
+押した瞬間だけ反応する。
+
+使う場面。
+
+* モード切替
+* メニュー操作
+* 1回だけ実行したい処理
+
+例。
+
+```cpp
+if (IsKeyPressed(KEY_V)) {
+    // 編集モードに切り替え
+}
+```
+
+## IsKeyDown
+
+押している間ずっと反応する。
+
+使う場面。
+
+* プレイヤー移動
+* 長押し操作
+
+例。
+
+```cpp
+if (IsKeyDown(KEY_RIGHT)) {
+    player.x += speed;
+}
+```
+
+## 覚え方
+
+* 1回だけ → `IsKeyPressed`
+* 押してる間 → `IsKeyDown`
+
+---
+
+# 3. 2D座標とカメラ
+
+使う関数。
+
+```cpp
+BeginMode2D(camera);
+EndMode2D();
+```
+
+## ワールド座標
+
+カメラの影響を受けるもの。
+
+* プレイヤー
+* 敵
+* 地形
+* ステージ
+* アイテム
+
+```cpp
+BeginMode2D(camera);
+
+// ステージ、敵、プレイヤーを描く
+
+EndMode2D();
+```
+
+## スクリーン座標
+
+カメラの影響を受けないもの。
+
+* UI
+* HP表示
+* メニュー
+* ダイアログ
+* 画面固定の Ojisan
+
+```cpp
+// BeginMode2D の外で描く
+DrawTextEx(...);
+DrawTexture(...);
+```
+
+## メモ
+
+Ojisan は画面左下固定。
+つまり、ステージ上のキャラではなく UI 扱いで考える。
+
+なので、Ojisan はカメラの中ではなく、
+`EndMode2D()` のあとに描くイメージ。
+
+---
+
+# 4. 当たり判定
+
+使うもの。
+
+```cpp
+Rectangle
+Vector2
+CheckCollisionRecs(...)
+```
+
+基本はこれ。
+
+```cpp
+if (CheckCollisionRecs(playerRect, enemyRect)) {
+    // ぶつかった
+}
+```
+
+でも、これだけだと足りない。
+
+## 大事なのは方向
+
+このゲームでは、敵にどう当たったかで結果が変わる。
+
+* 横から敵に当たる
+  → プレイヤー死亡、リスポーン
+
+* 上から敵を踏む
+  → プレイヤーは生きる
+
+* ただし、上から踏んだら
+  → 敵にダメージ + プレイヤーがバウンド
+
+つまり、
+
+「当たったかどうか」
+
+よりも、
+
+「どの方向から当たったか」
+
+が大事。
+
+## 敵を踏んだ判定で見るもの
+
+見るべきもの。
+
+* プレイヤーの bottom
+* 敵の top
+* プレイヤーの下向き速度
+
+考え方。
+
+```cpp
+プレイヤーが下に落ちている
+かつ
+プレイヤーの足元が敵の上に近い
+なら
+上から踏んだ判定
+```
+
+## メモ
+
+当たり判定は、ただの衝突チェックではなく、
+そのあとに「どう処理するか」が本体。
+
+---
+
+# 5. リソース読み込み
+
+使う関数。
+
+```cpp
+LoadTexture(...);
+UnloadTexture(...);
+
+LoadFontEx(...);
+DrawTextEx(...);
+```
+
+## メモ
+
+画像やフォントは毎フレーム読み込まない。
+
+悪い例。
+
+```cpp
+while (!WindowShouldClose()) {
+    Texture2D tex = LoadTexture("player.png");
+}
+```
+
+これは重い。
+
+良い流れ。
+
+```cpp
+Texture2D tex = LoadTexture("player.png");
+
+while (!WindowShouldClose()) {
+    DrawTexture(tex, x, y, WHITE);
+}
+
+UnloadTexture(tex);
+```
+
+## フォントについて
+
+日本語を使う場合、フォントに必要な文字を読み込ませる必要がある。
+
+特にダイアログの文字は読み込み対象に入れる。
+入れないと文字化けする可能性がある。
+
+## 覚えること
+
+* 読み込みは最初
+* 描画は毎フレーム
+* 解放は最後
+* 日本語はフォント読み込みに注意
+
+---
+
+# 6. C++ 文法メモ
+
+## if / else
+
+状態分岐で使う。
+
+```cpp
+if (gameState == GameState::PLAYING) {
+    // プレイ中
+}
+else if (gameState == GameState::EDITOR) {
+    // 編集中
+}
+else if (gameState == GameState::PAUSE) {
+    // 一時停止
+}
+```
+
+ゲームは状態で処理が変わるので、かなり使う。
+
+---
+
+## bool
+
+オン・オフを管理する。
+
+例。
+
+```cpp
+bool isGrounded;
+bool isDead;
+bool isDragging;
+bool showTilePalette;
+bool visible;
+bool locked;
+```
+
+使う場面。
+
+* 着地しているか
+* 死んでいるか
+* ドラッグ中か
+* 表示するか
+* ロックされているか
+
+メモ。
+
+bool が増えすぎると分かりにくい。
+そのときは enum class にまとめた方がいい。
+
+---
+
+## enum class
+
+モードや種類を表すときに使う。
+
+```cpp
+enum class GameState {
+    PLAYING,
+    EDITOR,
+    PAUSE
+};
+```
+
+使い方。
+
+```cpp
+GameState gameState = GameState::PLAYING;
+```
+
+メリット。
+
+* 数字より分かりやすい
+* モード管理に向いている
+* 意味がはっきりする
+
+このプロジェクトで重要そうなもの。
+
+* `GameState`
+* `EditorObjectType`
+* `EditorMode`
+
+---
+
+## struct
+
+データをひとまとめにする。
+
+例。
+
+```cpp
+struct Player {
+    Vector2 position;
+    Vector2 velocity;
+    Rectangle rect;
+    bool isGrounded;
+    int hp;
+};
+```
+
+ゲームでは、1つのものにいろいろな情報がある。
+
+プレイヤーなら、
+
+* 位置
+* 速度
+* 当たり判定
+* 体力
+* 状態
+
+など。
+
+これをバラバラに置くより、struct でまとめる方が見やすい。
+
+---
+
+## std::vector
+
+複数のものを管理するときに使う。
+
+```cpp
+std::vector<Enemy> enemies;
+std::vector<PlacedObject> objects;
+std::vector<TextureTile> textureTiles;
+```
+
+使うもの。
+
+* 敵
+* 地形
+* タイル
+* 弾
+* エフェクト
+* アイテム
+
+数が増えたり減ったりするものは vector が便利。
+
+---
+
+## 関数
+
+処理を分ける。
+
+例。
+
+```cpp
+EditorInit(...);
+EditorUpdate(...);
+EditorDraw(...);
+```
+
+分け方。
+
+* Init
+  初期化
+
+* Update
+  更新
+
+* Draw
+  描画
+
+* Unload
+  解放
+
+メモ。
+
+main に全部書くと読みにくくなる。
+処理ごとに関数に分けた方があとで直しやすい。
+
+---
+
+## 参照 &
+
+コピーせずに元のデータを使う。
+
+```cpp
+void EditorUpdate(StageEditor& ed);
+```
+
+これは `ed` の中身を変更できる。
+
+---
+
+## const 参照
+
+```cpp
+Rectangle GetPropPanelRect(const StageEditor& ed);
+```
+
+意味。
+
+* コピーしない
+* 中身を変更しない
+* 読むだけ
+
+覚え方。
+
+```cpp
+StageEditor& ed
+```
+
+これは変更できる。
+
+```cpp
+const StageEditor& ed
+```
+
+これは読むだけ。
+
+---
+
+## const
+
+変更しない値につける。
+
+```cpp
+const int SCREEN_WIDTH = 1280;
+const int SCREEN_HEIGHT = 720;
+```
+
+使う場面。
+
+* 画面サイズ
+* 固定値
+* 定数テーブル
+* 変更してほしくない引数
+
+---
+
+## 配列
+
+固定サイズのデータ。
+
+```cpp
+float params[MAX_OBJ_PARAMS];
+```
+
+使う場面。
+
+* 数が決まっているもの
+* パラメータ表
+* 色の定義
+* 種類ごとの設定
+
+---
+
+## 初期化子 {}
+
+C++でよく出てくる。
+
+```cpp
+Vector2 position = {};
+Texture2D texture = {};
+velocity = { 0.0f, 0.0f };
+```
+
+座標や速度の初期化でよく使う。
+
+---
+
+## auto
+
+型を自動で決めてくれる。
+
+```cpp
+auto RestartGame = [&]() {
+    // リスタート処理
+};
+```
+
+型が長いときに便利。
+ラムダ式でよく出てくる。
+
+---
+
+## ラムダ式
+
+その場で小さい関数を作る感じ。
+
+```cpp
+auto RespawnPlayer = [&]() {
+    player.position = startPosition;
+    player.velocity = { 0.0f, 0.0f };
+};
+```
+
+使う場面。
+
+* リスポーン
+* リスタート
+* ちょっとした補助処理
+
+メモ。
+
+`[&]` は外の変数を使えるようにするためのもの。
+ただし、使いすぎると分かりにくくなる。
+
+---
+
+## for
+
+くり返し処理。
+
+```cpp
+for (int i = 0; i < enemies.size(); i++) {
+    // 敵を1体ずつ処理
+}
+```
+
+ゲームでは毎フレームたくさん使う。
+
+使う場面。
+
+* 敵を全部動かす
+* タイルを全部描く
+* 弾を全部動かす
+* 当たり判定を全部見る
+
+---
+
+# 7. このプロジェクトで特に大事なこと
+
+## 1. Update と Draw を分ける
+
+Update でやること。
+
+* 入力
+* 移動
+* 重力
+* 当たり判定
+* 死亡判定
+* モード切替
+
+Draw でやること。
+
+* 背景
+* プレイヤー
+* 敵
+* UI
+* 文字
+
+---
+
+## 2. ワールドと UI を分ける
+
+ワールド側。
+
+* プレイヤー
+* 敵
+* 地形
+* ステージ
+
+UI側。
+
+* HP
+* メニュー
+* ダイアログ
+* Ojisan
+
+基本形。
+
+```cpp
+BeginMode2D(camera);
+// ワールドを描く
+EndMode2D();
+
+// UIを描く
+```
+
+---
+
+## 3. 当たり判定は方向を見る
+
+結果が1種類ではない。
+
+* 敵を上から踏む
+  → ダメージ + バウンド
+
+* 横から敵に当たる
+  → 死亡
+
+* 足場に乗る
+  → 着地
+
+* 壁に当たる
+  → 横移動を止める
+
+なので、
+
+「当たった」
+
+で終わらせない。
+
+そのあとに、
+
+「どこから当たったか」
+
+を見る。
+
+---
+
+## 4. モード管理をはっきりさせる
+
+このプロジェクトで出てくるモード。
+
+* 通常プレイ
+* ステージ編集モード
+* テクスチャモード
+* 一時停止
+
+キー入力の場所に処理を散らすより、
+今のモードを1つの変数で管理した方がいい。
+
+例。
+
+```cpp
+if (IsKeyPressed(KEY_V)) {
+    gameState = GameState::EDITOR;
+}
+```
+
+---
+
+## 5. アセット読み込みはまとめる
+
+アセットは画像、フォント、音など。
+
+基本。
+
+* 最初に Load
+* 毎フレーム Draw
+* 最後に Unload
+
+理由。
+
+* 重くなるのを防ぐ
+* 解放忘れを防ぐ
+* 初期化漏れを防ぐ
+* フォントの文字化け対策になる
+
+---
+
+# 8. 学習優先順位
+
+## まず覚える
+
+1. `if / else`
+2. `bool`
+3. `enum class`
+4. `struct`
+5. `std::vector`
+6. 関数
+
+ここが分かると、だいぶコードが読める。
+
+## 次に覚える
+
+7. 参照 `&`
+8. `const`
+9. `for`
+10. 配列
+11. 初期化子 `{}`
+
+## 余裕があれば
+
+12. `auto`
+13. ラムダ式 `[](){}`
+
+---
+
+# 9. Raylib関数メモ
+
+## ゲームループ
+
+```cpp
+InitWindow(...);
+SetTargetFPS(...);
+WindowShouldClose();
+BeginDrawing();
+EndDrawing();
+ClearBackground(...);
+CloseWindow();
+```
+
+## 入力
+
+```cpp
+IsKeyPressed(...);
+IsKeyDown(...);
+```
+
+## カメラ
+
+```cpp
+BeginMode2D(camera);
+EndMode2D();
+```
+
+## 当たり判定
+
+```cpp
+Rectangle
+Vector2
+CheckCollisionRecs(...)
+```
+
+## 画像
+
+```cpp
+LoadTexture(...);
+DrawTexture(...);
+DrawTexturePro(...);
+UnloadTexture(...);
+```
+
+## 文字
+
+```cpp
+LoadFontEx(...);
+DrawTextEx(...);
+UnloadFont(...);
+```
+
+---
+
+# 10. 最後にまとめ
+
+このゲームでやることは、かなり単純にするとこれ。
+
+```cpp
+最初に素材やデータを読み込む
+↓
+毎フレーム
+    入力を見る
+    位置や速度を更新する
+    当たり判定を見る
+    状態を変える
+    画面に描く
+↓
+最後に素材を解放する
+```
+
+特に忘れないこと。
+
+* Update と Draw を分ける
+* カメラの中と外を分ける
+* 当たり判定は方向を見る
+* モードは enum class などで管理する
+* 画像やフォントは毎フレーム読み込まない
+
+このへんが分かると、ゲーム全体のコードがかなり読みやすくなる。

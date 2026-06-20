@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{1eebaffe-b0d9-484f-8218-520d986582fc}</ProjectGuid>
+    <RootNamespace>My2Dgame1</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\Windows Kits\10\LIb\10.0.26100.0\um\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions> /utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x64;%(AdditionalLibraryDerectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="ChengeStage.cpp" />
+    <ClCompile Include="DialogManager.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="EnemyManager.cpp" />
+    <ClCompile Include="Item.cpp" />
+    <ClCompile Include="ItemManager.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="OjisanDialog.cpp" />
+    <ClCompile Include="OjisanVIsual.cpp" />
+    <ClCompile Include="PlayerVisual.cpp" />
+    <ClCompile Include="Stage.cpp" />
+    <ClCompile Include="StageCollision.cpp" />
+    <ClCompile Include="StageDraw.cpp" />
+    <ClCompile Include="StageEditor.cpp" />
+    <ClCompile Include="StageEditorDraw.cpp" />
+    <ClCompile Include="StageEditorIO.cpp" />
+    <ClCompile Include="StageHazard.cpp" />
+    <ClCompile Include="StageInit_3.cpp" />
+    <ClCompile Include="StageInit_1.cpp" />
+    <ClCompile Include="StageInit_2.cpp" />
+    <ClCompile Include="StageInit_4.cpp" />
+    <ClCompile Include="StageInit_choseStage.cpp" />
+    <ClCompile Include="StageInit_deback.cpp" />
+    <ClCompile Include="StageTheme.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CameraController.h" />
+    <ClInclude Include="ChengeStage.h" />
+    <ClInclude Include="DialogManager.h" />
+    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="EnemyManager.h" />
+    <ClInclude Include="GameEvents.h" />
+    <ClInclude Include="GameObjects.h" />
+    <ClInclude Include="Item.h" />
+    <ClInclude Include="ItemManager.h" />
+    <ClInclude Include="OjisanDialog.h" />
+    <ClInclude Include="OjisanVisual.h" />
+    <ClInclude Include="PlayerVisual.h" />
+    <ClInclude Include="Stage.h" />
+    <ClInclude Include="StageCollision.h" />
+    <ClInclude Include="StageDraw.h" />
+    <ClInclude Include="StageEditor.h" />
+    <ClInclude Include="StageEditorInternal.h" />
+    <ClInclude Include="StageHazard.h" />
+    <ClInclude Include="StageInit_3.h" />
+    <ClInclude Include="StageInit_1.h" />
+    <ClInclude Include="StageInit_2.h" />
+    <ClInclude Include="StageInit_4.h" />
+    <ClInclude Include="StageInit_choseStage.h" />
+    <ClInclude Include="StageInit_deback.h" />
+    <ClInclude Include="StageTheme.h" />
+    <ClInclude Include="StageTypes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="ojisan_lines.text">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\x64\Debug\assets\images\items\Adobe Express - file.png" />
+    <Image Include="..\x64\Debug\assets\images\items\debuffpotion.png" />
+    <Image Include="..\x64\Debug\assets\images\items\excessjumppotion.png" />
+    <Image Include="..\x64\Debug\assets\images\items\jumpportion.png" />
+    <Image Include="..\x64\Debug\assets\images\items\speedportion.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\bubble\bubble.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan2.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan3.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan4.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan_Idle.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan_Idle2.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan_punch.png" />
+    <Image Include="..\x64\Debug\assets\images\ojisan\punch.png" />
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-death.png" />
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-fall.png" />
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-idle.png" />
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-idle_turn.png" />
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-jump.png" />
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-run.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\background2.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\background_1.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\death.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\select_background.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\stage1.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\stage2.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\title.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\title2.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\title3.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\title4.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\unnamed.jpg" />
+    <Image Include="..\x64\Debug\assets\images\stage\background\unnamedw.jpg" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\gimic.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground1.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground2.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground3.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground4.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground5.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\groundLayer.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\item.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\itemblock.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\normalblock.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\stage_asset.png" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\unnamed (1).jpg" />
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\unnamed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\x64\Debug\assets\images\font\._YDWaosagi.otf" />
+    <Font Include="..\x64\Debug\assets\images\font\titlefont.ttf" />
+    <Font Include="..\x64\Debug\assets\images\font\x10y12pxDonguriDuel.ttf" />
+    <Font Include="..\x64\Debug\assets\images\font\YDWaosagi.otf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="memo.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

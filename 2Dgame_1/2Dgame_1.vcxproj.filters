@@ -1,0 +1,419 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="assets">
+      <UniqueIdentifier>{20ef3de0-5795-46f4-9695-1d16fbdd8169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images">
+      <UniqueIdentifier>{e8a06652-de9c-454f-b65b-7ef9fca69369}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images\player">
+      <UniqueIdentifier>{5a94e055-39be-4a1e-93e8-f2143b322720}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images\stage">
+      <UniqueIdentifier>{1a8567d8-5d0c-4308-bac9-a9796d3b5285}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images\stage\object">
+      <UniqueIdentifier>{0c0774f4-b58a-4780-beaa-1c4297c53f96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images\stage\background">
+      <UniqueIdentifier>{1f09ed4c-f433-43bb-899c-6daaad4cad2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Stage.Init">
+      <UniqueIdentifier>{785f8e49-7132-440a-a6ea-d64d1878d61a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\StageInit.h">
+      <UniqueIdentifier>{2a2cb572-d3c2-410a-9a89-7c5b4209a263}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemy">
+      <UniqueIdentifier>{49cc95f5-c483-43c2-b219-5af6c678c836}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Player">
+      <UniqueIdentifier>{61fd76ad-7386-469b-a7f3-a576e5d63586}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Stage">
+      <UniqueIdentifier>{82e1f500-4a6c-42ab-906a-2f8a68a8e644}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Enemy">
+      <UniqueIdentifier>{803ac662-d389-43ba-90e9-1e2e397e28b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Player">
+      <UniqueIdentifier>{48478181-bd6f-4bd6-a3b0-481af2523df2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Stage">
+      <UniqueIdentifier>{5d10f68d-73b5-4c26-becf-53cfd2740eca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Item">
+      <UniqueIdentifier>{2f65d0d9-e166-4fe7-be60-2f4b77bb30a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Item">
+      <UniqueIdentifier>{30238d1d-8367-4c92-bc34-e5a870113470}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Ojisan">
+      <UniqueIdentifier>{c3753e85-0cf7-43d8-a689-842f3e71939d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Ojisan">
+      <UniqueIdentifier>{5dfd9c6b-f5a3-4951-8e1c-8ba3a1dff1b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\data">
+      <UniqueIdentifier>{2d3afbb4-e3d1-4c91-b988-5322fd1245d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Other">
+      <UniqueIdentifier>{0bae3a2c-76e2-4596-a8ec-8b370f591434}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Other">
+      <UniqueIdentifier>{81366bae-3c69-459c-a4cf-74e21d4eb8fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Editor">
+      <UniqueIdentifier>{83cae1d9-72de-4958-aec4-4a09b84cafcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Editor">
+      <UniqueIdentifier>{aacce2c6-b36a-401b-a3c5-22127edc0643}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images\ojisan">
+      <UniqueIdentifier>{a3cbc069-ca95-4aae-a93a-626c3e64ed2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images\ojisan\bubble">
+      <UniqueIdentifier>{4717fb9d-711c-45df-8f9a-7cf6ccc033cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images\iitems">
+      <UniqueIdentifier>{b6c43c82-4013-4083-a969-86f63195580d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\images\font">
+      <UniqueIdentifier>{1dbc0b2d-6fbf-4a3f-9afd-9063892dbbf7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="StageInit_1.cpp">
+      <Filter>ソース ファイル\Stage.Init</Filter>
+    </ClCompile>
+    <ClCompile Include="StageInit_2.cpp">
+      <Filter>ソース ファイル\Stage.Init</Filter>
+    </ClCompile>
+    <ClCompile Include="StageInit_deback.cpp">
+      <Filter>ソース ファイル\Stage.Init</Filter>
+    </ClCompile>
+    <ClCompile Include="StageInit_choseStage.cpp">
+      <Filter>ソース ファイル\Stage.Init</Filter>
+    </ClCompile>
+    <ClCompile Include="ChengeStage.cpp">
+      <Filter>ソース ファイル\Stage.Init</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>ソース ファイル\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerVisual.cpp">
+      <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="StageCollision.cpp">
+      <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="StageInit_3.cpp">
+      <Filter>ソース ファイル\Stage.Init</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="StageDraw.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="StageHazard.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyManager.cpp">
+      <Filter>ソース ファイル\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
+      <Filter>ソース ファイル\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemManager.cpp">
+      <Filter>ソース ファイル\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="OjisanVIsual.cpp">
+      <Filter>ソース ファイル\Ojisan</Filter>
+    </ClCompile>
+    <ClCompile Include="DialogManager.cpp">
+      <Filter>ソース ファイル\Ojisan</Filter>
+    </ClCompile>
+    <ClCompile Include="OjisanDialog.cpp">
+      <Filter>ソース ファイル\Ojisan</Filter>
+    </ClCompile>
+    <ClCompile Include="StageInit_4.cpp">
+      <Filter>ソース ファイル\Stage.Init</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraController.cpp">
+      <Filter>ソース ファイル\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="StageTheme.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="StageEditor.cpp">
+      <Filter>ソース ファイル\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="StageEditorDraw.cpp">
+      <Filter>ソース ファイル\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="StageEditorIO.cpp">
+      <Filter>ソース ファイル\Editor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="StageInit_1.h">
+      <Filter>ヘッダー ファイル\StageInit.h</Filter>
+    </ClInclude>
+    <ClInclude Include="StageInit_2.h">
+      <Filter>ヘッダー ファイル\StageInit.h</Filter>
+    </ClInclude>
+    <ClInclude Include="StageInit_3.h">
+      <Filter>ヘッダー ファイル\StageInit.h</Filter>
+    </ClInclude>
+    <ClInclude Include="StageInit_choseStage.h">
+      <Filter>ヘッダー ファイル\StageInit.h</Filter>
+    </ClInclude>
+    <ClInclude Include="StageInit_deback.h">
+      <Filter>ヘッダー ファイル\StageInit.h</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>ヘッダー ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="StageCollision.h">
+      <Filter>ヘッダー ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerVisual.h">
+      <Filter>ヘッダー ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="StageHazard.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="ChengeStage.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjects.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="StageDraw.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="StageTypes.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyManager.h">
+      <Filter>ヘッダー ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>ヘッダー ファイル\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemManager.h">
+      <Filter>ヘッダー ファイル\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="OjisanVisual.h">
+      <Filter>ヘッダー ファイル\Ojisan</Filter>
+    </ClInclude>
+    <ClInclude Include="DialogManager.h">
+      <Filter>ヘッダー ファイル\Ojisan</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEvents.h">
+      <Filter>ヘッダー ファイル\Ojisan</Filter>
+    </ClInclude>
+    <ClInclude Include="OjisanDialog.h">
+      <Filter>ヘッダー ファイル\Ojisan</Filter>
+    </ClInclude>
+    <ClInclude Include="StageInit_4.h">
+      <Filter>ヘッダー ファイル\StageInit.h</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraController.h">
+      <Filter>ヘッダー ファイル\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="StageTheme.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="StageEditor.h">
+      <Filter>ヘッダー ファイル\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="StageEditorInternal.h">
+      <Filter>ヘッダー ファイル\Editor</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="ojisan_lines.text">
+      <Filter>assets\data</Filter>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-death.png">
+      <Filter>assets\images\player</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-fall.png">
+      <Filter>assets\images\player</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-idle.png">
+      <Filter>assets\images\player</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-idle_turn.png">
+      <Filter>assets\images\player</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-jump.png">
+      <Filter>assets\images\player</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\player\male_hero-run.png">
+      <Filter>assets\images\player</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\background_1.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\background2.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\death.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\select_background.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\stage1.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\stage2.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\title.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\title2.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\title3.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\title4.png">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\unnamed.jpg">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\background\unnamedw.jpg">
+      <Filter>assets\images\stage\background</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\gimic.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground1.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground2.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground3.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground4.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\ground5.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\groundLayer.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\item.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\itemblock.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\normalblock.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\stage_asset.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\unnamed (1).jpg">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\stage\stage_1\unnamed.png">
+      <Filter>assets\images\stage\object</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan.png">
+      <Filter>assets\images\ojisan</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan_Idle.png">
+      <Filter>assets\images\ojisan</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan_Idle2.png">
+      <Filter>assets\images\ojisan</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan_punch.png">
+      <Filter>assets\images\ojisan</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan2.png">
+      <Filter>assets\images\ojisan</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan3.png">
+      <Filter>assets\images\ojisan</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\ojisan4.png">
+      <Filter>assets\images\ojisan</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\punch.png">
+      <Filter>assets\images\ojisan</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\ojisan\bubble\bubble.png">
+      <Filter>assets\images\ojisan\bubble</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\items\Adobe Express - file.png">
+      <Filter>assets\images\iitems</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\items\debuffpotion.png">
+      <Filter>assets\images\iitems</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\items\excessjumppotion.png">
+      <Filter>assets\images\iitems</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\items\jumpportion.png">
+      <Filter>assets\images\iitems</Filter>
+    </Image>
+    <Image Include="..\x64\Debug\assets\images\items\speedportion.png">
+      <Filter>assets\images\iitems</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\x64\Debug\assets\images\font\._YDWaosagi.otf">
+      <Filter>assets\images\font</Filter>
+    </Font>
+    <Font Include="..\x64\Debug\assets\images\font\titlefont.ttf">
+      <Filter>assets\images\font</Filter>
+    </Font>
+    <Font Include="..\x64\Debug\assets\images\font\x10y12pxDonguriDuel.ttf">
+      <Filter>assets\images\font</Filter>
+    </Font>
+    <Font Include="..\x64\Debug\assets\images\font\YDWaosagi.otf">
+      <Filter>assets\images\font</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="memo.txt">
+      <Filter>assets\data</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

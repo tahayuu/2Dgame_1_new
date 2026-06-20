@@ -1,0 +1,1120 @@
+﻿#include "raylib.h"
+#include "GameObjects.h"
+#include"Stage.h"
+#include"StageTypes.h"
+#include"PlayerVisual.h"
+#include"StageCollision.h"
+#include"StageHazard.h"
+#include"StageDraw.h"
+#include "ChengeStage.h"
+#include <string>
+#include"EnemyManager.h"
+#include"ItemManager.h"
+#include "OjisanVisual.h"
+#include "DialogManager.h"
+#include "GameEvents.h"
+#include "OjisanDialog.h"
+#include <unordered_map>
+#include "StageEditor.h"
+#include "CameraController.h"  
+
+int main() {
+
+    enum class GameState { START, SELECT, PLAYING, DEAD_SCREEN, DEADING_SCREEN, Deback, EDITOR, PAUSE };
+    GameState gameState = GameState::START;
+    GameState pausePrevState = GameState::PLAYING; // ポーズ前の状態を保持
+    int pauseSelectIdx = 0; // 0=ゲームにもどる, 1=タイトルに戻る, 2=ゲーム終了
+
+    std::unordered_map<DeathCause, int> deathCounts;
+
+    int selectStage = 0;//ステージの選択
+	bool isSelectiongStage = false;//ステージ選択中か
+	const int stageCount = 6;//ステージの数（0～5を使用）
+
+    float deadTime = 0.0f;
+    float deadingTime = 0.0f;
+    const float deadDelay = 0.3f;
+    const float deadingstate = 0.8f;
+    std::string text = "SAFE";
+    const int screenWidth = 1280;
+    const int screenHeight = 720;
+
+    PlayerVisual pv;
+    StageVisual sv;
+    OjisanVisual ojisan;
+    InitWindow(screenWidth, screenHeight, "step1_TeST");
+    ChangeDirectory(GetApplicationDirectory());
+
+    PlayerVisualLoad(pv);
+    StageVisualLoad(sv);
+    ojisan.Load();
+    Texture2D titleBg = LoadTexture("assets/images/stage/background/title4.png");
+    Texture2D stage1Bg = LoadTexture("assets/images/stage/background/stage1.png");
+    Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
+    Texture2D stage3Bg = LoadTexture("assets/images/stage/background/select_background.png");
+    // DialogManager のロードを先に行う
+    DialogManager::Instance().LoadFromFile("ojisan_lines.text");
+
+    // ダイアログから全テキストを取得して結合
+    std::string allDialogText;
+    for (const auto& key : DialogManager::Instance().Keys()) {
+        std::string line = DialogManager::Instance().Get(key, "");
+        allDialogText += line;
+        allDialogText += "\n";
+    }
+
+    // UIテキストも追加（既存の uiChars8 に追記）
+    const char8_t* uiChars8 = u8"モードせんたく\n"
+        u8"イージーモード\n"
+        u8"デバッグモード\n"
+        u8"ステージ１\n"
+        u8"ステージ２\n"
+        u8"ステージ3\n"
+        u8"YOU DIED\n"
+        u8"PRESS ENTER / SPACE\n"
+        u8"ゲームにもどる\n"
+        u8"タイトルにもどる\n"
+        u8"ゲームしゅうりょう\n"
+        u8"\n"    
+        ;
+
+     
+    std::string uiText = reinterpret_cast<const char*>(uiChars8);
+    allDialogText += uiText;
+
+    // Editor UI text (for font codepoints)s
+    const char8_t* editorChars8 =
+        u8"\u666E\u901A\u5E8C\u4E0A\u5074\u306E"           // 普通床奥側の
+        u8"\u3068\u3052\u89E6\u58CA\u4E0B"                  // とげ触壊下
+        u8"\u30D6\u30ED\u30C3\u30C1\u305B\u308B"            // ブロック せる
+        u8"\u30A8\u30EC\u30D9\u30FC\u30BF"                  // エレベータ
+        u8"\u91CD\u529B\u30DC\u30BF\u30F3"                  // 重力ボタン
+        u8"\u30A2\u30A4\u30C6\u30E0"                        // アイテム
+        u8"\u6C37\u79FB\u52D5\u4F4E\u4E0A\u6607"            // 氷移動低上昇
+        u8"\u30B8\u30E3\u30F3\u30D7\u53F0\u7832"            // ジャンプ台砲
+        u8"\u30AB\u30FC\u30BD\u30EB\u78C1\u77F3"            // カーソル磁石
+        u8"\u5439\u98DB\u3070\u3057\u58C1"                  // 吹飛ばし壁
+        u8"\u308F\u304B\u308C\u5186\u8ECC\u9053"            // わかれ円軌道
+        u8"\u4E57\u52D5\u304F"                              // 乗動く
+        u8"YX\u62E1\u5F35\u304C\u308B"                     // YX拡張がる
+        u8"\u8FFD\u5C3E\u56DE\u8EE2\u9244\u7403"            // 追尾回転鉄球
+        u8"\u30EF\u30A4\u30E4\u8EE2"                        // ワイヤー転
+        u8"\u843D\u5F80\u5FA9\u900F\u660E"                  // 落往復透明
+        u8"\u30B9\u30A4\u30C3\u30C1\u6587\u5B57"            // スイッチ文字
+        u8"\u51FA\u53E3\u30C9\u30A2\u884C\u304D"            // 出口ドア行き
+        u8"\u30EA\u30B9\u30DD\u30F3"                        // リスポン
+        u8"\u9078\u629E\u4E2D\u4FDD\u5B58\u3057\u307E\u305F\uFF01" // 選択中保存しました！
+        u8"\u914D\u7F6E\u524A\u9664\u8AAD\u8FBC"            // 配置削除読込
+        u8"\u5143\u306B\u623B\u3059\u958B\u59CB"            // 元に戻す開始
+        u8"\u30D7\u30EC\u623B\n"                           // プレイ戻
+        u8"\u30A3\u30C6\u30C7"                              // ィテデ（エディタステージ用）
+        u8"\u5DE6\u53F3\u5E45\u9AD8\u753B\u9762\u64CD\u4F5C\u53D6\u6D88"; // 左右幅高画面操作取消
+    allDialogText += reinterpret_cast<const char*>(editorChars8);
+
+    // @キーシステム & コメントブロック入力用:
+    // 半角ASCII印刷可能文字（@a-zA-Z0-9 など DrawTextEx で表示するために必要）
+    allDialogText +=
+        " !\"#$%&'()*+,-./"
+        "0123456789:;<=>?@"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "[\\]^_`"
+        "abcdefghijklmnopqrstuvwxyz"
+        "{|}~";
+
+    // コメントブロックエディタ用ヒント文字列（@キー名入力・プレビュー表示）
+    const char8_t* commentHintChars8 =
+        u8"\u81EA\u7531\u30C6\u30AD\u30B9\u30C8\u307E\u305F\u306F\u540D\u3067\u5165\u529B"  // 自由テキストまたは名で入力
+        u8"\uFF08\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u7DE8\u96C6\uFF09"                    // （クリックして編集）
+        u8"\uFF08\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\uFF09";                   // （が見つかりません）
+    allDialogText += reinterpret_cast<const char*>(commentHintChars8);
+
+    // 結合したテキストからコードポイントを生成
+    int ojisanCpCount = 0;
+    int* ojisanCps = LoadCodepoints(allDialogText.c_str(), &ojisanCpCount);
+    //TraceLog(LOG_INFO, "Loaded codepoints: %d", ojisanCpCount);
+
+    // 最初の10個のコードポイントをログ出力（デバッグ用）
+    /*for (int i = 0; i < (ojisanCpCount < 10 ? ojisanCpCount : 10); i++) {
+        TraceLog(LOG_INFO, "Codepoint[%d] = %d (0x%X)", i, ojisanCps[i], ojisanCps[i]);
+    }*/
+
+    // フォントサイズを64に増やして高解像度テクスチャを生成
+    Font ojisanFont = LoadFontEx("assets/images/font/YDWaosagi.otf", 64, ojisanCps, ojisanCpCount);
+    if (ojisanFont.texture.id == 0) {
+        TraceLog(LOG_ERROR, "Failed to load ojisan font!");
+    }
+    else {
+        GenTextureMipmaps(&ojisanFont.texture);
+        SetTextureFilter(ojisanFont.texture, TEXTURE_FILTER_BILINEAR);
+        //TraceLog(LOG_INFO, "Ojisan font texture: %dx%d, glyphs: %d",
+        //    ojisanFont.texture.width, ojisanFont.texture.height, ojisanFont.glyphCount);
+    }
+    UnloadCodepoints(ojisanCps);
+
+    int jpCpCount = 0;
+    int* jpCps = LoadCodepoints(allDialogText.c_str(), &jpCpCount);
+    Font jpFont = LoadFontEx("assets/images/font/titlefont.ttf", 64, jpCps, jpCpCount);
+    if (jpFont.texture.id == 0) {
+        TraceLog(LOG_ERROR, "Failed to load jp font!");
+    }
+    else {
+        GenTextureMipmaps(&jpFont.texture);
+        SetTextureFilter(jpFont.texture, TEXTURE_FILTER_BILINEAR);
+        //TraceLog(LOG_INFO, "JP font texture: %dx%d, glyphs: %d",
+        //    jpFont.texture.width, jpFont.texture.height, jpFont.glyphCount);
+    }
+    UnloadCodepoints(jpCps);
+
+    // おじさんのデフォルトフォントを YDWaosagi.otf に設定
+    ojisan.SetFont(ojisanFont);
+
+    SetTargetFPS(60);
+    Stage* stagePtr = new Stage{};
+    Stage& stage = *stagePtr;
+    StageEditor stageEditor;
+    Enemy enemy;
+    EnemyManager enemyManager;
+    enemyManager.Init();
+    ItemManager itemManager;
+    itemManager.Init();
+    itemManager.Load();
+    Item item;
+    Font textFont = jpFont;
+
+    int currentStage = 1;
+    stage.fallingTexts[0].Init({ 200.0f,220.0f }, jpFont);// フォント情報で幅/高さを設定
+    stage.fallingTextsInit[0] = stage.fallingTexts[0];
+
+    //プレイヤー
+    const int PLAYER_W = 60;
+    const int PLAYER_H = 70;
+
+    Rectangle player = { 100,500,PLAYER_W,PLAYER_H };
+    //Rectangle player = { 5500,500,PLAYER_W,PLAYER_H };
+
+    bool isKnockedBack = false;      // 吹っ飛ばし中か
+    float knockBackTimer = 0.0f;     // 吹っ飛ばし経過時間
+    const float knockBackDuration = 0.5f;  // 吹っ飛ばし持続時間
+    bool isjumped = false;
+    float jumpTimer = 0.0f;
+    float jumpDuration = 0.5f;
+    bool isFired = false;
+    float fireTimer = 0.0f;
+    float fireDuration = 0.7f;
+
+    //クレーン関係
+    bool isCraneLaunched = false;       // 発射台で射出された（入力無効）
+    float craneLaunchTimer = 0.0f;
+    const float craneLaunchDuration = 0.6f; // 入力無効の秒数
+    bool isCraneGrabbed = false;        // クレーンに掴まれている（入力無効・位置固定）
+
+    Vector2 velocity = { 0.0f,0.0f };
+    bool onGround = false;
+    bool onTop = false;//頭をぶつけているか
+    bool respawnflag = false;
+    bool fallingfl = false;
+
+    
+    Vector2 respawn = { player.x,player.y };
+    int deaths = 0;
+
+    //const float moveSpeed = 800.0f;//でバック用
+     //const float basejumpSpeed = 3000.0f;
+    const float moveObject = 300.f;//オブジェクト
+    const float basemoveSpeed = 300.0f;//プレイヤーの移動速度（1秒あたり何ピクセル動くか）
+    const float gravity = 1600.0f;//どれくらい強く下に引っ張るか
+
+    const float basejumpSpeed = 830.0f;//ジャンプ速度
+    const float stageWidth = 6400.0f;
+    const float stageHeight = 720;
+	const float deathLine = 900;//この高さまで落ちたら死ぬ
+    const float spikeW = 15.0f;
+
+
+    //アイテム
+    bool hasJumpItem = false;
+    bool hasSpeedItem = false;
+    bool hasInvincibleItem = false;
+
+    float moveSpeed = basemoveSpeed + itemManager.GetSpeedBoost();
+    float jumpSpeed = basejumpSpeed + itemManager.GetJumpBoost();
+
+    //氷床用パラメータ
+    const float iceAccel = 400.0f;//氷床上での加速度
+    const float iceFriction = 0.02f;//摩擦係数
+    const float maxIceSpeed = 500.0f;
+
+    //移動低下床用パラメータ
+    const float moveDownAccel = 400.0f;//移動低下床上での加速度
+    const float maxMoveDownSpeed = 300.0f;//最大滑り速度
+
+    //移動上昇床用パラメータ
+    const float moveUpAccel = 1000.0f;//移動上昇床上での加速度
+    const float maxMoveUpSpeed = 1500.0f;//最大滑り速度
+
+    //横スクロール
+    Camera2D camera = { 0 };/*初期化Raylivが用意している構造体
+    struct Camera2D {
+       Vector2 offset;   画面のどこに映すか
+       Vector2 target;   世界のどこを見るか
+       float rotation;   回転
+       float zoom;       拡大率
+   };*/
+    camera.offset = { screenWidth / 2.0f,screenHeight / 2.0f };//画面のどこに target を表示するか（画面座標)
+    camera.target = { player.x + player.width / 2 ,player.y + player.height / 2 };//世界のどこを見るか（世界座標）
+    camera.zoom = 1.0f;//拡大率
+
+    bool isRunning = false;  // whileの外
+    float editorExitInvTimer = 0.0f;        // エディタ終了後の無敵時間
+    const float editorExitInvDuration = 2.0f; // 無敵秒数
+    float editorKeyBlockTimer = 0.0f;       // エディタ切替直後のキー入力無視時間
+    const float editorKeyBlockDuration = 0.3f; // キー無視秒数
+
+    // おじさんパンチ死亡演出
+    bool isOjisanPunchDeath = false;
+    Vector2 ojisanPunchStickScreenPos = { 0.0f, 0.0f };
+
+    // ステージ番号 → 保存ファイルパス
+    auto GetStageSavePath = [](int stageId) -> std::string {
+        return "stage_edit_" + std::to_string(stageId);
+    };
+
+    auto LoadSelectedStage = [&]() {
+        StageClear(stage);
+        ojisan.showPunch = false;  // パンチフラグをリセット
+
+        switch (selectStage) {
+        case 0:
+            StageInit_1(stage, enemyManager, itemManager);
+            currentStage = 1;
+            break;
+        case 1:
+            StageInit_debug(stage, enemyManager, itemManager);
+            currentStage = 99;
+            break;
+        case 2:
+            StageInit_2(stage, enemyManager, itemManager);
+            currentStage = 2;
+            break;
+        case 3:
+            StageInit_3(stage, enemyManager, itemManager);
+            currentStage = 3;
+            break;
+        case 4:
+            StageInit_choseStage(stage, enemyManager);
+            currentStage = 0;
+            break;
+        case 5: {
+            StageEditor tempEd;
+            tempEd.savePath = "stage_editor_output";
+            std::string csvPath = tempEd.savePath + ".csv";
+            if (FileExists(csvPath.c_str()) && EditorLoadCSV(tempEd, csvPath.c_str())) {
+                EditorExportToStage(tempEd, stage);
+            }
+            currentStage = 100;
+            break;
+        }
+        default:
+            break;
+        }
+
+        // 保存済みエディタデータがある場合はステージに上書き適用
+        // （currentStage == 100 はエディタステージ自身なのでスキップ）
+        if (currentStage != 100) {
+            std::string csvPath = GetStageSavePath(currentStage) + ".csv";
+            StageEditor tempEd;
+            if (FileExists(csvPath.c_str()) && EditorLoadCSV(tempEd, csvPath.c_str())) {
+                EditorExportToStage(tempEd, stage);
+            }
+        }
+
+        itemManager.saveItemsInit();
+        enemyManager.saveEnemiesInit();
+        enemyManager.RestorInitialEnemies();
+        itemManager.RestorInitialItems();
+    };
+
+    auto EnterStageEditor = [&]() {
+        stageEditor.savePath = (currentStage == 100)
+            ? "stage_editor_output"
+            : GetStageSavePath(currentStage);
+        EditorInit(stageEditor, screenWidth, screenHeight, jpFont);
+        if (stageEditor.objects.empty()) {
+            EditorImportFromStage(stageEditor, stage);
+        }
+        stageEditor.camera.target = {
+            player.x + player.width / 2.0f,
+            player.y + player.height / 2.0f
+        };
+        gameState = GameState::EDITOR;
+        editorKeyBlockTimer = editorKeyBlockDuration; // キー入力を一時的にブロック
+    };
+
+    while (!WindowShouldClose()) {
+
+        float dt = GetFrameTime();
+
+        // ===== エディタモード: BeginDrawing より前に完結させる =====
+        if (gameState == GameState::EDITOR) {
+            // エディタ切替直後のキー入力無視タイマー更新
+            if (editorKeyBlockTimer > 0.0f) {
+                editorKeyBlockTimer -= dt;
+                if (editorKeyBlockTimer < 0.0f) editorKeyBlockTimer = 0.0f;
+            }
+
+            EditorUpdate(stageEditor, dt);
+
+            // F5: エディタ内容を適用してプレイテスト開始
+            if (IsKeyPressed(KEY_C)) {
+                EditorSaveCSV(stageEditor, (stageEditor.savePath + ".csv").c_str());
+                EditorExportToStage(stageEditor, stage);
+                StageReset(stage);
+                HazardReset(stage);
+                enemyManager.RestorInitialEnemies();
+                itemManager.RestorInitialItems();
+                if (stage.hasRespawnPoint) {
+                    player = { stage.respawnPoint.x, stage.respawnPoint.y, (float)PLAYER_W, (float)PLAYER_H };
+                    respawn = stage.respawnPoint;
+                } else {
+                    player = { 100, 500, PLAYER_W, PLAYER_H };
+                    respawn = { 100.0f, 500.0f };
+                }
+                velocity = { 0.0f, 0.0f };
+                onGround = false;
+                editorExitInvTimer = editorExitInvDuration;
+                gameState = GameState::PLAYING;
+            }
+
+            if ((IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1)) && editorKeyBlockTimer <= 0.0f) {
+                EditorSaveCSV(stageEditor, (stageEditor.savePath + ".csv").c_str());
+                stageEditor.active = false;
+                editorExitInvTimer = editorExitInvDuration;
+                if (stage.hasRespawnPoint) {
+                    player = { stage.respawnPoint.x, stage.respawnPoint.y, (float)PLAYER_W, (float)PLAYER_H };
+                    velocity = { 0.0f, 0.0f };
+                    respawn = stage.respawnPoint;
+                }
+                gameState = GameState::PLAYING;
+                editorKeyBlockTimer = editorKeyBlockDuration; // キー入力を一時的にブロック
+            }
+
+            BeginDrawing();
+            ClearBackground({ 40, 40, 50, 255 });
+            BeginMode2D(stageEditor.camera);
+            EditorDraw(stageEditor);
+            EndMode2D();
+            EditorDrawUI(stageEditor);
+            EndDrawing();
+            continue;
+        }
+
+        // Ojisan の更新：タイトル画面以外で毎フレーム更新
+        if (gameState != GameState::START) {
+            ojisan.Update(dt);
+        }
+
+
+        DeathCause cause = DeathCause::FALL; // デフォルト値（適宜変更）
+
+        auto RespawnPlayer = [&]() {
+            deaths++;
+            gameState = GameState::DEADING_SCREEN;
+            deadTime = 0.0f;
+            deadingTime = 0.0f;
+            enemyManager.playerTouched = false;
+            if (cause != DeathCause::OJISAN_PUNCH) {
+                isOjisanPunchDeath = false;
+            }
+            for (int i = 0; i < stage.clearsCount; i++) {
+                stage.clearBlocks[i].clearflag = false;
+            }
+
+            // ★ 死亡ブロック(TRAP)死亡時はコメントを出さない
+            if (cause == DeathCause::TRAP) {
+                return;
+            }
+
+            // OjisanContext を組み立てて拡張版を使う
+            OjisanContext ctx;
+            ctx.cause = cause;
+            ctx.stageName = "stage" + std::to_string(currentStage);
+            ctx.totalDeaths = deaths;
+
+            std::string line = GetOjiSanLine(ctx);
+
+            if (!enemyManager.touchedEnemyDialogKey.empty() &&
+                DialogManager::Instance().Has(enemyManager.touchedEnemyDialogKey)) {
+                line = DialogManager::Instance().Get(enemyManager.touchedEnemyDialogKey, "");
+            }
+            ojisan.SetFont(ojisanFont);
+            ojisan.TriggerMessage(line, 3.0f, &ojisanFont);
+        };
+
+        auto RestartGame = [&]() {
+            player.x = respawn.x;
+            player.y = respawn.y;
+            velocity = { 0.0f,0.0f };
+            onGround = false;
+            onTop = false;
+            stage.gravityReversed = false;
+            stage.currentLayer = 0;
+            isOjisanPunchDeath = false;
+            ojisan.showPunch = false;  // パンチフラグをリセット
+
+            StageReset(stage);
+            HazardReset(stage);
+            enemyManager.RestorInitialEnemies();
+            itemManager.RestorInitialItems();
+            gameState = GameState::PLAYING;
+            };
+
+        Rectangle prevPlayer = player;
+
+
+        //プレイ画面
+        if (gameState == GameState::PLAYING) {
+
+            //ポーズメニューを開く
+            if (IsKeyPressed(KEY_TAB)) {
+                pausePrevState = gameState;
+                pauseSelectIdx = 0;
+                gameState = GameState::PAUSE;
+            }
+
+            // エディタ終了後の無敵タイマー更新
+            if (editorExitInvTimer > 0.0f) {
+                editorExitInvTimer -= dt;
+                if (editorExitInvTimer < 0.0f) editorExitInvTimer = 0.0f;
+            }
+            const bool isInvincible = (editorExitInvTimer > 0.0f);
+
+            // V / F1 キーでエディタモードへ（現在のステージをそのまま読み込む）
+            if (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1)) {
+                TraceLog(LOG_INFO, "Entering editor from PLAYING state, currentStage=%d", currentStage);
+                EnterStageEditor();
+                TraceLog(LOG_INFO, "Editor entered, gameState=%d", (int)gameState);
+                continue;
+            }
+
+     
+            // 吹っ飛ばしフラグをチェック
+            if (stage.playerKnockedBack) {
+                isKnockedBack = true;
+                knockBackTimer = 0.0f;
+                stage.playerKnockedBack = false;
+            }
+            // ジャンプ台で跳ねたフラグをチェック
+            if (stage.playerJumped) {
+                isjumped = true;
+                jumpTimer = 0.0f;
+                stage.playerJumped = false;
+            }
+
+            // 砲台で発射されたフラグをチェック
+            if (stage.playerFired) {
+                isFired = true;
+                fireTimer = 0.0f;
+                stage.playerFired = false;
+            }
+
+            //発射台タイマー更新
+            if (isCraneLaunched) {
+                craneLaunchTimer += dt;
+                if (craneLaunchTimer >= craneLaunchDuration) {
+                    isCraneLaunched = false;
+                }
+            }
+
+            // クレーン掴まれフラグをチェック
+            if (stage.playerGrabbedByCrane && !isCraneGrabbed) {
+                isCraneGrabbed = true;
+            }
+
+            // ジャンプ台タイマー更新
+            if (isjumped) {
+                jumpTimer += dt;
+                if (jumpTimer >= jumpDuration)
+                    isjumped = false;
+            }
+
+            // 吹っ飛ばしタイマー更新
+            if (isKnockedBack) {
+                knockBackTimer += dt;
+                if (knockBackTimer >= knockBackDuration) {
+                    isKnockedBack = false;
+                }
+            }
+            // クレーン発射タイマー更新
+            if (isCraneLaunched) {
+                craneLaunchTimer += dt;
+                if (craneLaunchTimer >= craneLaunchDuration) {
+                    isCraneLaunched = false;
+                }
+            }
+
+            // クレーンにプレイヤー矩形を毎フレーム渡す
+            for (int i = 0; i < stage.craneCount; i++) {
+                stage.cranes[i].playerRect = player;
+            }
+            StageUpdate(stage, dt, itemManager, camera);
+            itemManager.UpdateAll(dt, player, velocity);                // 出現したアイテムを更新（飛び出し処理等）
+            itemManager.ItemCollisionAll(item, player, dt, velocity);   // プレイヤーとアイテムの当たり判定
+            HazardUpdate(stage, player, dt);                             // 危険物の更新
+            float moveSpeed = basemoveSpeed + itemManager.GetSpeedBoost();
+            float jumpSpeed = basejumpSpeed + itemManager.GetJumpBoost();
+
+            bool onIce = IsOnIcePlatform(stage, player);
+            bool onMoveDown = IsOnMoveDownPlatform(stage, player);
+            bool onMoveUp = IsOnMoveUpPlatform(stage, player);
+
+            // 吹っ飛ばし中は入力を無視（速度を維持）
+            if (isKnockedBack) {
+                // 何もしない - velocity.x はそのまま維持される
+            }
+            else if (isjumped) {
+
+            }
+            else if (isFired) {
+
+            }
+            else if (isCraneGrabbed) {
+
+            }
+            else if (isCraneGrabbed) {
+                velocity = { 0.0f,0.f };
+            }
+
+            else if (onIce && onGround) {
+                //=== 氷床での滑り処理 ===
+                float inputDir = 0.0f;
+                if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) inputDir += 1.0f;
+                if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) inputDir -= 1.0f;
+
+                if (inputDir != 0.0f) {
+                    // 入力方向に加速
+                    velocity.x += inputDir * iceAccel * dt;
+                }
+                else {
+                    // 入力がないときは摩擦で減速
+                    velocity.x *= (1.0f - iceFriction);
+                }
+
+                // 最大速度制限
+                if (velocity.x > maxIceSpeed) velocity.x = maxIceSpeed;
+                if (velocity.x < -maxIceSpeed) velocity.x = -maxIceSpeed;
+
+                // 十分遅くなったら停止
+                if (fabsf(velocity.x) < 1.0f) velocity.x = 0.0f;
+            }
+            //=== 移動低下床での滑り処理 ===
+            else if (onMoveDown && onGround) {
+                float inputDir = 0.0f;
+                if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) { inputDir += 1.0f; }//右移動
+                if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) { inputDir -= 1.0f; }//左移動
+
+
+
+                if (inputDir != 0.0f) {
+                    velocity.x += inputDir * moveDownAccel * dt;
+                }
+                else {
+                    velocity.x = 0.0f;
+                }
+                if (velocity.x > maxMoveDownSpeed) { velocity.x = maxMoveDownSpeed; }
+                if (velocity.x < -maxMoveDownSpeed) { velocity.x = -maxMoveDownSpeed; }
+            }
+            //=== 移動上昇床での滑り処理 ===
+            else if (onMoveUp && onGround) {
+                float inputDir = 0.0f;
+                if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) { inputDir += 1.0f; }//右移動
+                if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) { inputDir -= 1.0f; }//左移動
+                if (inputDir != 0.0f) {
+                    velocity.x += inputDir * moveUpAccel;
+                }
+                else {
+                    velocity.x = 0.0f;
+                }
+                if (velocity.x > maxMoveUpSpeed) { velocity.x = maxMoveUpSpeed; }
+                if (velocity.x < -maxMoveUpSpeed) { velocity.x = -maxMoveUpSpeed; }
+            }
+
+            else {
+                //入力で「速度」を決める（毎フレームリセット）
+                velocity.x = 0.0f;
+                if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) { velocity.x += moveSpeed; }//右移動
+                if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) { velocity.x -= moveSpeed; }//左移動
+            }
+
+            float gravDir = stage.gravityReversed ? -1.0f : 1.0f;
+
+            if (onGround) {
+                if (stage.playerInElevator) {
+                    // エレベーター内：スペースのみジャンプ（上下キーはエレベーター操作）
+                    if (IsKeyPressed(KEY_SPACE)) {
+                        velocity.y = -jumpSpeed * gravDir;
+                        onGround = false;
+                    }
+                }
+                else {
+                    // 通常：全キーでジャンプ
+                    if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+                        velocity.y = -jumpSpeed * gravDir;
+                        onGround = false;
+                    }
+                }
+            }
+
+            if (!stage.playerInBattery) {
+                //重力（反転時は上向き）
+                velocity.y += gravity * gravDir * dt;
+            }
+            //移動
+            player.x += velocity.x * dt;  // 速度→位置
+            StageResolveX(stage, player, velocity, dt, prevPlayer);
+
+            if (!stage.playerInBattery) {
+                player.y += velocity.y * dt;
+                onGround = StageResolveY(stage, prevPlayer, player, velocity, prevPlayer, dt);
+            }
+
+            PlayerVisualUpdate(pv, dt, velocity, onGround);
+            bool hasJumpBoost = (itemManager.GetJumpBoost() > 0.0f);
+            PlayerParticleUpdate(pv.jumpEffect, dt, player, hasJumpBoost);
+
+
+            if (IsKeyPressed(KEY_R)){
+                if (stage.heldSpringIndex < 0) {
+
+                    for (int i = 0; i < stage.springCount; i++){
+                        if (!stage.springs[i].isActive) continue;
+						// プレイヤーとスプリングの中心点を計算
+                        Vector2 playerCenter = { player.x + player.width / 2,player.y + player.height / 2 };
+                        Vector2 springCenter = {
+                            stage.springs[i].rect.x + stage.springs[i].rect.width / 2,
+                            stage.springs[i].rect.y + stage.springs[i].rect.height / 2
+                        };
+                        float dist = sqrtf(
+                            (playerCenter.x - springCenter.x) * (playerCenter.x - springCenter.x) +
+                            (playerCenter.y - springCenter.y) * (playerCenter.y - springCenter.y)
+                        );
+						// プレイヤーの中心とスプリングの中心が100ピクセル以内なら掴む
+                        if (dist < 100.0f) {
+                            stage.heldSpringIndex = i;
+                            stage.springs[i].isActive = false;
+                            break;
+                        }
+                    }
+                }
+                else {
+					int idx = stage.heldSpringIndex;// 掴んでいるスプリングのインデックス
+                    if (idx >= 0 && idx < stage.springCount){
+                    //プレイヤーの目の前に設置
+                        bool facingRight = (velocity.x >= 0);
+                        float offsetX = facingRight ? (player.width + 20.0f) : (-stage.springs[idx].rect.width - 20.0f);
+
+                        stage.springs[idx].rect.x = player.x + offsetX;
+                        stage.springs[idx].rect.y = player.y + player.height - stage.springs[idx].rect.height;
+                        stage.springs[idx].isActive = true;
+                        stage.heldSpringIndex = -1;
+                    }
+                }
+            }
+
+ 
+
+
+            enemyManager.EnemyCollisionAll(player, dt, velocity);
+            if (!isInvincible && enemyManager.playerTouched) {
+                cause = DeathCause::ENEMY_WALKER;
+                RespawnPlayer();
+            }
+
+     
+
+            enemyManager.UpdateAll(dt, player);
+
+           //おじさんパンチトリガー領域
+            for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
+                if (!stage.ojisanPunchTriggered[i] && CheckCollisionRecs(player, stage.ojisanPunchAreas[i])) {
+                    stage.ojisanPunchTriggered[i] = true;
+                    cause = DeathCause::OJISAN_PUNCH;
+					isOjisanPunchDeath = true;// パンチ死亡フラグを立てる
+					ojisan.showPunch = true; // パンチエフェクト表示フラグを立てる
+					ojisanPunchStickScreenPos = GetWorldToScreen2D({ player.x,player.y }, camera);// プレイヤーの位置を画面座標に変換して保存
+					velocity = { 0.0f,0.0f }; // プレイヤーの動きを止める
+                    RespawnPlayer();
+                    break;
+                }
+            }
+
+            if (gameState != GameState::PLAYING) {
+                continue;
+            }
+
+            MoveUpdateWithPlayrer(stage, player, velocity, dt);
+            ElevatorUpdate(stage, player, velocity, dt);
+            UpdateMagnet(stage, player, velocity, dt);
+
+			//クレーンに掴まれている場合はフック先端に位置を固定
+            if (isCraneGrabbed) {
+                for (int i = 0; i < stage.craneCount; i++) {
+                    auto& cr = stage.cranes[i];
+                    if (cr.state == CraneState::CARRYING || cr.state == CraneState::GRABBING) {
+                        // フック先端 = 天井Y + アーム長さ
+                        float hookCX = cr.bodyRect.x + cr.bodyRect.width / 2;
+                        float hookY  = cr.ceilingY + cr.armLength;
+                        player.x = hookCX - player.width / 2;
+                        player.y = hookY;   // フック先端にプレイヤーを乗せる
+                        velocity = { 0.0f, 0.0f };
+                        break;
+                    }
+                }
+            }
+            // クレーンによる死亡
+            if (!isInvincible && stage.playerCraneKill) {
+                stage.playerCraneKill = false;
+                stage.playerGrabbedByCrane = false;
+                isCraneGrabbed = false;
+                cause = DeathCause::TRAP;
+                RespawnPlayer();
+            } 
+                // 死亡判定
+                bool hitDeathBlock = false;
+                for (int i = 0; i < stage.deathBlockCount; i++) {
+                    if (CheckCollisionRecs(player, stage.deathBlocks[i])) {
+                        hitDeathBlock = true;
+                        break;
+                    }
+                }
+
+                if (!isInvincible && hitDeathBlock) {
+                    cause = DeathCause::TRAP;
+                    RespawnPlayer();
+                }
+                else if (!isInvincible && StageHitRisingSpike(stage, player)) {
+                    cause = DeathCause::SPIKE_RISING;
+                    RespawnPlayer();
+                }
+                else if (!isInvincible && StageHitHazard(stage, player)) {
+                    cause = DeathCause::SPIKE;
+                    RespawnPlayer();
+                }
+            
+
+            // コメントブロック判定（当たり判定なし・重なりでコメント発動）
+            for (int i = 0; i < stage.commentBlockCount; i++) {
+                auto& cb = stage.commentBlocks[i];
+                if (cb.cooldown > 0.0f) {
+                    cb.cooldown -= dt;
+                    continue;
+                }
+                if (!cb.triggered && CheckCollisionRecs(player, cb.rect)) {
+                    cb.triggered = true;
+                    cb.cooldown = cb.duration + 1.0f;
+                    // 標準フォント（GetFontDefault）で表示 — 任意テキストに対応
+                    ojisan.TriggerMessage(cb.message, cb.duration, nullptr, true);
+                }
+                if (cb.triggered && !CheckCollisionRecs(player, cb.rect)) {
+                    cb.triggered = false;
+                }
+            }
+        }
+
+        //死亡硬直画面
+		else if (gameState == GameState::DEADING_SCREEN) {//死亡してから少しの間、プレイヤーの操作を受け付けない状態
+            deadingTime += dt;
+
+            if (deadingTime >= deadingstate) {
+                gameState = GameState::DEAD_SCREEN;
+                deadTime = 0.0f;
+            }
+        }
+
+        //死亡画面
+        else if (gameState == GameState::DEAD_SCREEN) {
+            deadTime += dt;
+
+            // リスポーンしたら消す（戻す）
+            if (respawnflag) {
+                respawnflag = false;
+            }
+            if (deadTime >= deadDelay && (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
+                RestartGame();
+            }
+        }
+
+        else if (gameState == GameState::START) {
+            // スタート画面処理
+            ClearBackground(BLACK);
+            if (titleBg.id != 0) {
+                DrawTexturePro(
+                    titleBg,
+                    { 0, 0, (float)titleBg.width, (float)titleBg.height },
+                    { 0, 0, (float)screenWidth, (float)screenHeight },
+                    { 0, 0 }, 0.0f, WHITE);
+            }
+            if (!isSelectiongStage && IsKeyPressed(KEY_SPACE)) {
+                isSelectiongStage = true;
+            }
+            if (isSelectiongStage) {
+                if (IsKeyPressed(KEY_UP)) {
+                    selectStage = (selectStage + stageCount - 1) % stageCount;
+                }
+                if (IsKeyPressed(KEY_DOWN)) {
+                    selectStage = (selectStage + 1) % stageCount;
+                }
+
+                if (IsKeyPressed(KEY_ENTER)) {
+                    LoadSelectedStage();
+
+                    player = { 100, 500, PLAYER_W, PLAYER_H };
+                    velocity = { 0.0f, 0.0f };
+                    editorExitInvTimer = 1.0f; // スタート開始時に1秒無敵
+                    gameState = GameState::PLAYING;
+                    isSelectiongStage = false;
+                }
+
+                if (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1)) {
+                    LoadSelectedStage();
+
+                    player = { 100, 500, PLAYER_W, PLAYER_H };
+                    velocity = { 0.0f, 0.0f };
+                    isSelectiongStage = false;
+                    EnterStageEditor();
+                }
+            }
+        }
+
+        else if (gameState == GameState::Deback) {
+
+        }
+
+        // PAUSE状態の入力処理ブロック
+        else if (gameState == GameState::PAUSE) {
+            const int pauseMenuCount = 3;
+
+            // 上下で選択
+            if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
+                pauseSelectIdx = (pauseSelectIdx + pauseMenuCount - 1) % pauseMenuCount;
+            }
+            if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
+                pauseSelectIdx = (pauseSelectIdx + 1) % pauseMenuCount;
+            }
+
+            // ESC / TAB で再開
+            if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_TAB)) {
+                gameState = pausePrevState;
+            }
+
+            // ENTER で決定
+            if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+                if (pauseSelectIdx == 0) {
+                    // ゲームに戻る
+                    gameState = pausePrevState;
+                }
+                else if (pauseSelectIdx == 1) {
+                    // タイトルに戻る
+                    StageClear(stage);
+                    ojisan.showPunch = false;  // パンチフラグをリセット
+                    enemyManager.Reset();
+                    itemManager.Reset();
+                    deaths = 0;
+                    editorExitInvTimer = 0.0f;
+                    gameState = GameState::START;
+                    isSelectiongStage = false;
+                }
+                else {
+                    // ゲーム終了
+                    CloseWindow();
+                    return 0;
+                }
+            }
+        }
+
+        // ===== 描画 =====
+        BeginDrawing();
+
+        if (gameState == GameState::START) {
+            ClearBackground({ 20, 20, 40, 255 });
+            if (!isSelectiongStage) {
+                DrawTextEx(textFont, "step1", { screenWidth / 2.0f - 80,  screenHeight / 2.0f - 120 }, 80, 0, WHITE);
+                DrawTextEx(textFont, "PRESS SPACE", { screenWidth / 2.0f - 100, screenHeight / 2.0f + 20 }, 36, 0, YELLOW);
+            }
+            else {
+                DrawTextEx(textFont,
+                    reinterpret_cast<const char*>(u8"モードせんたく"),
+                    { 100, 50 }, 48, 0, YELLOW);
+
+                const char* stageLabels[] = {
+                    reinterpret_cast<const char*>(u8"ステージ１"),
+                    reinterpret_cast<const char*>(u8"デバッグモード"),
+                    reinterpret_cast<const char*>(u8"ステージ２"),
+                    reinterpret_cast<const char*>(u8"ステージ3"),
+                    reinterpret_cast<const char*>(u8"ステージせんたく"),
+                    reinterpret_cast<const char*>(u8"エディタステージ"),
+                };
+                for (int i = 0; i < stageCount; i++) {
+                    Color c = (i == selectStage) ? YELLOW : WHITE;
+                    DrawTextEx(textFont, stageLabels[i], { 150, 150.0f + i * 70 }, 36, 0, c);
+                }
+                DrawTextEx(textFont, "PRESS ENTER / V",
+                    { 150, 150.0f + stageCount * 70 + 30 }, 24, 0, LIGHTGRAY);
+            }
+        }
+        else if (gameState == GameState::PLAYING ||
+            gameState == GameState::DEADING_SCREEN ||
+            gameState == GameState::DEAD_SCREEN) {
+
+            ClearBackground({ 135, 206, 235, 255 }); // 空色
+
+
+            // ステージ1・2は森の背景を全画面表示
+            if ((currentStage == 1 || currentStage == 2) && stage1Bg.id != 0) {
+                DrawTexturePro(
+                    stage1Bg,
+                    { 0, 0, (float)stage1Bg.width, (float)stage1Bg.height },
+                    { 0, 0, (float)screenWidth,    (float)screenHeight },
+                    { 0, 0 }, 0.0f, WHITE);
+            }
+            if ((currentStage == 3) && stage2Bg.id != 0) {
+                DrawTexturePro(
+                    stage2Bg,
+                    { 0, 0, (float)stage2Bg.width, (float)stage2Bg.height },
+                    { 0, 0, (float)screenWidth,    (float)screenHeight },
+                    { 0, 0 }, 0.0f, WHITE);
+            }
+
+            // カメラを
+            // プレイヤーに追従させる
+            if (gameState == GameState::PLAYING && !isCraneGrabbed) {
+                if (stage.cameraConfig.twoLayered) {
+                    // 2段構造ステージ: 地上固定→シャフト追従→地下固定
+                    UpdateCamera(camera, player, stage.cameraConfig,
+                        stageWidth, stage.stageHeight,
+                        screenWidth, screenHeight, dt);
+                }
+                else {
+                    // 通常ステージ: Y軸固定、X軸クランプ
+                    float camTargetX = player.x + player.width / 2.0f;
+                    float minCamX = (screenWidth / 2.0f) / camera.zoom;
+                    if (camTargetX < minCamX) camTargetX = minCamX;
+                    camera.target = { camTargetX, 400.0f };
+                }
+            }
+            BeginMode2D(camera);
+            StageDraw(stage, spikeW, player, stage.heldSpringIndex);
+            enemyManager.DrawAll();
+            itemManager.DrawAll();
+            PlayerParticleDraw(pv.jumpEffect);
+
+            // プレイヤー描画（無敵中は点滅）
+			bool showPlayer = (editorExitInvTimer <= 0.0f) ||
+	((int)(editorExitInvTimer * 10.0f) % 2 == 0);
+			if (showPlayer && !(isOjisanPunchDeath && (gameState == GameState::DEADING_SCREEN || gameState == GameState::DEAD_SCREEN))) {
+	PlayerVisualDraw(pv, player, velocity, stage.gravityReversed);
+}
+            EndMode2D();
+
+            // ← ここでUIを描く（スクリーン固定）
+            DrawItemUI(stage);
+
+            // HUD：死亡回数
+            std::string deathText = "Deaths: " + std::to_string(deaths);
+            DrawTextEx(textFont, deathText.c_str(), { 10, 10 }, 24, 0, WHITE);
+
+            // 死亡演出・死亡画面
+            if (gameState == GameState::DEADING_SCREEN || gameState == GameState::DEAD_SCREEN) {
+                if (isOjisanPunchDeath) {
+                    Rectangle stuckPlayer = { ojisanPunchStickScreenPos.x, ojisanPunchStickScreenPos.y, player.width, player.height };
+                    PlayerVisualDraw(pv, stuckPlayer, velocity, stage.gravityReversed);
+
+                    // パンチエフェクトをプレイヤーの上に重ねる
+                    if (ojisan.punchEffect.id != 0) {
+                        float effectScale = 0.3f;
+                        float effectW = ojisan.punchEffect.width * effectScale;
+                        float effectH = ojisan.punchEffect.height * effectScale;
+                        Rectangle srcEffect = { 0.0f, 0.0f, (float)ojisan.punchEffect.width, (float)ojisan.punchEffect.height };
+                        Rectangle dstEffect = { ojisanPunchStickScreenPos.x + player.width * 0.5f, ojisanPunchStickScreenPos.y + player.height * 0.5f, effectW, effectH };
+                        Vector2 originEffect = { dstEffect.width * 0.5f, dstEffect.height * 0.5f };
+                        DrawTexturePro(ojisan.punchEffect, srcEffect, dstEffect, originEffect, 0.0f, WHITE);
+                    }
+                }
+
+                unsigned char alpha = (gameState == GameState::DEADING_SCREEN)
+                    ? (unsigned char)(deadingTime / deadingstate * 180.0f)
+                    : 180;
+                DrawRectangle(0, 0, screenWidth, screenHeight, { 0, 0, 0, alpha });
+
+                if (gameState == GameState::DEAD_SCREEN) {
+                    DrawTextEx(textFont, "YOU DIED",
+                        { screenWidth / 2.0f - 120, screenHeight / 2.0f - 60 }, 72, 0, RED);
+                    if (deadTime >= deadDelay) {
+                        DrawTextEx(textFont, "PRESS ENTER / SPACE",
+                            { screenWidth / 2.0f - 160, screenHeight / 2.0f + 40 }, 28, 0, WHITE);
+                    }
+                }
+            }
+
+            // おじさんをUI要素として描画（カメラ変換外）
+            ojisan.Draw(screenWidth, screenHeight);
+        }
+
+        // ポーズメニュー描画（PLAYINGの描画の上に重ねる）
+        if (gameState == GameState::PAUSE) {
+            // 半透明オーバーレイ
+            DrawRectangle(0, 0, screenWidth, screenHeight, { 0, 0, 0, 160 });
+
+            // メニュー背景
+            const float menuW = 400.0f;
+            const float menuH = 300.0f; // 3項目に増やすため拡張
+            const float menuX = screenWidth / 2.0f - menuW / 2.0f;
+            const float menuY = screenHeight / 2.0f - menuH / 2.0f;
+            DrawRectangleRounded({ menuX, menuY, menuW, menuH }, 0.12f, 8, { 20, 20, 40, 230 });
+            DrawRectangleRoundedLinesEx({ menuX, menuY, menuW, menuH }, 0.12f, 8, 2, ColorAlpha(WHITE, 0.4f));
+
+            // タイトル
+            DrawTextEx(textFont, "PAUSE",
+                { menuX + menuW / 2.0f - MeasureTextEx(textFont, "PAUSE", 52, 0).x / 2.0f,
+                  menuY + 20.0f }, 52, 0, WHITE);
+
+            // 選択肢
+            const char* items[] = {
+                reinterpret_cast<const char*>(u8"ゲームにもどる"),
+                reinterpret_cast<const char*>(u8"タイトルにもどる"),
+                reinterpret_cast<const char*>(u8"ゲームしゅうりょう"),
+            };
+            for (int i = 0; i < 3; i++) {
+                Color col = (i == pauseSelectIdx) ? YELLOW : LIGHTGRAY;
+                float iy = menuY + 100.0f + i * 52.0f;
+                float tw = MeasureTextEx(textFont, items[i], 32, 0).x;
+                if (i == pauseSelectIdx) {
+                    DrawTextEx(textFont, ">",
+                        { menuX + menuW / 2.0f - tw / 2.0f - 28.0f, iy }, 32, 0, YELLOW);
+                }
+                DrawTextEx(textFont, items[i],
+                    { menuX + menuW / 2.0f - tw / 2.0f, iy }, 32, 0, col);
+            }
+
+            // 操作ヒント
+            DrawTextEx(textFont, "TAB/ESC: resume",
+                { menuX + menuW / 2.0f - MeasureTextEx(textFont, "TAB/ESC: resume", 18, 0).x / 2.0f,
+                  menuY + menuH - 28.0f }, 18, 0, GRAY);
+        }
+
+        EndDrawing();
+    }
+
+    // --- クリーンアップ ---
+    enemyManager.Reset();
+    itemManager.Reset();
+    itemManager.Unload();
+    PlayerVisualUnload(pv);
+    StageVisualUnload(sv);
+    ojisan.Unload();
+    UnloadFont(ojisanFont);
+    UnloadFont(jpFont);
+    UnloadTexture(titleBg);
+    CloseWindow();
+
+    return 0;
+}

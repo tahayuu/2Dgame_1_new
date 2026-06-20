@@ -1,0 +1,22 @@
+﻿# ===== 落下死 =====
+death_fall_cave_1|この洞窟は足元が危ないぞ！
+death_fall_cave_3|3回も落ちるとは…洞窟が怖いのか？
+death_fall_cave|洞窟は暗いから仕方ない
+death_fall_stage2_1|ステージ2は難しいからな
+death_fall_1|1回目は許す！
+death_fall_5|5回目…もう言葉がないわい
+death_fall|また落ちたのか…気をつけろ！
+
+# ===== トゲ =====
+death_spike_boss_room|ボス部屋のトゲは痛いぞ！
+death_spike|トゲには近づくな！
+
+# ===== 敵 =====
+death_enemy_walker_stage1|最初のステージの敵にやられるとは…
+death_enemy_walker|敵の動きをよく見るんじゃ
+
+# ===== おじさんパンチ =====
+death_ojisan_punch|わしのパンチは重いぞい！
+
+# ===== どれにも当てはまらないとき ====
+death_unknown|うーん…何があったんじゃ？
