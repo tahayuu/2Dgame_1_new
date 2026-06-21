@@ -6,7 +6,8 @@ enum class EnemyType
 {
 WALKER,
 FLYER,
-SHOOTER
+SHOOTER,
+JUMPCOPY,
 };
 
 struct Enemy{

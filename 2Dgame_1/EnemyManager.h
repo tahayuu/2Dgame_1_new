@@ -18,6 +18,7 @@ struct EnemyManager {
 	bool playerTouched = false; //プレイヤーに触れたか
 	std::string touchedEnemyDialogKey = ""; //プレイヤーが触れた敵のダイアログキー
 
+
     void Init();                                         // 初期化（必要ならプリロード）
     void Spawn(EnemyType Type, Vector2 pos);             // 敵を生成（追加）
 	void EnemyCollisionAll( const Rectangle& player, float dt,Vector2& velocity); // 敵とプレイヤーの当たり判定

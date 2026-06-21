@@ -213,8 +213,7 @@ int main() {
     Vector2 respawn = { player.x,player.y };
     int deaths = 0;
 
-    //const float moveSpeed = 800.0f;//でバック用
-     //const float basejumpSpeed = 3000.0f;
+
     const float moveObject = 300.f;//オブジェクト
     const float basemoveSpeed = 300.0f;//プレイヤーの移動速度（1秒あたり何ピクセル動くか）
     const float gravity = 1600.0f;//どれくらい強く下に引っ張るか

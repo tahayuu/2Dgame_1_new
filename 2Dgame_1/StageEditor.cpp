@@ -3,7 +3,7 @@
 // ================================================================
 // パラメータテーブル
 // ================================================================
-static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {
+static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {//•	新しいオブジェクトを追加しても、COUNT が自動で増える
     /* 0  PLATFORM              */ { 0, {} },
     /* 1  BACK_PLATFORM         */ { 0, {} },
     /* 2  HAZARD                */ { 0, {} },
@@ -33,8 +33,8 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {
     /* 26 TRACKING_HAZARD       */ { 4, {{"speed",150,false},{"trkRange",300,false},{"maxDist",400,false},{"retStart",1,true}} },
     /* 27 ROTATING_BALL         */ { 3, {{"radius",15,false},{"angSpd",2,false},{"armLen",100,false}} },
     /* 28 MOVE_ROTATING_BALL    */ { 5, {{"radius",15,false},{"angSpd",2,false},{"gravity",1600,false},{"reverse",0,true},{"armLen",100,false}} },
-    /* 29 ROLLING_BALL */ { 4, {{"radius",15,false},{"rollSpd",200,false},{"rollDir",-1,false},{"waitBtn",1,true}} },
-    /* 30 FALLING_PLATFORM */ { 3, {{"fallDelay",0.5f,false},{"fallSpd",400,false},{"detect(0:both 1:p 2:b)",0,false}} },
+    /* 29 ROLLING_BALL          */ { 4, {{"radius",15,false},{"rollSpd",200,false},{"rollDir",-1,false},{"waitBtn",1,true}} },
+    /* 30 FALLING_PLATFORM      */ { 3, {{"fallDelay",0.5f,false},{"fallSpd",400,false},{"detect(0:both 1:p 2:b)",0,false}} },
     /* 31 UPRISING_PLATFORM     */ { 2, {{"riseDelay",0.3f,false},{"riseSpd",300,false}} },
     /* 32 UP_DOWN_PLATFORM      */ { 4, {{"riseH",150,false},{"riseSpd",200,false},{"fallSpd",200,false},{"stopTm",0.5f,false}} },
     /* 33 CLEAR_BLOCK           */ { 0, {} },
@@ -45,20 +45,67 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {
     /* 38 LAYER_DOOR            */ { 0, {} },
     /* 39 RESPAWN               */ { 0, {} },
     /* 40 SWITCH_BUTTON         */ { 0, {} },
-    /* 41 COMMENT_BLOCK         */ { 1, {{"duration",3.0f,false}} }, 
+    /* 41 COMMENT_BLOCK         */ { 1, {{"duration",3.0f,false}} },
     /* 42 CURSOR_BOTTOM         */ { 3, {{"targetBall",-1,false},{"oneShot",1,true},{"maxDist",0,false}} }, // 追加
-	/* 43 DEATH_BLOCK           */ { 0, {} }, 
+    /* 43 DEATH_BLOCK           */ { 0, {} },
     /* 44 SPIKE_BOUNCER         */ { 2, {{"bounceVelX",0,false},{"bounceVelY",-600,false}} },
     /* 45 SPRING                */ { 2, {{"bounceVelX",0,false},{"bounceVelY",-800,false}} },
-    /* 46 CRANE_LAUNCH_PAD */ { 1, {{"launchVelY",-900,false}} },
-    /* 47 CRANE */ { 5, {{"maxArmLen",200,false},{"detectRangeY",600,false},{"carrySpeedX",250,false},{"carryDir",1,false},{"carryDist",2000,false}}},
+    /* 46 CRANE_LAUNCH_PAD      */ { 1, {{"launchVelY",-900,false}} },
+    /* 47 CRANE                 */ { 5, {{"maxArmLen",200,false},{"detectRangeY",600,false},{"carrySpeedX",250,false},{"carryDir",1,false},{"carryDist",2000,false}}},
     /* 48 OJISAN_PUNCH_AREA     */ { 0, {} },
     /* 49 WARP_HOLE             */ { 2, {{"destX",0,false},{"destY",0,false}} },
+    /*50  ENEMY                 */ {0,{} },
 };
 
-const TypeParamInfo& EdGetTypeInfo(EditorObjectType t) {
-    return TYPE_PARAMS[(int)t];
+
+static const EnemyTypeParamInfo ENEMY_TYPE_PARAMS[] = {
+    // [0] WALKER
+    {  2,  // パラメータ数2
+        {{"Speed (移動速度)", 100.0f, false},{"PatrolDist (巡回距離)", 200.0f, false}  } },
+    // [1] FLYER
+    {  3,  // パラメータ数3
+    {{"Speed (移動速度)", 80.0f, false},         
+         {"HoverHeight (滞空高さ)", 100.0f, false}    
+        }
+    },
+    // [2] SHOOTER
+    {3,  // パラメータ数3
+        {{"Speed (移動速度)", 60.0f, false},         
+         {"ShootInterval (発射間隔)", 2.0f, true},   
+         {"ShootRange (射撃範囲)", 300.0f, false}    
+        }
+    },
+    // [3] JUMPCOPY
+    {  2,  // パラメータ数2
+    {{"Speed (移動速度)", 120.0f, false},      
+      {"JumpHeight (ジャンプ高さ)", 150.0f, false} 
+        }
+    },
+};
+
+//ヘルパー関数
+const EnemyTypeParamInfo& EdGetEnemyTypeInfo(EnemyType t) {//敵が持つべきパラメータ情報を取得する
+    int idx = static_cast<int>(t);//enumをintに変換
+    if (idx < 0 || idx >= 4) return ENEMY_TYPE_PARAMS[0];
+    return ENEMY_TYPE_PARAMS[idx];
 }
+
+//デフォルトパラメータを初期化
+void InitDefaultEnemyParams(PlacedEnemy& enemy) {
+	const auto& info = EdGetEnemyTypeInfo(enemy.type);//敵のタイプに応じたパラメータ情報を取得
+    for (int i = 0; i < MAX_OBJ_PARAMS; i++) {
+		enemy.params[i] = (i < info.count) ? info.defs[i].defaultValue : 0.0f;//パラメータ数を超えた場合は0.0fで初期化
+    }
+}
+
+int GetEnemyAtWorldPos(const StageEditor& ed, Vector2 worldPos) {
+    for(int i = (int)ed.placedEnemies.size() - 1;i >= 0;
+}
+
+const TypeParamInfo& EdGetTypeInfo(EditorObjectType t) {//EditorObjectType は enum class なので int にキャストして配列アクセス
+	return TYPE_PARAMS[(int)t];//enum class EditorObjectType の値が増えても、TYPE_PARAMS 配列のサイズは自動で増える
+}
+
 
 void InitDefaultParams(PlacedObject& obj) {
     const auto& info = TYPE_PARAMS[(int)obj.type];
@@ -98,7 +145,7 @@ static const char* const EN_NAMES[(int)EditorObjectType::COUNT] = {
     "fallingPlatforms","upRisingPlatforms","upDouwnPlatforms","clearBlocks","clearBlocksX",
     "switchPlatforms","fallingTexts","exitDoors","layerDoors","respawn","switchButtons",
     "commentBlocks","cursorButtons","deathBlocks","spikeBouncers","springs",
-    "craneLaunchPads","cranes","ojisanPunchAreas","warpHoles"
+	"craneLaunchPads","cranes","ojisanPunchAreas","warpHoles","enemies"
 };
 
 static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
@@ -111,7 +158,7 @@ static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
     u8"fallingPlatforms",u8"upRisingPlatforms",u8"upDouwnPlatforms",u8"clearBlocks",u8"clearBlocksX",
     u8"switchPlatforms",u8"fallingTexts",u8"exitDoors",u8"layerDoors",u8"respawn",u8"switchButtons",
     u8"commentBlocks",u8"cursorButtons",u8"deathBlocks",u8"spikeBouncers",u8"springs",
-    u8"craneLaunchPads",u8"cranes",u8"ojisanPunchAreas",u8"warpHoles"
+	u8"craneLaunchPads",u8"cranes",u8"ojisanPunchAreas",u8"warpHoles",u8"enemies"
 };
 
 const char* GetNameJP(int i) {
@@ -164,16 +211,18 @@ static const Color TYPE_COLORS[(int)EditorObjectType::COUNT] = {
     {180,100,220,255},      // 37 ExitDoor
     {160, 80,200,255},      // 38 LayerDoor
     GOLD,                   // 39 Respawn
-		{220, 140,  60, 255},   // 40 SwitchButton（オレンジ）
-  { 60, 200, 200, 255},   // 41 CommentBlock（シアン）
-	{255,200,0,255},	  // 42 CursorBottom（黄色）
+		{220, 140,  60, 255},   // 40 SwitchButton
+  { 60, 200, 200, 255},   // 41 CommentBlock
+	{255,200,0,255},	  // 42 CursorBottom
 	{255, 40, 140, 255},      // 43 DeathBlock
-	   {200, 80, 200, 255},      // 44 SpikeBouncer（紫/マゼンタ）
-		   {255, 192, 203, 255},     // 45 Spring（ピンク）
-	{255, 220,   0, 255},     // 46 CraneLaunchPad（明るい黄色）
-	{120, 120, 120, 255},     // 47 Crane（濃いグレー）
+	   {200, 80, 200, 255},      // 44 SpikeBouncer
+		   {255, 192, 203, 255},     // 45 Spring
+	{255, 220,   0, 255},     // 46 CraneLaunchPad
+	{120, 120, 120, 255},     // 47 Crane
 	{255, 120, 120, 255},   // 48 OjisanPunchArea
-	{100, 200, 255, 255},   // 49 WarpHole（明るい水色）
+	{100, 200, 255, 255},   // 49 WarpHole
+	{200, 100, 100, 255},      // 50 Enemy
+
 };
 
 Color GetColor(int i) {

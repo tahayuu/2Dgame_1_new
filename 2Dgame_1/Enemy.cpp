@@ -98,7 +98,17 @@ static void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt,
 
 	}
 }
+//プレイヤーを感知する
+static bool playerSence(Rectangle player,Enemy& enemy,int add) {
+	if (enemy.rect.x <= player.x + player.width + add) {
+		return true;//プレイヤーの右側に敵がいる場合
+	}
+	else if (enemy.rect.x >= player.x - add) {
+		return true;//プレイヤーの左側に敵がいる場合
+	}
+	else return false;
 
+}
 
 //==========================
 // 公開関数の実装
@@ -129,7 +139,16 @@ void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
 		enemy.patrolMinY = spawnPos.y - 100.0f;//上
 		enemy.patrolMaxY = spawnPos.y + 100.0f;//下
 		break;
+
+	case EnemyType::JUMPCOPY:
+		enemy.rect = { spawnPos.x,spawnPos.y,40.0f,40.0f };
+		enemy.vel = { 100.0f,100.0f };
+		enemy.hp = 1;
+		enemy.patrolMinX = spawnPos.x - 100.0f;
+		enemy.patrolMaxX = spawnPos.x + 100.0f;
+		break;
 	}
+
 
 	enemy.rect.x = enemy.pos.x;
 	enemy.rect.y = enemy.pos.y;
@@ -143,11 +162,15 @@ void EnemyCollision(Enemy& enemy, const Rectangle& player,float dt,Vector2& velo
 	switch (enemy.type)
 	{
 	case EnemyType::WALKER: {
-		EnemyCollisionErase(enemy, player,dt,velocity, 200,100);
+		EnemyCollisionErase(enemy, player, dt, velocity, 200, 100);
 		break;
 	}
 	case EnemyType::FLYER: {
-		EnemyCollisionErase(enemy, player, dt, velocity,200,100);
+		EnemyCollisionErase(enemy, player, dt, velocity, 200, 100);
+		break;
+	}
+	case EnemyType::JUMPCOPY: {
+		EnemyCollisionErase(enemy, player, dt, velocity, 300, 150);
 		break;
 	}
 	}
@@ -177,8 +200,20 @@ void EnemyUpdate(Enemy& enemy, float dt,const Rectangle& player){
 				enemy.vel.y = -fabs(enemy.speed);
 			}
 			enemy.pos.y += enemy.vel.y * dt;
-
 			break;
+		}
+		case EnemyType::JUMPCOPY: {
+			if (enemy.rect.x <= enemy.patrolMinX) {
+				enemy.vel.x = enemy.speed;
+			}
+			else if (enemy.rect.x >= enemy.patrolMaxX) {
+				enemy.vel.x = -enemy.speed;
+			}
+			enemy.pos.x += enemy.vel.x * dt;
+			if (playerSence(player, enemy, 50 ) && IsKeyPressed(KEY_W) ){
+				enemy.vel.y = -830.0f;
+				enemy.pos.y += enemy.vel.y * dt;
+			}
 		}
 	}
 
@@ -189,6 +224,8 @@ void EnemyUpdate(Enemy& enemy, float dt,const Rectangle& player){
 		enemy.isActive = false;
 	}
 }
+
+
 void EnemyDraw(const Enemy& enemy){
 	if (!enemy.isActive)return;
 	switch (enemy.type) {
@@ -202,6 +239,10 @@ void EnemyDraw(const Enemy& enemy){
 		}
 		default: {
 			DrawRectangleRec(enemy.rect, MAROON);
+			break;
+		}
+		case EnemyType::JUMPCOPY: {
+			DrawRectangleRec(enemy.rect, RED);
 			break;
 		}
 	}

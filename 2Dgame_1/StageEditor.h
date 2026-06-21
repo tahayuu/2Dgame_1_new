@@ -1,6 +1,7 @@
 #pragma once
 #include "raylib.h"
 #include "StageTypes.h"
+#include "Enemy.h"
 #include <vector>
 #include <string>
 
@@ -56,16 +57,25 @@ enum class EditorObjectType {
 	CRANE,                  // 47
 	OJISAN_PUNCH_AREA,      // 48
 	WARP_HOLE,              // 49
-	COUNT,                  // 50
+    ENEMY,                  // 50
+	COUNT,                  // 51
 };
 
 static constexpr int MAX_OBJ_PARAMS = 6;
+//=====================================
+// 敵配置データ構造
+//=====================================
+struct PlacedEnemy {// 敵を配置するための構造体
+    EnemyType type;
+    Vector2 pos;
+	float params[MAX_OBJ_PARAMS] = {};// 追加のパラメータ（必要に応じて使用）
+};
 
 struct PlacedObject {
-    EditorObjectType type;
-    Rectangle rect;
-    float params[MAX_OBJ_PARAMS] = {};
-    std::string text;  // コメントブロック等で使用するテキスト
+	EditorObjectType type;
+	Rectangle rect;
+	float params[MAX_OBJ_PARAMS] = {};
+	std::string text;  // コメントブロック等で使用するテキスト 
 };
 
 // --- Texture Paint用 ---
@@ -140,10 +150,24 @@ struct StageEditor {
     char propEditBuf[32] = {};      // テキスト入力バッファ
     int propEditCursor = 0;         // カーソル位置
 
+
     // テキスト編集 (コメントブロック用)
     bool propEditingText = false;   // テキスト編集モード中か
     char propTextBuf[256] = {};     // テキスト入力バッファ
     int propTextCursor = 0;         // カーソル位置
+
+    //=================
+    //敵配置機能
+    //=================
+     
+	std::vector<PlacedEnemy> placedEnemies;// 配置された敵のリスト
+    EnemyType currentEnmyType = EnemyType::WALKER;  
+	int selectedEnemyIdx = -1; // 選択中の敵インデックス
+    
+   //敵UI状態
+	bool enemyMenuOpen = false; // 敵配置メニューが開いているか
+	Rectangle enemyMenuRect = {};// 敵配置メニューの矩形
+	int hoveredEnemyType = -1;// ホバー中の敵タイプインデックス
 };
 
 void EditorInit(StageEditor& ed, int screenWidth, int screenHeight, Font uiFont);
