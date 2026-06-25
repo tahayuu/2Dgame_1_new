@@ -23,6 +23,36 @@ void EditorDraw(const StageEditor& ed) {
         DrawText(GetNameEN(t), (int)obj.rect.x + 2, (int)obj.rect.y + 2, 10, BLACK);
     }
 
+    for (int i = 0; i < (int)ed.placedEnemies.size(); i++) {
+        const auto& enemy = ed.placedEnemies[i];
+        const float R = 20.0f;
+
+        Color typeColor = WHITE;
+        switch (enemy.type) {
+        case EnemyType::WALKER:   typeColor = { 255, 150,  50, 255 }; break; // オレンジ
+        case EnemyType::FLYER:    typeColor = { 100, 150, 255, 255 }; break; // 青
+        case EnemyType::SHOOTER:  typeColor = { 255,  80,  80, 255 }; break; // 赤
+        case EnemyType::JUMPCOPY: typeColor = { 100, 220, 100, 255 }; break; // 緑
+        }
+
+        DrawCircleV(enemy.pos, R, typeColor);
+        DrawCircleLinesV(enemy.pos, R, (i == ed.selectedEnemyIdx) ? YELLOW : ColorAlpha(BLACK, 0.6f));
+
+        const char* label = "W";
+        switch (enemy.type) {
+        case EnemyType::WALKER:   label = "W"; break;
+        case EnemyType::FLYER:    label = "F"; break;
+        case EnemyType::SHOOTER:  label = "S"; break;
+        case EnemyType::JUMPCOPY: label = "J"; break;
+        }
+        DrawText(label, (int)(enemy.pos.x - 5), (int)(enemy.pos.y - 7), 14, BLACK);
+
+        // 選択中は太い外枠を追加
+        if (i == ed.selectedEnemyIdx) {
+            DrawCircleLinesV(enemy.pos, R + 4.0f, YELLOW);
+        }
+    }
+
     Vector2 mp = GetMousePosition();
     if (mp.y >= ed.TOOLBAR_H && mp.y <= ed.screenH - ed.BOTTOM_H) {
         Vector2 mw = GetScreenToWorld2D(mp, ed.camera);
@@ -38,7 +68,7 @@ void EditorDraw(const StageEditor& ed) {
 }
 
 // ================================================================
-void EditorDrawUI(const StageEditor& ed) {
+void EditorDrawUI(StageEditor& ed) {
     if (!ed.active) return;
     bool hasFont = (ed.uiFont.texture.id != 0);
     const int TC = (int)EditorObjectType::COUNT;
@@ -159,7 +189,56 @@ void EditorDrawUI(const StageEditor& ed) {
         DrawText("Saved!", ed.screenW / 2 - 30, (int)ed.TOOLBAR_H + 12, 24, ColorAlpha(GREEN, a));
     }
 
-    DrawPropertyPanel(ed);
+    DrawPropertyPanel(ed);        // 通常オブジェクトのパネル（既存）
+    DrawEnemyPropertyPanel(ed);   // ← 敵用パネル（新規追加）
+
+
+    // ===== ENEMYタイプ選択中のときのサイドパネル =====
+    if (ed.currentType == EditorObjectType::ENEMY) {
+        const float PX = 10.0f;
+        const float PY = ed.TOOLBAR_H + 10.0f;
+        const float PW = 130.0f;
+        const float PH = 175.0f;
+
+        DrawRectangleRounded({PX, PY, PW, PH}, 0.1f, 4, {30, 30, 50, 230});
+        DrawRectangleRoundedLinesEx({PX, PY, PW, PH}, 0.1f, 4, 2, ColorAlpha(ORANGE, 0.7f));
+        DrawText("ENEMY TYPE", (int)PX + 6, (int)PY + 6, 11, ORANGE);
+
+        // 敵タイプボタン
+        const char* typeNames[] = {"WALKER","FLYER","SHOOTER","JUMPCOPY"};
+        Color typeColors[] = {
+            {255, 150, 50, 255},
+            {100, 150, 255, 255},
+            {255, 80, 80, 255},
+            {100, 220, 100, 255},
+        };
+
+        for (int i = 0; i < 4; i++) {
+            Rectangle btn = {PX + 5, PY + 28 + i * 34, PW - 10, 28};
+            bool isSelected = (ed.currentEnemyType == (EnemyType)i);
+            bool isHover    = CheckCollisionPointRec(GetMousePosition(), btn);
+
+            Color bg = isSelected ? ColorAlpha(typeColors[i], 0.85f)
+                     : isHover    ? ColorAlpha(typeColors[i], 0.5f)
+                                  : ColorAlpha(typeColors[i], 0.3f);
+            DrawRectangleRounded(btn, 0.2f, 4, bg);
+            DrawRectangleRoundedLinesEx(btn, 0.2f, 4, isSelected ? 2 : 1,
+                isSelected ? YELLOW : ColorAlpha(WHITE, 0.4f));
+            DrawText(typeNames[i], (int)(btn.x + 5), (int)(btn.y + 7), 11, WHITE);
+
+            // クリックで敵タイプを選択
+            if (isHover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                ed.currentEnemyType = (EnemyType)i;
+            }
+        }
+
+        // 操作説明
+        const float GY = PY + PH + 8.0f;
+        DrawText("LClick: Place", (int)PX, (int)GY,      10, LIGHTGRAY);
+        DrawText("RClick: Delete",(int)PX, (int)GY + 14, 10, LIGHTGRAY);
+        DrawText("T: Select",     (int)PX, (int)GY + 28, 10, LIGHTGRAY);
+        DrawText("Del: Remove",   (int)PX, (int)GY + 42, 10, LIGHTGRAY);
+    }
 }
 
 // ================================================================
@@ -324,5 +403,89 @@ void DrawPropertyPanel(const StageEditor& ed) {
             }
             y += PROP_LINE_H;
         }
+    }
+}
+
+// ================================================================
+// 敵プロパティパネル
+// ================================================================
+void DrawEnemyPropertyPanel(StageEditor& ed) {
+    if (ed.currentType != EditorObjectType::ENEMY) return;
+    if (ed.selectedEnemyIdx < 0 ||
+        ed.selectedEnemyIdx >= (int)ed.placedEnemies.size()) return;
+
+    auto& enemy = ed.placedEnemies[ed.selectedEnemyIdx];
+    const auto& info = EdGetEnemyTypeInfo(enemy.type);
+    bool hasFont = (ed.uiFont.texture.id != 0);
+
+    // パネル矩形
+    float panelW = PROP_W;
+    float panelH = PROP_HEADER_H + (float)info.count * PROP_LINE_H + 40.0f;
+    float panelX = ed.screenW - panelW - 10.0f;
+    float panelY = ed.TOOLBAR_H + 10.0f;
+    Rectangle panel = { panelX, panelY, panelW, panelH };
+
+    DrawRectangleRounded(panel, 0.08f, 4, { 20, 20, 40, 235 });
+    DrawRectangleRoundedLinesEx(panel, 0.08f, 4, 2, ColorAlpha(ORANGE, 0.6f));
+
+    // ヘッダー
+    const char* typeName = "WALKER";
+    switch (enemy.type) {
+    case EnemyType::WALKER:   typeName = "WALKER";   break;
+    case EnemyType::FLYER:    typeName = "FLYER";    break;
+    case EnemyType::SHOOTER:  typeName = "SHOOTER";  break;
+    case EnemyType::JUMPCOPY: typeName = "JUMPCOPY"; break;
+    }
+    DrawText(TextFormat("Enemy: %s", typeName), (int)panelX + 10, (int)panelY + 8, 16, ORANGE);
+    DrawText(TextFormat("x:%.0f y:%.0f", enemy.pos.x, enemy.pos.y),
+        (int)panelX + 10, (int)panelY + 28, 11, LIGHTGRAY);
+    DrawLineEx({ panelX + 8, panelY + 48 }, { panelX + panelW - 8, panelY + 48 },
+        1, ColorAlpha(WHITE, 0.2f));
+
+    // パラメータ行
+    float y = panelY + PROP_HEADER_H;
+    Vector2 mp = GetMousePosition();
+    for (int i = 0; i < info.count; i++) {
+        Rectangle row = { panelX + 5, y, panelW - 10, PROP_LINE_H };
+        bool hov = CheckCollisionPointRec(mp, row);
+        bool editing = (ed.propEditingParam == i);
+
+        if (hov && !editing) DrawRectangleRec(row, ColorAlpha(WHITE, 0.06f));
+        DrawText(info.defs[i].name, (int)panelX + 12, (int)y + 7, 12, WHITE);
+
+        float valX = panelX + 160.0f;
+        if (editing) {
+            Rectangle editR = { valX - 4, y + 2, panelW - 168, PROP_LINE_H - 4 };
+            DrawRectangleRec(editR, { 40, 40, 60, 255 });
+            DrawRectangleLinesEx(editR, 1, YELLOW);
+            DrawText(ed.propEditBuf, (int)valX, (int)y + 7, 12, YELLOW);
+            if ((int)(GetTime() * 2) % 2 == 0) {
+                int tw = MeasureText(ed.propEditBuf, 12);
+                DrawText("|", (int)valX + tw, (int)y + 6, 12, YELLOW);
+            }
+        }
+        else {
+            DrawText(TextFormat("%.2f", enemy.params[i]), (int)valX, (int)y + 7, 12, SKYBLUE);
+        }
+
+        // クリックで編集開始
+        if (hov && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            ed.propEditingParam = i;
+            snprintf(ed.propEditBuf, sizeof(ed.propEditBuf), "%.2f", enemy.params[i]);
+            ed.propEditCursor = (int)strlen(ed.propEditBuf);
+        }
+        y += PROP_LINE_H;
+    }
+
+    // 削除ボタン
+    float delY = panelY + panelH - 34.0f;
+    Rectangle delBtn = { panelX + panelW / 2 - 50, delY, 100, 24 };
+    bool delHov = CheckCollisionPointRec(mp, delBtn);
+    DrawRectangleRec(delBtn, delHov ? Color{ 180, 50, 50, 255 } : Color{ 120, 30, 30, 255 });
+    int tw = MeasureText("Delete", 12);
+    DrawText("Delete", (int)(delBtn.x + (delBtn.width - tw) / 2), (int)(delBtn.y + 6), 12, WHITE);
+
+    if (delHov && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        EditorRemoveEnemy(ed, ed.selectedEnemyIdx);
     }
 }

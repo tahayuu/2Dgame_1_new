@@ -1,12 +1,13 @@
 #include "StageEditorInternal.h"
 #include "DialogManager.h" 
+#include "EnemyManager.h"
 #include <fstream>
 #include <sstream>
 
 // ================================================================
 //  Export (editor -> Stage)
 // ================================================================
-void EditorExportToStage(const StageEditor& ed, Stage& stage) {
+void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemyManager) {
     StageClear(stage);
     int c[(int)EditorObjectType::COUNT] = {};
 
@@ -96,28 +97,36 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage) {
                 stage.clearBlocksXInit[i] = stage.clearBlocksX[i];
             }break;
         case EditorObjectType::ELEVATOR:
-            if (c[t]<Stage::MAX_ELEVATORS){int i=c[t]++;auto&e=stage.elevators[i];
-            e.rect=o.rect;
-            e.speed   = o.params[0];
-            e.upperY  = o.rect.y - o.params[1]; // rangeUp: 初期位置から何px上まで
-            e.lowerY  = o.rect.y + o.params[2]; // rangeDown: 初期位置から何px下まで
-            stage.elevatorsInit[i]=e;}break;
+            if (c[t] < Stage::MAX_ELEVATORS) {
+                int i = c[t]++; auto& e = stage.elevators[i];
+                e.rect = o.rect;
+                e.speed = o.params[0];
+                e.upperY = o.rect.y - o.params[1]; // rangeUp: 初期位置から何px上まで
+                e.lowerY = o.rect.y + o.params[2]; // rangeDown: 初期位置から何px下まで
+                stage.elevatorsInit[i] = e;
+            }break;
         case EditorObjectType::JUMP_PLATFORM:
-            if (c[t]<MAX_PLATFORMS){int i=c[t]++;auto&j=stage.jumpPlatfroms[i];
-            j.rect=o.rect;j.jumpVelocity={o.params[0],o.params[1]};j.startY=o.rect.y;
-            j.stopTimer=o.params[2]; j.delay=o.params[3];
-            j.withdraw=o.params[4]; j.jumpSpeed=o.params[5];
-            stage.jumpPlatfromsInit[i]=j;}break;
+            if (c[t] < MAX_PLATFORMS) {
+                int i = c[t]++; auto& j = stage.jumpPlatfroms[i];
+                j.rect = o.rect; j.jumpVelocity = { o.params[0],o.params[1] }; j.startY = o.rect.y;
+                j.stopTimer = o.params[2]; j.delay = o.params[3];
+                j.withdraw = o.params[4]; j.jumpSpeed = o.params[5];
+                stage.jumpPlatfromsInit[i] = j;
+            }break;
         case EditorObjectType::BATTERY_HUMAN:
-            if (c[t]<MAX_PLATFORMS){int i=c[t]++;auto&b=stage.batteryHumans[i];
-            b.rect=o.rect;b.BatteryVelocity={o.params[0],o.params[1]};
-            b.delay=o.params[2];
-            stage.batteryHumansInit[i]=b;}break;
+            if (c[t] < MAX_PLATFORMS) {
+                int i = c[t]++; auto& b = stage.batteryHumans[i];
+                b.rect = o.rect; b.BatteryVelocity = { o.params[0],o.params[1] };
+                b.delay = o.params[2];
+                stage.batteryHumansInit[i] = b;
+            }break;
         case EditorObjectType::KNOCKBACK_WALL:
-            if (c[t]<MAX_PLATFORMS){int i=c[t]++;auto&w=stage.knockBackWalls[i];
-            w.rect=o.rect;w.startX=o.rect.x;w.knockBackVelocity={o.params[0],o.params[1]};
-            w.withdraw=o.params[2]; w.delay=o.params[3]; w.limitStop=o.params[4];
-            stage.knockBackWallsInit[i]=w;}break;
+            if (c[t] < MAX_PLATFORMS) {
+                int i = c[t]++; auto& w = stage.knockBackWalls[i];
+                w.rect = o.rect; w.startX = o.rect.x; w.knockBackVelocity = { o.params[0],o.params[1] };
+                w.withdraw = o.params[2]; w.delay = o.params[3]; w.limitStop = o.params[4];
+                stage.knockBackWallsInit[i] = w;
+            }break;
         case EditorObjectType::SPLIT_PLATFORM:
             if (c[t] < MAX_SPLITPLATFORM) {
                 int i = c[t]++; auto& s = stage.splitPlatforms[i];
@@ -237,6 +246,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage) {
                 if (f.detectMode < 0 || f.detectMode > 2) f.detectMode = 0;
                 stage.fallingPlatformsInit[i] = f;
             }break;
+        
 
         case EditorObjectType::UPRISING_PLATFORM:
             if (c[t] < MAX_UPRISING) {
@@ -445,6 +455,29 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage) {
         "assets/images/stage/stage_1/ground3.png",
         "assets/images/stage/stage_1/ground4.png",
         50.0f);
+
+    enemyManager.Init();
+
+	for (const auto& pe : ed.placedEnemies) {// placedEnemies を Stage に反映
+        enemyManager.Spawn(pe.type, pe.pos);
+		auto& e = enemyManager.enemies.back();// 新しい敵を追加配列の後ろに追加
+
+		const auto& info = EdGetEnemyTypeInfo(pe.type);// 敵のタイプ情報を取得
+
+        if (info.count > 0)e.speed = pe.params[0];
+
+        // パトロール範囲を配置位置から計算
+        float patrolDist = (info.count > 1) ? pe.params[1] : 200.0f;
+        e.patrolMinX = pe.pos.x - patrolDist;
+        e.patrolMaxX = pe.pos.x + patrolDist;
+        e.patrolMinY = pe.pos.y - patrolDist;
+        e.patrolMaxY = pe.pos.y + patrolDist;
+
+        // params[2] = hp（WALKERはindex2）
+        if (info.count > 2) e.hp = pe.params[2];
+    
+    }
+    enemyManager.saveEnemiesInit();
 }
 
 // ================================================================
@@ -721,19 +754,54 @@ bool EditorSaveJSON(const StageEditor& ed, const char* filename) {
     ofs << "  ]\n}\n";
     return true;
 }
-
 bool EditorSaveCSV(const StageEditor& ed, const char* filename) {
+    // 指定されたファイル名で書き込み用ファイルを開く
     std::ofstream ofs(filename);
+
+    // ファイルを開けなかった場合は保存失敗
     if (!ofs.is_open()) return false;
+
+    // 通常オブジェクト用の見出し行を書き込む
     ofs << "type,typeId,x,y,w,h,p0,p1,p2,p3,p4,p5,text\n";
+
+    // 配置済みの通常オブジェクトを1つずつ保存する
     for (const auto& o : ed.objects) {
+        // オブジェクト名、種類番号、位置、大きさを書き込む
         ofs << GetNameEN((int)o.type) << "," << (int)o.type << ","
-            << o.rect.x << "," << o.rect.y << "," << o.rect.width << "," << o.rect.height;
-        for (int i = 0; i < MAX_OBJ_PARAMS; i++) ofs << "," << o.params[i];
-        // テキスト列（ダブルクォートで囲む）
-        ofs << ",\"" << o.text << "\"";
+            << o.rect.x << "," << o.rect.y << ","
+            << o.rect.width << "," << o.rect.height;
+
+        // オブジェクトのパラメータをすべて保存する
+        for (int i = 0; i < MAX_OBJ_PARAMS; i++) {
+            ofs << "," << o.params[i];
+        }
+
+        // オブジェクトのテキストを保存する
+        // ダブルクォーテーションで囲んでCSVに書き込む
+        ofs << ",\"" << o.text << "\"\n";
+    }
+
+    // ここから敵データであることを示す目印
+    ofs << "[ENEMIES]\n";
+
+    // 敵データ用の見出し行
+    ofs << "enemyTypeId,posX,posY,p0,p1,p2,p3,p4,p5\n";
+
+    // 配置済みの敵を1体ずつ保存する
+    for (const auto& e : ed.placedEnemies) {
+        // 敵の種類番号と配置位置を保存する
+        ofs << (int)e.type << "," << e.pos.x << "," << e.pos.y;
+
+        // 敵のパラメータをすべて保存する
+        for (int i = 0; i < MAX_OBJ_PARAMS; i++) {
+            ofs << "," << e.params[i];
+        }
+
+        // 敵1体分を書き終えたので改行する
         ofs << "\n";
     }
+
+    // ここまで来たら保存成功
     return true;
 }
 
@@ -741,13 +809,45 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
     std::ifstream ifs(filename);
     if (!ifs.is_open()) return false;
     ed.objects.clear();
+	ed.placedEnemies.clear();// 敵データもクリア
     ed.propSelectedIdx = -1;
     ed.propEditingParam = -1;
     ed.propEditingText = false;
+    ed.selectedEnemyIdx = -1;
     std::string line;
     std::getline(ifs, line); // ヘッダースキップ
+
+	bool inEnemySection = false; // 敵データセクションに入ったかどうかのフラグ
     while (std::getline(ifs, line)) {
         if (line.empty()) continue;
+        //[ENEMIES]セクションに到達したら敵データの読み込みに切り替える
+        if (line == "[ENEMIES]") {
+            inEnemySection = true;
+			std::getline(ifs, line);// 敵データのヘッダースキップ
+            continue;
+        }
+        if (inEnemySection) {
+            std::istringstream ss(line);
+			int typeId; float posX, posY;// 敵の種類番号と配置位置を読み取る
+			char cm;// カンマ区切りの読み取り用
+            ss >> typeId >> cm >> posX >> cm >> posY;
+
+            PlacedEnemy e;
+            e.type = (EnemyType)typeId;
+            e.pos = { posX,posY };
+            InitDefaultEnemyParams(e);
+            for (int i = 0; i < MAX_OBJ_PARAMS; i++) {
+                float pv;
+                if (ss >> cm >> pv) 
+                    /*カンマと数値をちゃんと読み取れたら true
+                      読み取れなかったら false*/
+                    e.params[i] = pv;
+            }
+            ed.placedEnemies.push_back(e);
+            continue;
+        }
+
+
         std::istringstream ss(line);
         std::string tn;
         int tid; float x, y, w, h; char cm;

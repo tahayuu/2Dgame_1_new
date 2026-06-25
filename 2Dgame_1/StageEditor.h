@@ -105,6 +105,7 @@ struct StageEditor {
     bool active = false;
     EditorObjectType currentType = EditorObjectType::PLATFORM;
 
+
     std::vector<PlacedObject> objects;
     std::vector<PlacedObject> undoStack;
 
@@ -161,7 +162,7 @@ struct StageEditor {
     //=================
      
 	std::vector<PlacedEnemy> placedEnemies;// 配置された敵のリスト
-    EnemyType currentEnmyType = EnemyType::WALKER;  
+    EnemyType currentEnemyType = EnemyType::WALKER;  
 	int selectedEnemyIdx = -1; // 選択中の敵インデックス
     
    //敵UI状態

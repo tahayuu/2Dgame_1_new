@@ -98,8 +98,39 @@ void InitDefaultEnemyParams(PlacedEnemy& enemy) {
     }
 }
 
-int GetEnemyAtWorldPos(const StageEditor& ed, Vector2 worldPos) {
-    for(int i = (int)ed.placedEnemies.size() - 1;i >= 0;
+int GetEnemyAtWorldPos(const StageEditor& ed, Vector2 worldPos) {//敵の配置位置を取得する
+    for (int i = (int)ed.placedEnemies.size() - 1; i >= 0; i--)
+        if (CheckCollisionPointRec(worldPos, GetEnemyRect(ed.placedEnemies[i])))
+			return i;//敵の矩形にワールド座標が含まれている場合は、その敵のインデックスを返す
+    return -1;
+}
+
+Rectangle GetEnemyRect(const PlacedEnemy& enemy) {
+    const float R = 20.0f;
+	return { enemy.pos.x - R,enemy.pos.y - R,R * 2.0f,R * 2.0f };
+}
+
+void EditorAddEnemy(StageEditor& ed, EnemyType type, Vector2 worldPos) {
+    PlacedEnemy e;
+    e.type = type;
+    e.pos = worldPos;
+    InitDefaultEnemyParams(e);
+    ed.placedEnemies.push_back(e);
+}
+
+void EditorRemoveEnemy(StageEditor& ed, int idx) {//敵を削除する
+    if (idx < 0 || idx >= (int)ed.placedEnemies.size()) return;
+    ed.placedEnemies.erase(ed.placedEnemies.begin() + idx);
+	if //選択中の敵インデックスが削除された敵のインデックスと同じ場合は、選択を解除する
+        (ed.selectedEnemyIdx == idx) ed.selectedEnemyIdx = -1;//選択中の敵が削除された場合は選択を解除
+	else if//選択中の敵インデックスが削除された敵のインデックスより大きい場合は、インデックスを1つ減らす
+        (ed.selectedEnemyIdx > idx) ed.selectedEnemyIdx--;//選択中の敵インデックスを更新
+}
+
+void EditorSetEnemyParam(StageEditor& ed, int enemyIdx, int paramIdx, float value) {//敵のパラメータを設定する
+    if (enemyIdx >= 0 && enemyIdx < (int)ed.placedEnemies.size() && paramIdx >= 0 && paramIdx < MAX_OBJ_PARAMS) {
+		ed.placedEnemies[enemyIdx].params[paramIdx] = value;//敵のパラメータを設定
+    }
 }
 
 const TypeParamInfo& EdGetTypeInfo(EditorObjectType t) {//EditorObjectType は enum class なので int にキャストして配列アクセス
@@ -290,8 +321,8 @@ void DrawObjectIcon(int typeIdx, Rectangle r) {
     }
     else if (typeIdx == 40) {  // SWITCH_BUTTON: ボタン形状
         float cx = r.x + r.width / 2;
-        DrawRectangle((int)(cx - 6), (int)(r.y + r.height - 6), 12, 6, {220,140,60,255});
-        DrawCircle((int)cx, (int)(r.y + r.height / 2 - 2), 7, {220,140,60,255});
+        DrawRectangle((int)(cx - 6), (int)(r.y + r.height - 6), 12, 6, { 220,140,60,255 });
+        DrawCircle((int)cx, (int)(r.y + r.height / 2 - 2), 7, { 220,140,60,255 });
         DrawCircleLines((int)cx, (int)(r.y + r.height / 2 - 2), 7, BLACK);
     }
     else if (typeIdx == 42) { // CURSOR_BOTTOM 追加
@@ -314,6 +345,15 @@ void DrawObjectIcon(int typeIdx, Rectangle r) {
         DrawRectangleLinesEx(r, 2, MAROON);
         DrawText("!", (int)(r.x + r.width / 2 - 3), (int)(r.y + 2), 14, BLACK);
     }
+    else if (typeIdx == 50) {
+        float cx = r.x + r.width / 2;
+        float cy = r.y + r.height / 2;
+        float rad = (std::min)(r.width, r.height) / 2 - 2;
+        DrawCircle((int)cx, (int)cy, rad, c);
+        DrawCircleLines((int)cx, (int)cy, rad, BLACK);
+        DrawText("E", (int)(cx - 6), (int)(cy - 8), 16, BLACK);
+    }
+
     else {
         DrawRectangleRec(r, c);
         DrawRectangleLinesEx(r, 1, ColorAlpha(BLACK, 0.4f));
@@ -326,6 +366,10 @@ void EditorInit(StageEditor& ed, int screenWidth, int screenHeight, Font uiFont)
     ed.objects.clear();
     ed.undoStack.clear();
     ed.currentType = EditorObjectType::PLATFORM;
+    ed.placedEnemies.clear();
+    ed.selectedEnemyIdx = -1;
+    ed.currentEnemyType = EnemyType::WALKER;
+    ed.hoveredEnemyType = -1;
     ed.camera.offset = { screenWidth / 2.0f, screenHeight / 2.0f };
     ed.camera.target = { screenWidth / 2.0f, screenHeight / 2.0f };
     ed.camera.zoom = 1.0f;
@@ -357,6 +401,68 @@ void EditorUpdate(StageEditor& ed, float dt) {
     bool mouseInPropPanel = false;
     if (ed.propSelectedIdx >= 0)
         mouseInPropPanel = CheckCollisionPointRec(GetMousePosition(), GetPropPanelRect(ed));
+
+
+    // === 敵パラメータ テキスト編集中 ===
+    if (ed.currentType == EditorObjectType::ENEMY &&
+        ed.selectedEnemyIdx >= 0 && ed.propEditingParam >= 0) {
+
+        // キーボードから入力された文字を1文字取得する
+        int ch = GetCharPressed();
+
+        // 入力された文字が残っている間、すべて処理する
+        while (ch > 0) {
+
+            // 数字、小数点、マイナスだけ入力を許可する
+            // これにより、3.5 や -2.0 のような数値を入力できる
+            if ((ch >= '0' && ch <= '9') || ch == '.' || ch == '-') {
+
+                // 入力文字数が30文字未満なら追加する
+                // 長すぎる入力を防ぐため
+                if (ed.propEditCursor < 30) {
+
+                    // 現在のカーソル位置に文字を入れる
+                    ed.propEditBuf[ed.propEditCursor++] = (char)ch;
+
+                    // C言語文字列の終端を入れる
+                    ed.propEditBuf[ed.propEditCursor] = '\0';
+                }
+            }
+
+            // 次に入力された文字を取得する
+            ch = GetCharPressed();
+        }
+
+        // Backspaceが押されたら、入力中の文字を1文字削除する
+        if (IsKeyPressed(KEY_BACKSPACE) && ed.propEditCursor > 0) {
+            ed.propEditBuf[--ed.propEditCursor] = '\0';
+        }
+
+        // Enterが押されたら、入力した文字列を数値に変換して反映する
+        if (IsKeyPressed(KEY_ENTER)) {
+
+            // propEditBufに入っている文字列をfloatに変換して、
+            // 選択中の敵のパラメータに設定する
+            EditorSetEnemyParam(ed,
+                ed.selectedEnemyIdx,
+                ed.propEditingParam,
+                (float)atof(ed.propEditBuf));
+
+            // 編集終了
+            ed.propEditingParam = -1;
+        }
+
+        // Escapeが押されたら、変更せずに編集をやめる
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            ed.propEditingParam = -1;
+        }
+
+        // テキスト編集中は、他のエディタ操作をさせない
+        return;
+    }
+
+
+
 
     // === パラメータ テキスト編集中 ===
     if (ed.propSelectedIdx >= 0 && ed.propEditingParam >= 0) {
@@ -612,15 +718,26 @@ void EditorUpdate(StageEditor& ed, float dt) {
 
         // 左クリック: 配置（ドラッグ開始中は配置しない）
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !ed.isDragging) {
-            PlacedObject newObj;
-            newObj.type = ed.currentType;
-            newObj.rect = { sn.x, sn.y, ed.gridSize * ed.gridW, ed.gridSize * ed.gridH };
-            InitDefaultParams(newObj);
-            ed.objects.push_back(newObj);
+            if (ed.currentType == EditorObjectType::ENEMY) {
+                EditorAddEnemy(ed, ed.currentEnemyType, sn);
+                ed.selectedEnemyIdx = (int)ed.placedEnemies.size() - 1;
+            }
+            else {
+
+                PlacedObject newObj;
+                newObj.type = ed.currentType;
+                newObj.rect = { sn.x, sn.y, ed.gridSize * ed.gridW, ed.gridSize * ed.gridH };
+                InitDefaultParams(newObj);
+                ed.objects.push_back(newObj);
+            }
         }
 
         // 右クリック: 削除
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            if (ed.currentType == EditorObjectType::ENEMY) {
+                int hitIdx = GetEnemyAtWorldPos(ed, mw);
+                if (hitIdx >= 0) EditorRemoveEnemy(ed, hitIdx);
+            }else{
             for (int i = (int)ed.objects.size() - 1; i >= 0; i--) {
                 if (CheckCollisionPointRec(mw, ed.objects[i].rect)) {
                     ed.undoStack.push_back(ed.objects[i]);
@@ -629,11 +746,16 @@ void EditorUpdate(StageEditor& ed, float dt) {
                     else if (ed.propSelectedIdx > i) ed.propSelectedIdx--;
                     break;
                 }
+                }
             }
         }
 
         // T キー: カーソル下のオブジェクトを選択 → プロパティパネル表示
         if (IsKeyPressed(KEY_T)) {
+            if (ed.currentType == EditorObjectType::ENEMY) {
+                ed.selectedEnemyIdx = GetEnemyAtWorldPos(ed, mw);
+                ed.propEditingParam = -1;
+            }else{
             bool found = false;
             for (int i = (int)ed.objects.size() - 1; i >= 0; i--) {
                 if (CheckCollisionPointRec(mw, ed.objects[i].rect)) {
@@ -642,9 +764,15 @@ void EditorUpdate(StageEditor& ed, float dt) {
                     found = true;
                     break;
                 }
-            }
+                }
             if (!found) { ed.propSelectedIdx = -1; ed.propEditingParam = -1; }
+            }
+            
         }
+    }
+
+    if (ed.currentType == EditorObjectType::ENEMY && ed.selectedEnemyIdx >= 0 && IsKeyPressed(KEY_DELETE)) {
+        EditorRemoveEnemy(ed, ed.selectedEnemyIdx);
     }
 
     if (ed.propSelectedIdx >= 0 && ed.propSelectedIdx < (int)ed.objects.size()
