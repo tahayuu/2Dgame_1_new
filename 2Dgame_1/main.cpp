@@ -303,7 +303,7 @@ int main() {
             tempEd.savePath = "stage_editor_output";
             std::string csvPath = tempEd.savePath + ".csv";
             if (FileExists(csvPath.c_str()) && EditorLoadCSV(tempEd, csvPath.c_str())) {
-                EditorExportToStage(tempEd, stage);
+                EditorExportToStage(tempEd, stage,enemyManager);
             }
             currentStage = 100;
             break;
@@ -318,7 +318,7 @@ int main() {
             std::string csvPath = GetStageSavePath(currentStage) + ".csv";
             StageEditor tempEd;
             if (FileExists(csvPath.c_str()) && EditorLoadCSV(tempEd, csvPath.c_str())) {
-                EditorExportToStage(tempEd, stage);
+                EditorExportToStage(tempEd, stage, enemyManager);
             }
         }
 
@@ -361,7 +361,7 @@ int main() {
             // F5: エディタ内容を適用してプレイテスト開始
             if (IsKeyPressed(KEY_C)) {
                 EditorSaveCSV(stageEditor, (stageEditor.savePath + ".csv").c_str());
-                EditorExportToStage(stageEditor, stage);
+                EditorExportToStage(stageEditor, stage, enemyManager);
                 StageReset(stage);
                 HazardReset(stage);
                 enemyManager.RestorInitialEnemies();

@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "StageTypes.h"
 #include "Enemy.h"
+#include "EnemyManager.h"
 #include <vector>
 #include <string>
 
@@ -174,8 +175,8 @@ struct StageEditor {
 void EditorInit(StageEditor& ed, int screenWidth, int screenHeight, Font uiFont);
 void EditorUpdate(StageEditor& ed, float dt);
 void EditorDraw(const StageEditor& ed);
-void EditorDrawUI(const StageEditor& ed);
-void EditorExportToStage(const StageEditor& ed, Stage& stage);
+void EditorDrawUI(StageEditor& ed);
+void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enemyManager);
 void EditorImportFromStage(StageEditor& ed, const Stage& stage);
 bool EditorSaveJSON(const StageEditor& ed, const char* filename);
 bool EditorSaveCSV(const StageEditor& ed, const char* filename);

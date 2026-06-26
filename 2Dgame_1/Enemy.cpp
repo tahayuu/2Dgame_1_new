@@ -99,14 +99,10 @@ static void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt,
 	}
 }
 //プレイヤーを感知する
-static bool playerSence(Rectangle player,Enemy& enemy,int add) {
-	if (enemy.rect.x <= player.x + player.width + add) {
-		return true;//プレイヤーの右側に敵がいる場合
-	}
-	else if (enemy.rect.x >= player.x - add) {
-		return true;//プレイヤーの左側に敵がいる場合
-	}
-	else return false;
+static bool playerSence(const Rectangle& player,const Enemy& enemy,float rangeX) {
+	const float playerCenterX = player.x + player.width * 0.5f;
+	const float enemyCenterX = enemy.rect.x + enemy.rect.width * 0.5f;
+	return fabsf(playerCenterX - enemyCenterX) <= rangeX;
 
 }
 
@@ -146,6 +142,7 @@ void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
 		enemy.hp = 1;
 		enemy.patrolMinX = spawnPos.x - 100.0f;
 		enemy.patrolMaxX = spawnPos.x + 100.0f;
+		enemy.patrolMinY = spawnPos.y;//ジャンプする高さはプレイヤーの位置に依存するため、初期値は設定しない
 		break;
 	}
 
@@ -210,10 +207,34 @@ void EnemyUpdate(Enemy& enemy, float dt,const Rectangle& player){
 				enemy.vel.x = -enemy.speed;
 			}
 			enemy.pos.x += enemy.vel.x * dt;
-			if (playerSence(player, enemy, 50 ) && IsKeyPressed(KEY_W) ){
-				enemy.vel.y = -830.0f;
-				enemy.pos.y += enemy.vel.y * dt;
+
+
+			const float gravity   = 1600.0f;
+			const float jumpSpeed = 830.0f;
+			const float groundY   = enemy.patrolMinY;
+			const float eps       = 0.5f;
+
+			const bool onGround = (enemy.pos.y >= groundY - eps);
+			if (onGround) {
+				enemy.pos.y = groundY;
+				if (enemy.vel.y > 0.0f)enemy.vel.y = 0.0f;//着地時に下向き速度をリセット
 			}
+
+			const bool nearPlayer = playerSence(player, enemy, 220.0f);
+			const bool playerJumpPressed = (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP));
+
+			if (nearPlayer && onGround && playerJumpPressed) {
+				enemy.vel.y = -jumpSpeed;//プレイヤーがジャンプしたら敵もジャンプ
+			}
+
+			enemy.vel.y += gravity * dt;//重力加速度を適用
+			enemy.pos.y += enemy.vel.y * dt;//位置を更新
+
+			if (enemy.pos.y > groundY) {//地面に落ちた場合
+				enemy.pos.y = groundY;//地面に戻す
+				enemy.vel.y = 0.0f;//着地時に下向き速度をリセット
+			}
+			break;
 		}
 	}
 

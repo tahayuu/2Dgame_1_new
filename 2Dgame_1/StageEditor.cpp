@@ -63,7 +63,7 @@ static const EnemyTypeParamInfo ENEMY_TYPE_PARAMS[] = {
     {  2,  // パラメータ数2
         {{"Speed (移動速度)", 100.0f, false},{"PatrolDist (巡回距離)", 200.0f, false}  } },
     // [1] FLYER
-    {  3,  // パラメータ数3
+    {  2,  // パラメータ数2
     {{"Speed (移動速度)", 80.0f, false},         
          {"HoverHeight (滞空高さ)", 100.0f, false}    
         }
@@ -719,8 +719,25 @@ void EditorUpdate(StageEditor& ed, float dt) {
         // 左クリック: 配置（ドラッグ開始中は配置しない）
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !ed.isDragging) {
             if (ed.currentType == EditorObjectType::ENEMY) {
-                EditorAddEnemy(ed, ed.currentEnemyType, sn);
-                ed.selectedEnemyIdx = (int)ed.placedEnemies.size() - 1;
+                Rectangle enemySidePanel = { 10.0f,ed.TOOLBAR_H + 10.0F,130.0F,175.0F };
+                bool onSidePanel = CheckCollisionPointRec(GetMousePosition(), enemySidePanel);
+
+                // 敵プロパティパネルのチェック
+                bool onPropPanel = false;
+                if (ed.selectedEnemyIdx >= 0 && ed.selectedEnemyIdx < (int)ed.placedEnemies.size()) {
+                    const auto& info = EdGetEnemyTypeInfo(ed.placedEnemies[ed.selectedEnemyIdx].type);
+                    float panelW = 280.0f;  // PROP_W
+                    float panelH = 58.0f + (float)info.count * 28.0f + 40.0f;  // PROP_HEADER_H + count * PROP_LINE_H + 40
+                    float panelX = ed.screenW - panelW - 10.0f;
+                    float panelY = ed.TOOLBAR_H + 10.0f;
+                    Rectangle enemyPropPanel = { panelX, panelY, panelW, panelH };
+                    onPropPanel = CheckCollisionPointRec(GetMousePosition(), enemyPropPanel);
+                }
+
+                if (!onSidePanel && !onPropPanel) {
+                    EditorAddEnemy(ed, ed.currentEnemyType, sn);
+                    ed.selectedEnemyIdx = (int)ed.placedEnemies.size() - 1;
+                }
             }
             else {
 
