@@ -46,48 +46,47 @@ int main() {
     StageVisual sv;
     OjisanVisual ojisan;
     InitWindow(screenWidth, screenHeight, "step1_TeST");
-    ChangeDirectory(GetApplicationDirectory());
+
     namespace fs = std::filesystem;
 
-    const fs::path exeDir = fs::path(GetApplicationDirectory());
-    const fs::path repoRootDir = (exeDir / ".." / "..").lexically_normal();
-    const fs::path projectDataDir = (repoRootDir / "2Dgame_1").lexically_normal();
+// 実行場所がどこでも、assets があるゲームルートを探索
+auto FindGameRoot = []() -> fs::path {
+    fs::path p = fs::path(GetApplicationDirectory());
+    for (int i = 0; i < 8; ++i) {
+        if (fs::exists(p / "assets")) return p;
+        if (fs::exists(p / "2Dgame_1" / "assets")) return p / "2Dgame_1";
+        if (!p.has_parent_path()) break;
+        p = p.parent_path();
+    }
+    return fs::path(GetApplicationDirectory());
+};
 
-    auto GetStageSaveName = [](int stageId) -> std::string {
-        return "stage_edit_" + std::to_string(stageId);
-        };
+const fs::path gameRoot = FindGameRoot();
+ChangeDirectory(gameRoot.string().c_str()); // assets, ojisan_lines.text の相対パス基準
 
-    // 読み込み: プロジェクト側を優先（最新CSVを拾う）
-    auto ResolveStageCsvPath = [&](const std::string& baseName) -> std::string {
-        const std::vector<fs::path> candidates = {
-            projectDataDir / (baseName + ".csv"), // 最優先
-            repoRootDir / (baseName + ".csv"),
-            exeDir / (baseName + ".csv")
-        };
+const fs::path stageDir = gameRoot / "data" / "stages";
+fs::create_directories(stageDir);
 
-        for (const auto& p : candidates) {
-            if (fs::exists(p)) return p.string();
-        }
+auto GetStageSaveName = [](int stageId) -> std::string {
+    return "stage_edit_" + std::to_string(stageId);
+};
 
-        // 見つからない場合の既定
-        return (projectDataDir / (baseName + ".csv")).string();
-        };
+auto ResolveStageCsvPath = [&](const std::string& baseName) -> std::string {
+    return (stageDir / (baseName + ".csv")).string();
+};
 
-    // 保存: プロジェクト側へ保存（次回起動時に古いDebug版へ引っ張られない）
-    auto ResolveStageSaveBasePath = [&](const std::string& baseName) -> std::string {
-        if (fs::exists(projectDataDir)) {
-            return (projectDataDir / baseName).string();
-        }
-        return (exeDir / baseName).string();
-        };
+auto ResolveStageSaveBasePath = [&](const std::string& baseName) -> std::string {
+    return (stageDir / baseName).string();
+};
 
-    PlayerVisualLoad(pv);
-    StageVisualLoad(sv);
-    ojisan.Load();
-    Texture2D titleBg = LoadTexture("assets/images/stage/background/title4.png");
-    Texture2D stage1Bg = LoadTexture("assets/images/stage/background/stage1.png");
-    Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
-    Texture2D stage3Bg = LoadTexture("assets/images/stage/background/select_background.png");
+PlayerVisualLoad(pv);
+StageVisualLoad(sv);
+ojisan.Load();
+
+Texture2D titleBg = LoadTexture("assets/images/stage/background/title4.png");
+Texture2D stage1Bg = LoadTexture("assets/images/stage/background/stage1.png");
+Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
+Texture2D stage3Bg = LoadTexture("assets/images/stage/background/select_background.png");
     // DialogManager のロードを先に行う
     DialogManager::Instance().LoadFromFile("ojisan_lines.text");
 
@@ -1187,7 +1186,10 @@ int main() {
     ojisan.Unload();
     UnloadFont(ojisanFont);
     UnloadFont(jpFont);
-    UnloadTexture(titleBg);
+    if (titleBg.id != 0)  UnloadTexture(titleBg);
+    if (stage1Bg.id != 0) UnloadTexture(stage1Bg);
+    if (stage2Bg.id != 0) UnloadTexture(stage2Bg);
+    if (stage3Bg.id != 0) UnloadTexture(stage3Bg);
     CloseWindow();
 
     return 0;
