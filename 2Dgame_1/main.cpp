@@ -1,4 +1,6 @@
-﻿#include "raylib.h"
+﻿#include <filesystem>
+#include <vector>
+#include "raylib.h"
 #include "GameObjects.h"
 #include"Stage.h"
 #include"StageTypes.h"
@@ -45,7 +47,39 @@ int main() {
     OjisanVisual ojisan;
     InitWindow(screenWidth, screenHeight, "step1_TeST");
     ChangeDirectory(GetApplicationDirectory());
+    namespace fs = std::filesystem;
 
+    const fs::path exeDir = fs::path(GetApplicationDirectory());
+    const fs::path repoRootDir = (exeDir / ".." / "..").lexically_normal();
+    const fs::path projectDataDir = (repoRootDir / "2Dgame_1").lexically_normal();
+
+    auto GetStageSaveName = [](int stageId) -> std::string {
+        return "stage_edit_" + std::to_string(stageId);
+        };
+
+    // 読み込み: プロジェクト側を優先（最新CSVを拾う）
+    auto ResolveStageCsvPath = [&](const std::string& baseName) -> std::string {
+        const std::vector<fs::path> candidates = {
+            projectDataDir / (baseName + ".csv"), // 最優先
+            repoRootDir / (baseName + ".csv"),
+            exeDir / (baseName + ".csv")
+        };
+
+        for (const auto& p : candidates) {
+            if (fs::exists(p)) return p.string();
+        }
+
+        // 見つからない場合の既定
+        return (projectDataDir / (baseName + ".csv")).string();
+        };
+
+    // 保存: プロジェクト側へ保存（次回起動時に古いDebug版へ引っ張られない）
+    auto ResolveStageSaveBasePath = [&](const std::string& baseName) -> std::string {
+        if (fs::exists(projectDataDir)) {
+            return (projectDataDir / baseName).string();
+        }
+        return (exeDir / baseName).string();
+        };
 
     PlayerVisualLoad(pv);
     StageVisualLoad(sv);
@@ -269,10 +303,9 @@ int main() {
     Vector2 ojisanPunchStickScreenPos = { 0.0f, 0.0f };
 
     // ステージ番号 → 保存ファイルパス
-    auto GetStageSavePath = [](int stageId) -> std::string {
-        return "stage_edit_" + std::to_string(stageId);
-    };
-
+    auto GetStageSavePath = [&](int stageId) -> std::string {
+        return ResolveStageSaveBasePath(GetStageSaveName(stageId));
+        };
     auto LoadSelectedStage = [&]() {
         StageClear(stage);
         ojisan.showPunch = false;  // パンチフラグをリセット
@@ -300,10 +333,10 @@ int main() {
             break;
         case 5: {
             StageEditor tempEd;
-            tempEd.savePath = "stage_editor_output";
-            std::string csvPath = tempEd.savePath + ".csv";
+            tempEd.savePath = ResolveStageSaveBasePath("stage_editor_output");
+            std::string csvPath = ResolveStageCsvPath("stage_editor_output");
             if (FileExists(csvPath.c_str()) && EditorLoadCSV(tempEd, csvPath.c_str())) {
-                EditorExportToStage(tempEd, stage,enemyManager);
+                EditorExportToStage(tempEd, stage, enemyManager);
             }
             currentStage = 100;
             break;
@@ -315,7 +348,8 @@ int main() {
         // 保存済みエディタデータがある場合はステージに上書き適用
         // （currentStage == 100 はエディタステージ自身なのでスキップ）
         if (currentStage != 100) {
-            std::string csvPath = GetStageSavePath(currentStage) + ".csv";
+            const std::string stageBaseName = GetStageSaveName(currentStage);
+            std::string csvPath = ResolveStageCsvPath(stageBaseName);
             StageEditor tempEd;
             if (FileExists(csvPath.c_str()) && EditorLoadCSV(tempEd, csvPath.c_str())) {
                 EditorExportToStage(tempEd, stage, enemyManager);
@@ -330,8 +364,8 @@ int main() {
 
     auto EnterStageEditor = [&]() {
         stageEditor.savePath = (currentStage == 100)
-            ? "stage_editor_output"
-            : GetStageSavePath(currentStage);
+            ? ResolveStageSaveBasePath("stage_editor_output")
+            : ResolveStageSaveBasePath(GetStageSaveName(currentStage));
         EditorInit(stageEditor, screenWidth, screenHeight, jpFont);
         if (stageEditor.objects.empty()) {
             EditorImportFromStage(stageEditor, stage);
