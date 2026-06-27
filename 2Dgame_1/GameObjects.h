@@ -564,7 +564,21 @@ struct Warp {
     bool warped = false;
 };
 
+//一時的に出現する床
+struct TempFloor {
+    Rectangle rect;
+    float timer = 0.0f;
+    float showSec = 100.0f;
+	bool visible = false;//表示されているか
+};
 
+struct TempFloorSwitch {
+    Rectangle rect;
+    int targetFloor = -1;
+	bool oneShot = true;//一度だけ作動するか
+	bool triggered = false;//一度踏まれたか
+	bool hover = false;//カーソルが上にあるか
+};
 
 // トゲ描画関数（宣言）
 void DrawSpikes(Rectangle h, float spikeW);

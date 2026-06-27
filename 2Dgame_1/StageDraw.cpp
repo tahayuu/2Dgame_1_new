@@ -546,6 +546,20 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		}
 	}
 
+	// ===== 一時的に出現する床やスイッチの描画 =====
+	for (int i = 0; i < stage.tempFloorCount; i++) {
+		const auto& tf = stage.tempFloors[i];
+		if (!tf.visible) continue;
+		DrawRectangleRec(tf.rect, { 120,220,255,220 });
+		DrawRectangleLinesEx(tf.rect, 2, BLUE);
+	}
+	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
+		const auto& sw = stage.tempFloorSwitches[i];
+		Color c = sw.triggered ? ORANGE : (sw.hover ? YELLOW : GOLD);
+		DrawRectangleRec(sw.rect, c);
+		DrawRectangleLinesEx(sw.rect, 2, BROWN);
+	}
+
 }
 	// ==========UI: 右上にプレイヤーがもつアイテムの表示===========
 	void DrawItemUI(const Stage & stage) {

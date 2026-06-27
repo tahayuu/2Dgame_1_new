@@ -279,6 +279,15 @@ struct Stage {
 	Rectangle ojisanPunchAreas[MAX_OJISAN_PUNCH_AREAS];
 	bool ojisanPunchTriggered[MAX_OJISAN_PUNCH_AREAS];
 	int ojisanPunchAreaCount = 0;
-
+	
+	// 一時的に消える床
+	static constexpr int MAX_TEMP_FLOORS = 16;
+	TempFloor tempFloors[MAX_TEMP_FLOORS];
+	TempFloor tempFloorsInit[MAX_TEMP_FLOORS];
+	int tempFloorCount = 0;
+	// 一時的に消える床のスイッチ
+	TempFloorSwitch tempFloorSwitches[MAX_TEMP_FLOORS];
+	TempFloorSwitch tempFloorSwitchesInit[MAX_TEMP_FLOORS];
+	int tempFloorSwitchCount = 0;
 };
 	

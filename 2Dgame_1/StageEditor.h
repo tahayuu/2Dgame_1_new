@@ -59,7 +59,9 @@ enum class EditorObjectType {
 	OJISAN_PUNCH_AREA,      // 48
 	WARP_HOLE,              // 49
     ENEMY,                  // 50
-	COUNT,                  // 51
+	TEMP_FLOOR,             // 51
+	TEMP_FLOOR_SWITCH,      // 52
+	COUNT,                  // 53
 };
 
 static constexpr int MAX_OBJ_PARAMS = 6;

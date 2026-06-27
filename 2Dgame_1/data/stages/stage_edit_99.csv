@@ -37,5 +37,7 @@ breakableBlocks,5,2640,320,80,80,0,0,0,0,0,0,""
 icePlatforms,10,2720,80,80,80,0.02,400,500,0,0,0,""
 jumpPlatfroms,13,2800,80,80,80,0,-800,0.4,0.1,3,200,""
 icePlatforms,10,2880,80,80,80,0.02,400,500,0,0,0,""
+tempFloors,51,2500,450,100,50,2,0,0,0,0,0,""
+tempFloorSwitches,52,2350,450,100,50,-1,1,0,0,0,0,""
 [ENEMIES]
 enemyTypeId,posX,posY,p0,p1,p2,p3,p4,p5

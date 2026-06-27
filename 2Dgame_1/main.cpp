@@ -269,7 +269,7 @@ Texture2D stage3Bg = LoadTexture("assets/images/stage/background/select_backgrou
     const float gravity = 1600.0f;//どれくらい強く下に引っ張るか
 
     const float basejumpSpeed = 830.0f;//ジャンプ速度
-    const float stageWidth = 6400.0f;
+    const float stageWidth = 9000.0f;
     const float stageHeight = 720;
 	const float deathLine = 900;//この高さまで落ちたら死ぬ
     const float spikeW = 15.0f;

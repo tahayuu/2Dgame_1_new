@@ -1215,6 +1215,15 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		ResolveSolidX(stage.switchPlatforms[i].rect, player, velocity, prev);
 	}
 
+	for (int i = 0; i < stage.tempFloorCount; i++) {
+		const auto& tf = stage.tempFloors[i];
+		if (!tf.visible) continue;
+		if (ResolveSolidYPlayer(tf.rect, player, velocity, prev, stage.gravityReversed)) {// Y方向（縦）の当たり判定
+			onGround = true;
+		}
+		ResolveSolidX(tf.rect, player, velocity, prev);// X方向（横）の当たり判定
+	}
+
 	} // ===== if (stage.currentLayer == 0) 終わり =====
 
 	// ===== プレイヤー以外のオブジェクト床判定（レイヤーに関係なく常に実行） =====

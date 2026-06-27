@@ -414,6 +414,29 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 cr.state = CraneState::IDLE;
                 stage.cranesInit[i] = cr;
             }break;
+            
+        case EditorObjectType::TEMP_FLOOR:
+            if (c[t] < Stage::MAX_TEMP_FLOORS) {
+                int i = c[t]++;
+                auto& tf = stage.tempFloors[i];
+                tf.rect = o.rect;
+                tf.showSec = (o.params[0] > 0.0f) ? o.params[0] : 2.0f;
+                tf.timer = 0.0f;
+                tf.visible = false;
+                stage.tempFloorsInit[i] = tf;
+            } break;
+
+        case EditorObjectType::TEMP_FLOOR_SWITCH:
+            if (c[t] < Stage::MAX_TEMP_FLOORS) {
+                int i = c[t]++;
+                auto& sw = stage.tempFloorSwitches[i];
+                sw.rect = o.rect;
+                sw.targetFloor = (int)o.params[0];
+                sw.oneShot = (o.params[1] != 0.0f);
+                sw.triggered = false;
+                sw.hover = false;
+                stage.tempFloorSwitchesInit[i] = sw;
+            } break;
 
         default: break;
         }
@@ -448,6 +471,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 	stage.craneCount = c[47];
 	stage.ojisanPunchAreaCount = c[48];
 	stage.warpCount = c[49];
+	stage.tempFloorCount = c[(int)EditorObjectType::TEMP_FLOOR];              // 51
+	stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
 
 	StageThemeLoadAll(stage.theme,
         "assets/images/stage/stage_1/ground1.png",
@@ -733,6 +758,18 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         InitDefaultParams(o);
         ed.objects.push_back(o);
     }
+	// TEMP_FLOOR と TEMP_FLOアーSWITCH を復元
+    for (int i = 0; i < s.tempFloorCount; i++) {
+        PlacedObject o = { EditorObjectType::TEMP_FLOOR, s.tempFloors[i].rect };
+        o.params[0] = s.tempFloors[i].showSec;
+        ed.objects.push_back(o);
+    }
+    for (int i = 0; i < s.tempFloorSwitchCount; i++) {
+        PlacedObject o = { EditorObjectType::TEMP_FLOOR_SWITCH, s.tempFloorSwitches[i].rect };
+        o.params[0] = (float)s.tempFloorSwitches[i].targetFloor;
+        o.params[1] = s.tempFloorSwitches[i].oneShot ? 1.0f : 0.0f;
+        ed.objects.push_back(o);
+    }
 #undef IMPORT_RAW_P
 #undef IMPORT_RECT_P
 }
@@ -854,7 +891,25 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
         std::getline(ss, tn, ',');
         ss >> tid >> cm >> x >> cm >> y >> cm >> w >> cm >> h;
         PlacedObject obj;
-        obj.type = (EditorObjectType)tid;
+
+        int resolvedTypeId = -1;
+        for (int i = 0; i < (int)EditorObjectType::COUNT; i++) {
+            if (tn == GetNameEN(i)) {
+                resolvedTypeId = i;
+                break;
+            }
+        }
+
+        if (resolvedTypeId >= 0) {
+            obj.type = (EditorObjectType)resolvedTypeId;
+        }
+        else if (tid >= 0 && tid < (int)EditorObjectType::COUNT) {
+            obj.type = (EditorObjectType)tid;
+        }
+        else {
+            obj.type = EditorObjectType::PLATFORM;
+        }
+
         obj.rect = { x, y, w, h };
         InitDefaultParams(obj);
         for (int i = 0; i < MAX_OBJ_PARAMS; i++) {

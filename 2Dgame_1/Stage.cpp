@@ -137,9 +137,57 @@ void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
 	}
 }
 
+//一時床ギミックの更新
+static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera) {
+	Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
+	bool clicked = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+
+	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
+		auto& sw = stage.tempFloorSwitches[i];
+		sw.hover = CheckCollisionPointRec(mouseWorld, sw.rect);
+
+
+		if (sw.triggered && sw.oneShot) continue;
+
+		if (clicked && sw.hover) {
+			for (int f = 0; f < stage.tempFloorCount; f++) {
+				auto& tf = stage.tempFloors[f];
+				tf.visible = true;
+				tf.timer = tf.showSec;
+			}
+			sw.triggered = true;
+		}
+	}
+
+	bool anyVisible = false;//少なくとも一つの床が表示されているか
+	for (int i = 0; i < stage.tempFloorCount; i++) {
+		auto& tf = stage.tempFloors[i];
+		if (!tf.visible) continue;
+
+		tf.timer -= dt;
+		if (tf.timer <= 0.0f) {
+			tf.timer = 0.0f;
+			tf.visible = false;
+		}
+		else {
+			anyVisible = true;
+		}
+	}
+	if (!anyVisible) {
+		for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
+			auto& sw = stage.tempFloorSwitches[i];
+				sw.triggered = false;
+			
+		}
+	}
+
+}
 
 //床更新
 void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camera) {
+	//一時床ギミックの更新
+	UpdateTempFloorGimmick(stage, dt, camera);
+
 	//触れると壊れるブロック
 	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
 		auto& tb = stage.touchBreakBlocks[i];
@@ -677,6 +725,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			for (int i = 0; i < stage.commentBlockCount; i++) {
 				stage.commentBlocks[i] = stage.commentBlocksInit[i];
 			}
+
 			for (int i = 0; i < stage.cursorBottomCount; i++) {
 				stage.cursorBottoms[i] = stage.cursorBottomsInit[i];
 			}
@@ -689,6 +738,12 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			}
 			for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
 				stage.ojisanPunchTriggered[i] = false;
+			}
+			for (int i = 0; i < stage.tempFloorCount; i++) {
+				stage.tempFloors[i] = stage.tempFloorsInit[i];
+			}
+			for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
+				stage.tempFloorSwitches[i] = stage.tempFloorSwitchesInit[i];
 			}
 		}
 	
@@ -752,4 +807,6 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.spikeBouncer​Count = 0;
 			stage.craneCount = 0;
 			stage.ojisanPunchAreaCount = 0;
+			stage.tempFloorCount = 0;
+			stage.tempFloorSwitchCount = 0;
 		}
