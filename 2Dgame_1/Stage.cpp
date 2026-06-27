@@ -59,34 +59,59 @@ void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera) {
 
 
 static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom& cb) {
-    auto ActivateOne = [](RollingBall& rb) {
-        rb.activated = true;
-        rb.onGround = false;          // ★ 落下開始
-        rb.vel.y = 0.0f;              // ★ 落下初速リセット
-        if (fabsf(rb.rollDerection) < 0.001f) rb.rollDerection = -1.0f;
-        if (rb.rollDerection > 0.0f) rb.rollDerection = -rb.rollDerection; // ★ 左転がり固定
-    };
+	// RollingBallを1個起動するための処理
+	// 同じ処理を何回も書かないためにラムダ式でまとめている
+	auto ActivateOne = [](RollingBall& rb) {
+		// 起動済み状態にする
+		rb.activated = true;
 
-    bool activatedAny = false;
-    if (cb.targetRollingBall >= 0 && cb.targetRollingBall < stage.rollingBallCount) {
-        ActivateOne(stage.rollingBalls[cb.targetRollingBall]);
-        activatedAny = true;
-    } else {
-        for (int i = 0; i < stage.rollingBallCount; i++) {
-            auto& rb = stage.rollingBalls[i];
-            if (rb.waitForCursorClick) {
-                ActivateOne(rb);
-                activatedAny = true;
-            }
-        }
-        if (!activatedAny) {
-            for (int i = 0; i < stage.rollingBallCount; i++) {
-                ActivateOne(stage.rollingBalls[i]);
-            }
-        }
-    }
+		// 地面にいる扱いを外して、落下を開始できるようにする
+		rb.onGround = false;
+
+		// Y方向の速度を一度リセットする
+		// 前の速度が残っていると不自然に動く可能性があるため
+		rb.vel.y = 0.0f;
+
+		// rollDerection がほぼ0なら、方向が未設定とみなして -1 にする
+		if (fabsf(rb.rollDerection) < 0.001f) {
+			rb.rollDerection = -1.0f;
+		}
+		else {
+			// 正の値なら右方向、負の値なら左方向として 1 または -1 にそろえる
+			rb.rollDerection = (rb.rollDerection > 0.0f) ? 1.0f : -1.0f;
+		}
+		};
+
+	// 今回1個でもRollingBallを起動したかどうか
+	bool activatedAny = false;
+
+	// targetRollingBall が有効な番号なら、その1個だけを起動する
+	if (cb.targetRollingBall >= 0 && cb.targetRollingBall < stage.rollingBallCount) {
+		ActivateOne(stage.rollingBalls[cb.targetRollingBall]);
+		activatedAny = true;
+	}
+	else {
+		// targetRollingBall が無効なら、
+		// waitForCursorClick が true のRollingBallを探して起動する
+		for (int i = 0; i < stage.rollingBallCount; i++) {
+			auto& rb = stage.rollingBalls[i];
+
+			// カーソルクリック待ちのRollingBallだけ起動する
+			if (rb.waitForCursorClick) {
+				ActivateOne(rb);
+				activatedAny = true;
+			}
+		}
+
+		// ここまでで1つも起動していない場合は、
+		// 念のためすべてのRollingBallを起動する
+		if (!activatedAny) {
+			for (int i = 0; i < stage.rollingBallCount; i++) {
+				ActivateOne(stage.rollingBalls[i]);
+			}
+		}
+	}
 }
-
 
 //カーソルによって動作するギミックの更新
 void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {

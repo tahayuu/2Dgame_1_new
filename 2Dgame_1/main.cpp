@@ -50,14 +50,31 @@ int main() {
     namespace fs = std::filesystem;
 
 // 実行場所がどこでも、assets があるゲームルートを探索
+// 優先順位:
+// 1) <親>/2Dgame_1/assets（開発環境）
+// 2) <実行フォルダ>/assets（配布zip）
 auto FindGameRoot = []() -> fs::path {
     fs::path p = fs::path(GetApplicationDirectory());
+    fs::path fallbackDistRoot;
+
     for (int i = 0; i < 8; ++i) {
-        if (fs::exists(p / "assets")) return p;
-        if (fs::exists(p / "2Dgame_1" / "assets")) return p / "2Dgame_1";
+        const fs::path devRoot = p / "2Dgame_1";
+        if (fs::exists(devRoot / "assets")) {
+            return devRoot;
+        }
+
+        if (fallbackDistRoot.empty() && fs::exists(p / "assets")) {
+            fallbackDistRoot = p;
+        }
+
         if (!p.has_parent_path()) break;
         p = p.parent_path();
     }
+
+    if (!fallbackDistRoot.empty()) {
+        return fallbackDistRoot;
+    }
+
     return fs::path(GetApplicationDirectory());
 };
 
