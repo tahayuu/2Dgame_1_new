@@ -1219,7 +1219,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 
 	// ===== プレイヤー以外のオブジェクト床判定（レイヤーに関係なく常に実行） =====
 
-	auto LandOnLayeredFloor = [&](float cx, float bottom, float radius, float& outTopY) -> bool {
+	auto LandOnLayeredFloor = [&](float cx, float bottom, float radius, float& outTopY) -> bool {// cx: 中心X座標, bottom: 底面Y座標, radius: 半径, outTopY: 床の上面Y座標を返す
 		auto tryFront = [&]() -> bool {
 			for (int p = 0; p < stage.platformCount; p++) {
 				const auto& plat = stage.platforms[p];
@@ -1300,8 +1300,49 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 			continue;
 		}
 
+		const float bottom = rb.center.y + rb.radius;// 鉄球の底面Y座標
+		const float prevBottom = bottom - (rb.vel.y * dt);// 前フレームの底面Y座標
 		float topY = 0.0f;
+
 		bool landed = LandOnLayeredFloor(rb.center.x, rb.center.y + rb.radius, rb.radius, topY);
+
+		//高速落下対策swept判定
+		if (!landed && rb.vel.y > 0.0f) {// 落下中でまだ床に着地していない場合
+			auto sweptHit = [&](const Rectangle& plat) -> bool {
+				const bool overlapX = (rb.center.x + rb.radius > plat.x) &&
+					(rb.center.x - rb.radius < plat.x + plat.width);// X方向の重なり判定
+				if (!overlapX) return false;
+				
+				const float eps = 0.1f;// 許容誤差
+				const bool crossedTop = (prevBottom <= plat.y + eps) 
+					&& (bottom >= plat.y - eps);// 前フレームの底面が床の上面より上、かつ今フレームの底面が床の上面より下にある場合
+
+				if (crossedTop) {
+					topY = plat.y;
+					return true;
+				}
+				return false;
+				};
+			 
+			if (stage.currentLayer == 0) {
+				for (int p = 0; p < stage.platformCount && !landed; p++) {
+					landed = sweptHit(stage.platforms[p]);
+				}  for (int p = 0; p < stage.backPlatformCount && !landed; p++) {
+					Rectangle bp = ScaleRectCenter(stage.backPlatforms[p], stage.BACK_LAYER_SCALE);
+					landed = sweptHit(bp);
+				}
+			}
+			else {
+				for (int p = 0; p < stage.backPlatformCount && !landed; p++) {
+					Rectangle bp = ScaleRectCenter(stage.backPlatforms[p], stage.BACK_LAYER_SCALE);
+					landed = sweptHit(bp);
+				}
+				for (int p = 0; p < stage.platformCount && !landed; p++) {
+					landed = sweptHit(stage.platforms[p]);
+				}
+			}
+		}
+
 
 		if (landed) {
 			rb.vel.y = 0.0f;
