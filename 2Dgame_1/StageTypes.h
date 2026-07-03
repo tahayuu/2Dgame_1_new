@@ -4,7 +4,7 @@
 #include "CameraController.h"
 #include "StageTheme.h"
 #include "TiledMap.h"  
-static constexpr int MAX_PLATFORMS = 64;//普通床の最大数conteexpr:コンパイル時定数
+static constexpr int MAX_PLATFORMS = 128;//普通床の最大数conteexpr:コンパイル時定数
 static constexpr int MAX_HAZARDS = 16;  //とげの最大数
 static constexpr int MAX_CLEAR = 16;    //透明ブロックの最大数
 static constexpr int MAX_FALLING = 16; //落下床の最大数

@@ -57,7 +57,7 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
     stage.platforms[18] = { 500.0f, 1800.0f,  100.0f,  20.0f };
     stage.platforms[19] = { 0.0f, 1700.0f,  400.0f,  60.0f };
     stage.platforms[20] = { 350.0f, 1380.0f,  650.0f,  150.0f }; // 天井・左
-    stage.platformCount = 22;   // 最大インデックス21 → 22個 (旧: 64 は誤り)
+    stage.platformCount = 64;   // 最大インデックス21 → 22個 (旧: 64 は誤り)
 
 
     //エレベーター
