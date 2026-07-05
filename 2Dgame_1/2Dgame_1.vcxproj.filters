@@ -171,6 +171,9 @@
     <ClCompile Include="StageEditorIO.cpp">
       <Filter>ソース ファイル\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>ソース ファイル\Other</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StageInit_1.h">
@@ -250,6 +253,9 @@
     </ClInclude>
     <ClInclude Include="StageEditorInternal.h">
       <Filter>ヘッダー ファイル\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

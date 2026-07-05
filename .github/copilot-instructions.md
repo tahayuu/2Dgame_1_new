@@ -3,6 +3,7 @@
 ## General Guidelines
 - First general instruction
 - Second general instruction
+- 既存コメントはできるだけ残し、修正時はコメントを削らず最小限の追記にとどめる。
 
 ## Game Mechanics
 - Implement player death upon enemy side collision (respawn); player should survive when landing on an enemy from above.
@@ -11,6 +12,10 @@
 - Ensure stable landing detection without fall motion during walking, as the user prioritizes this aspect.
 - Anchor Ojisan to the screen's bottom-left as a fixed UI element, unaffected by camera movement.
 - Implement a separate texture mode, activated by the B key, in addition to the stage editing mode (V).
+
+## Audio Management
+- Manage BGM and sound effects in separate files, with only calls made in main.cpp.
+- Ensure all sound effect files are in WAV format.
 
 ## Font and Dialog Management
 - Ensure the dialog file is included in font codepoints and LoadFromFile timing to prevent garbled Japanese text when jumping high.

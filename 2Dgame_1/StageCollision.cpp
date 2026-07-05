@@ -73,12 +73,13 @@ static bool ResolveSolidXForMovingSolid(const Rectangle& solid, const Rectangle&
 	return false;
 }
 
+
 static bool ResolveSolidX(const Rectangle& solid, Rectangle& player, Vector2& velocity, const Rectangle& prevPlayer) {
 
 
 	if (!CheckCollisionRecs(player, solid)) return false;
-
 	const float eps = 1.0f;
+
 
 	const float prevLeft = prevPlayer.x;
 	const float prevRight = prevPlayer.x + prevPlayer.width;
@@ -90,87 +91,156 @@ static bool ResolveSolidX(const Rectangle& solid, Rectangle& player, Vector2& ve
 	const float solidTop = solid.y;
 	const float solidBottom = solid.y + solid.height;
 
-
 	// 前フレームでプレイヤーがブロックの上側にいた場合、
-	// 今回の衝突は「上から落ちてきた着地」の可能性が高い。
-	// その場合、X方向に押し戻すと横に瞬間移動することがあるため、
-	// X方向の処理はせず、Y方向の当たり判定に任せる。
+	// 今回の重なりは「上から落ちてきて床に乗った」可能性が高い。
+	//
+	// この場合にX方向で押し戻すと、
+	// 着地しただけなのに左右へ瞬間移動する原因になる。
+	//
+	// そのため、X方向では解決せず、Y方向の当たり判定に任せる。
 	if (prevBottom <= solidTop + eps) return false;
 
-	// 前フレームでプレイヤーがブロックの下側にいた場合、
-	// 今回の衝突は「下からジャンプして頭をぶつけた」可能性が高い。
-	// ばねで上に飛んで上のブロックに当たったときに、
-	// ここでX方向の押し戻しをしてしまうと、
-	// プレイヤーが左や右に瞬間移動する原因になる。
-	// そのため、下側から来た場合もX方向の処理はしない。
+
 	if (prevTop >= solidBottom - eps) return false;
 
-	// 現在のプレイヤーとブロックが、Y方向にどれくらい重なっているかを計算する
+	// 現在のプレイヤーとブロックが、X方向にどれくらい重なっているかを求める
+	//
+	// fminf(player.x + player.width, solidRight)
+	//   → プレイヤー右端とブロック右端のうち、左側にある方
+	//
+	// fmaxf(player.x, solidLeft)
+	//   → プレイヤー左端とブロック左端のうち、右側にある方
+	//
+	// この差がX方向の重なり量になる
+	const float overlapX =
+		fmaxf(0.0f, fminf(player.x + player.width, solidRight) - fmaxf(player.x, solidLeft));
+
+	// 現在のプレイヤーとブロックが、Y方向にどれくらい重なっているかを求める
+	//
 	// fminf(player.y + player.height, solidBottom)
-	// → プレイヤー下端とブロック下端のうち、上にある方
+	//   → プレイヤー下端とブロック下端のうち、上側にある方
+	//
 	// fmaxf(player.y, solidTop)
-	// → プレイヤー上端とブロック上端のうち、下にある方
-	// この差が、Y方向の重なり量になる
+	//   → プレイヤー上端とブロック上端のうち、下側にある方
+	//
+	// この差がY方向の重なり量になる
 	const float overlapY =
-		fmaxf(
-			0.0f,
-			fminf(player.y + player.height, solidBottom) - fmaxf(player.y, solidTop)
-		);
+		fmaxf(0.0f, fminf(player.y + player.height, solidBottom) - fmaxf(player.y, solidTop));
 
-	// Y方向の重なりがとても薄い場合は、角に少しかすっただけの可能性が高い。
+	// 念のため、どちらかの重なりが0以下なら処理しない
+	// CheckCollisionRecsを通っているので基本的には重なっているはずだが、
+	// 誤差や境界ぴったりの状態を考えて安全にしている
+	if (overlapX <= 0.0f || overlapY <= 0.0f) return false;
+
+	// Y方向の重なりがとても薄い場合は、
+	// ブロックの角を少しかすっただけの可能性が高い。
+	//
 	// その状態でX方向に押し戻すと、
-	// プレイヤーが横にワープしたように見えることがある。
-	// そのため、Y方向の重なりが2px未満ならX方向の衝突として扱わない。
-	if (overlapY < 2.0f) return false;
+	// 少し触れただけなのに横へワープしたように見えることがある。
+	if (overlapY < 1.0f) return false;
 
-	// 前フレームでプレイヤーがブロックの左側にいたかどうか
+	// overlapY が overlapX に比べてかなり小さい場合、
+	// 食い込み方としては「横から壁にぶつかった」というより、
+	// 「上面・下面に軽く引っかかった」可能性が高い。
+	//
+	// 例：
+	// overlapX が大きく、overlapY が小さい
+	// → 横には広く重なっているが、縦方向の食い込みが浅い
+	// → 着地や天井衝突など、Y方向で解決した方が自然
+	//
+	// ここでX方向の押し戻しを止めることで、
+	// 斜め上昇で天井に当たったときの横ワープを防ぎやすくする。
+	if (overlapY <= overlapX * 0.6f) return false;
+
+	// 前フレームでプレイヤーがブロックの左側にいて、
+	// 今フレームでブロックの左側面を越えたかを判定する。
+	//
 	// prevRight <= solidLeft + eps
-	// → 前フレームのプレイヤー右端が、ブロック左端より左側にあった
-	// つまり、左から右へ進んできてブロックに当たった可能性がある。
-	const bool cameFromLeft = (prevRight <= solidLeft + eps);
+	//   → 前フレームではプレイヤー右端がブロック左端より左側にあった
+	//
+	// player.x + player.width >= solidLeft + eps
+	//   → 今フレームではプレイヤー右端がブロック左端を越えている
+	//
+	// つまり、左から右へ進んでブロックの左側面に入ったという意味
+	const bool crossedLeftFace =
+		(prevRight <= solidLeft + eps) && (player.x + player.width >= solidLeft + eps);
 
-	// 前フレームでプレイヤーがブロックの右側にいたかどうか
+	// 前フレームでプレイヤーがブロックの右側にいて、
+	// 今フレームでブロックの右側面を越えたかを判定する。
+	//
 	// prevLeft >= solidRight - eps
-	// → 前フレームのプレイヤー左端が、ブロック右端より右側にあった
-	// つまり、右から左へ進んできてブロックに当たった可能性がある。
-	const bool cameFromRight = (prevLeft >= solidRight - eps);
+	//   → 前フレームではプレイヤー左端がブロック右端より右側にあった
+	//
+	// player.x <= solidRight - eps
+	//   → 今フレームではプレイヤー左端がブロック右端を越えている
+	//
+	// つまり、右から左へ進んでブロックの右側面に入ったという意味
+	const bool crossedRightFace =
+		(prevLeft >= solidRight - eps) && (player.x <= solidRight - eps);
 
-	// プレイヤーが右に移動中で、前フレームではブロックの左側にいた場合
-	// → ブロックの左側面にぶつかったと判断する
-	if (velocity.x > 0.0f && cameFromLeft) {
+	// プレイヤーが右に移動中で、ブロックの左側面を越えていた場合
+	// → 明確にブロックの左側面へ衝突したと判断する
+	if (velocity.x > 0.0f && crossedLeftFace) {
 
-		// プレイヤーの右端がブロックの左端に合うように、
-		// プレイヤーをブロックの左側へ押し戻す
+		// プレイヤーの右端がブロックの左端に合うように配置する
+		// これでブロックの中にめり込んだ分を外へ戻す
 		player.x = solidLeft - player.width;
 
-		// 横方向の速度を止める
+		// 壁にぶつかったので横方向の速度を止める
 		velocity.x = 0.0f;
 
-		// X方向の衝突処理をしたので true を返す
+		// X方向の当たり判定を解決した
 		return true;
 	}
-	// プレイヤーが左に移動中で、前フレームではブロックの右側にいた場合
-	// → ブロックの右側面にぶつかったと判断する
-	else if (velocity.x < 0.0f && cameFromRight) {
 
-		// プレイヤーの左端がブロックの右端に合うように、
-		// プレイヤーをブロックの右側へ押し戻す
+	// プレイヤーが左に移動中で、ブロックの右側面を越えていた場合
+	// → 明確にブロックの右側面へ衝突したと判断する
+	if (velocity.x < 0.0f && crossedRightFace) {
+
+		// プレイヤーの左端がブロックの右端に合うように配置する
+		// これでブロックの中にめり込んだ分を外へ戻す
 		player.x = solidRight;
 
-		// 横方向の速度を止める
+		// 壁にぶつかったので横方向の速度を止める
 		velocity.x = 0.0f;
 
-		// X方向の衝突処理をしたので true を返す
+		// X方向の当たり判定を解決した
 		return true;
 	}
 
-	// ここまで来た場合は、
-	// 「左から来た」「右から来た」とはっきり判断できなかったということ。
+	// 斜めから入った場合、前フレーム基準の crossed 判定が取れないことがある。
 	//
-	// つまり、上から・下から・角からの衝突の可能性があるため、
-	// X方向の押し戻しはしない。
+	// 例：
+	// ・速度が速く、1フレームで角を深く通過した
+	// ・前フレーム時点ですでに少し近かった
+	// ・ばねや移動床で斜めに強く押された
 	//
-	// 無理にX方向で解決すると瞬間移動の原因になるので、Y方向の処理に任せる。
+	// そのような場合に何もしないと、
+	// ブロックをすり抜ける可能性がある。
+	//
+	// そこで最後の救済処理として、
+	// 横方向の速度が残っているなら、その方向に応じて最低限押し戻す。
+	//
+	// ただし、この処理は強めの補正なので、
+	// 上の条件で「明らかにY方向の衝突」と判断された場合は、
+	// ここまで来ないようにしている。
+	if (velocity.x > 0.0f) {
+
+		// 右に進んでいるので、ブロックの左側に戻す
+		player.x = solidLeft - player.width;
+		velocity.x = 0.0f;
+		return true;
+	}
+
+	if (velocity.x < 0.0f) {
+
+		// 左に進んでいるので、ブロックの右側に戻す
+		player.x = solidRight;
+		velocity.x = 0.0f;
+		return true;
+	}
+
+	// 横方向の速度がない、またはX方向で解決する必要がない場合
 	return false;
 }
 

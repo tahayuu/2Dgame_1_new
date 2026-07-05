@@ -158,6 +158,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="ChengeStage.cpp" />
     <ClCompile Include="DialogManager.cpp" />
@@ -185,6 +186,7 @@
     <ClCompile Include="StageTheme.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="ChengeStage.h" />
     <ClInclude Include="DialogManager.h" />
