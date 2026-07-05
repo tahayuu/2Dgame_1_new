@@ -7,7 +7,8 @@ void EnemyManager::Init()
 	enemies.reserve(32); //あらかじめ16体分のメモリを確保);
 
 	playerTouched = false;
-
+	touchedEnemyFromSide = false;
+	touchedEnemyIndex = -1;
 }
 
 void EnemyManager::Spawn(EnemyType Type, Vector2 pos){
@@ -19,6 +20,8 @@ void EnemyManager::Spawn(EnemyType Type, Vector2 pos){
 //敵とプレイヤーの当たり判定
 void EnemyManager::EnemyCollisionAll(const Rectangle& player, float dt, Vector2& velocity) {
 	playerTouched = false;
+	touchedEnemyFromSide = false;
+	touchedEnemyIndex = -1;
 	touchedEnemyDialogKey = "";
 
 	for (auto& e : enemies) {
@@ -64,10 +67,15 @@ void EnemyManager::saveEnemiesInit() {
 void EnemyManager::RestorInitialEnemies() {
 	enemies = enemiesInit;
 	for (auto& enemy : enemies) {
-		enemy.isActive = true;//全て有効化
+		enemy.isActive = true;
+		enemy.isHit = false;
+		enemy.touchedFromSide = false;
+		enemy.PlayerTouch = false;
 	}
 }
 void EnemyManager::Reset() {
 	for (auto& enemy : enemies) EnemyReset(enemy);
-	enemies.clear();//全ての敵を削除
+	enemies.clear();
+	touchedEnemyFromSide = false;
+	touchedEnemyIndex = -1;
 }

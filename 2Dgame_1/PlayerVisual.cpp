@@ -14,8 +14,9 @@ void StageVisualLoad(StageVisual& sv) {
 	sv.stage2 = LoadTexture("assets/images/stage/background/stage2.png");
 	sv.selectBackground = LoadTexture("assets/images/stage/background/select_background.png");
 	sv.texdeath = LoadTexture("assets/images/stage/background/death.png");
-
 }
+
+
 void PlayerVisualUnload(PlayerVisual& pv) {
 	if (pv.texIdle.id != 0) UnloadTexture(pv.texIdle);
 	if (pv.texRun.id != 0) UnloadTexture(pv.texRun);
@@ -34,6 +35,8 @@ void StageVisualUnload(StageVisual& sv) {
 	sv = StageVisual{};
 
 }
+
+
  
 //ステージ背景描画（画面全体に描画）
 void StageVisualDrawScreen(const StageVisual& sv, int screenW, int screenH) {
@@ -326,3 +329,5 @@ void PlayerParticleDraw(const PlayerParticleEffect& effect) {
 */
 	}
 }
+
+

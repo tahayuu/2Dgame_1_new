@@ -2,23 +2,86 @@
 #include"raylib.h"
 #include"StageCollision.h"
 #include<cmath>
+
+// テクスチャの静的管理
+static Texture2D walkerTexture{};
+static Texture2D flyerTexture{};
+static Texture2D jumpcopyTexture{};
+static Texture2D hitTexture{};
+static bool texturesLoaded = false;
+
+// スプライト設定（既存定数の近く）
+// 画像全体の1コマサイズ
+const int SPRITE_FRAME_WIDTH = 240;
+const int SPRITE_FRAME_HEIGHT = 821;
+const int SPRITE_FRAMES_PER_ROW = 8;
+const float ANIMATION_SPEED = 0.1f;
+
+// 当たり判定
+const float ENEMY_HITBOX_W = 56.0f;
+const float ENEMY_HITBOX_H = 56.0f;
+
+// 見た目
+const float ENEMY_DRAW_SCALE = 2.5f;
+const float ENEMY_DRAW_Y_OFFSET = -13.0f; // 少し上に寄せる
+
+// 切り取り余白
+const float ENEMY_CROP_LEFT = 10.0f;      // 左を少し切る
+const float ENEMY_CROP_RIGHT = 10.0f;     // 右を少し切る
+const float ENEMY_CROP_TOP = 0.0f;
+const float ENEMY_CROP_BOTTOM = 0.0f;
+
+void EnemyLoadTextures() {
+	if (texturesLoaded) return;
+
+	walkerTexture = LoadTexture("assets/images/enemy/enemy1_walk.png");
+	flyerTexture = LoadTexture("assets/images/enemy/enemy1_Fly.png");
+	jumpcopyTexture = LoadTexture("assets/images/enemy/enemy1_JumpCopy.png");
+	hitTexture = LoadTexture("assets/images/enemy/enemy1_Walk_kill_2.png"); 
+
+
+	TraceLog(LOG_INFO, "Enemy Textures Loaded - Walker ID: %d, Flyer ID: %d, JumpCopy ID: %d",
+		walkerTexture.id, flyerTexture.id, jumpcopyTexture.id);
+
+	texturesLoaded = true;
+}
+
+void EnemyUnloadTextures() {
+	if (!texturesLoaded) return;
+	UnloadTexture(walkerTexture);
+	UnloadTexture(flyerTexture);
+	UnloadTexture(jumpcopyTexture);
+	UnloadTexture(hitTexture);
+	texturesLoaded = false;
+}
+
+// Enemy 型を使ってテクスチャ ID を取得する関数
+static Texture2D GetEnemyTexture(EnemyType type) {
+	switch (type) {
+	case EnemyType::WALKER:
+		return walkerTexture;
+	case EnemyType::FLYER:
+		return flyerTexture;
+	case EnemyType::JUMPCOPY:
+		return jumpcopyTexture;
+	default:
+		return Texture2D{};
+	}
+}
+
 //==========================
 // static
 //==========================
 static bool CheckOverlapXEnemy(const Rectangle& player, const Enemy& enemy) {
-	//X方向が重なっているか
 	float playerLeft = player.x;
 	float playerRight = player.x + player.width;
 	float objectLeft = enemy.rect.x;
 	float objectRight = enemy.rect.x + enemy.rect.width;
-
 	bool overlapX = (playerRight > objectLeft) && (playerLeft < objectRight);
-
 	return overlapX;
 }
 
 static bool CheckOverlapYEnemy(const Rectangle& player, const Enemy& enemy) {
-	//Y方向が重なっているか
 	float playerTop = player.y;
 	float playerBottom = player.y + player.height;
 	float hazardTop = enemy.rect.y;
@@ -27,87 +90,66 @@ static bool CheckOverlapYEnemy(const Rectangle& player, const Enemy& enemy) {
 	return overlapY;
 }
 
-//許容値付きY重なり判定
 static bool CheckNealapYEnemy(const Rectangle& player, const Enemy& enemy, float tolerance) {
-	//Y方向が重なっているか（踏み判定用）
 	float playerTop = player.y;
 	float playerBottom = player.y + player.height;
 	float hazardTop = enemy.rect.y;
 	float hazardBottom = enemy.rect.y + enemy.rect.height;
-	// プレイヤーの下端が敵の上端より下（＝重なり始めている）かつ
-	// プレイヤーの上端が敵の下端より上（完全に下に居ない）なら踏み扱い
 	bool overlapY = (playerBottom > hazardTop - tolerance) && (playerTop < hazardBottom);
 	return overlapY;
 }
 
 static void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity, float Y, float X) {
-	// X方向の重なりが無ければ当たりなし
 	if (!CheckOverlapXEnemy(player, enemy)) return;
-
-	// Y方向の実際の重なりを確認（矩形が重なっているか）
 	bool overlapY = CheckOverlapYEnemy(player, enemy);
 
-	// 中心を使って主要方向を判定（横衝突か縦衝突か）
 	float playerCenterX = player.x + player.width * 0.5f;
 	float playerCenterY = player.y + player.height * 0.5f;
 	float enemyCenterX = enemy.rect.x + enemy.rect.width * 0.5f;
 	float enemyCenterY = enemy.rect.y + enemy.rect.height * 0.5f;
 	float dx = playerCenterX - enemyCenterX;
 	float dy = playerCenterY - enemyCenterY;
-	bool isMostlyHorizontal = (fabsf(dx) > fabsf(dy)); // true = 横衝突優勢
+	bool isMostlyHorizontal = (fabsf(dx) > fabsf(dy));
 
-	// 踏み／頭当たり判定用閾値（必要に応じて調整）
-	const float stompTolerance = 15.0f;          // px
-	const float stompVelocityThreshold = 50.0f; // px/s
+	const float stompTolerance = 15.0f;
+	const float stompVelocityThreshold = 50.0f;
 
 	float enemyTop = enemy.rect.y;
 	float enemyBottom = enemy.rect.y + enemy.rect.height;
 	float playerBottom = player.y + player.height;
 	float playerTop = player.y;
 
-	// 上から踏む条件（矩形が重なっていて、下端が敵上端に近く、かつ下向き速度が十分）
 	bool isCloseAbove = (playerBottom <= enemyTop + stompTolerance);
 	bool isFallingEnough = (velocity.y > stompVelocityThreshold);
 
-	// 下から（頭当たり）条件（矩形が重なっていて、上端が敵下端に近く、かつ上向き速度が十分）
 	bool isCloseBelow = (playerTop >= enemyBottom - stompTolerance);
 	bool isRisingEnough = (velocity.y < -stompVelocityThreshold);
 
 	if (!isMostlyHorizontal) {
-		// 縦衝突（上または下から）
 		if (overlapY && isCloseAbove && isFallingEnough) {
-			// 踏み（上から）: 敵にダメージ、プレイヤーを跳ね返す
 			enemy.hp -= 1;
 			if (velocity.x < 0.0f) velocity.x = -X;
 			else if (velocity.x > 0.0f) velocity.x = X;
 			velocity.y = -Y;
-		
 		}
 		else if (overlapY && isCloseBelow && isRisingEnough) {
-			// 下からの当たり（頭当たり）→ 死亡扱い（フラグ）
 			enemy.PlayerTouch = true;
-
-		}
-		else {
-			// 縦衝突だが踏み/頭条件を満たさない場合（軽い接触など）：何もしない
 		}
 	}
 	else {
-		// 横衝突（side）: プレイヤー死亡扱い
 		enemy.PlayerTouch = true;
-
+		enemy.touchedFromSide = true;// プレイヤーが横から接触した場合のフラグを立てる
 	}
 }
-//プレイヤーを感知する
+
 static bool playerSence(const Rectangle& player,const Enemy& enemy,float rangeX) {
 	const float playerCenterX = player.x + player.width * 0.5f;
 	const float enemyCenterX = enemy.rect.x + enemy.rect.width * 0.5f;
 	return fabsf(playerCenterX - enemyCenterX) <= rangeX;
-
 }
 
 //==========================
-// 公開関数の実装
+// 公開関数の定義
 //==========================
 void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
 	enemy.type = type;
@@ -117,43 +159,48 @@ void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
 	enemy.speed = 100.0f;
 	enemy.hp = 1;
 	enemy.PlayerTouch = false;
+	enemy.isHit = false;
+	enemy.touchedFromSide = false;
 	enemy.timer = 0.0f;
+	enemy.animTimer = 0.0f;
+	enemy.currentFrame = 0;
+	enemy.facingRight = true;
+
+	enemy.rect = { spawnPos.x, spawnPos.y, ENEMY_HITBOX_W, ENEMY_HITBOX_H };
+	enemy.texture = GetEnemyTexture(type);
+	enemy.hitTexture = hitTexture;
+
 	switch (type)
 	{
 	case EnemyType::WALKER:
-		enemy.rect = { spawnPos.x,spawnPos.y,40.0f,40.0f };
-		enemy.vel = { 100,100 };
+		enemy.vel = { 100, 100 };
 		enemy.hp = 1;
 		enemy.patrolMinX = spawnPos.x - 100.0f;
 		enemy.patrolMaxX = spawnPos.x + 100.0f;
 		break;
 
 	case EnemyType::FLYER:
-		enemy.rect = { spawnPos.x,spawnPos.y,40.0f,40.0f };
-		enemy.vel = { 100.0f,100.0f };
+		enemy.vel = { 100.0f, 100.0f };
 		enemy.hp = 1;
-		enemy.patrolMinY = spawnPos.y - 100.0f;//上
-		enemy.patrolMaxY = spawnPos.y + 100.0f;//下
+		enemy.patrolMinY = spawnPos.y - 100.0f;
+		enemy.patrolMaxY = spawnPos.y + 100.0f;
 		break;
 
 	case EnemyType::JUMPCOPY:
-		enemy.rect = { spawnPos.x,spawnPos.y,40.0f,40.0f };
-		enemy.vel = { 100.0f,100.0f };
+		enemy.vel = { 100.0f, 100.0f };
 		enemy.hp = 1;
 		enemy.patrolMinX = spawnPos.x - 100.0f;
 		enemy.patrolMaxX = spawnPos.x + 100.0f;
-		enemy.patrolMinY = spawnPos.y;//ジャンプする高さはプレイヤーの位置に依存するため、初期値は設定しない
+		enemy.patrolMinY = spawnPos.y;
 		break;
 	}
-
 
 	enemy.rect.x = enemy.pos.x;
 	enemy.rect.y = enemy.pos.y;
 }
 
-void EnemyCollision(Enemy& enemy, const Rectangle& player,float dt,Vector2& velocity) {
-	//敵とプレイヤーの当たり判定
-	if (!enemy.isActive)return;
+void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity) {
+	if (!enemy.isActive) return;
 	enemy.timer += dt;
 	bool overlapX = CheckOverlapXEnemy(player, enemy);
 	switch (enemy.type)
@@ -173,18 +220,24 @@ void EnemyCollision(Enemy& enemy, const Rectangle& player,float dt,Vector2& velo
 	}
 }
 
-void EnemyUpdate(Enemy& enemy, float dt,const Rectangle& player){
-	if (!enemy.isActive)return;
+void EnemyUpdate(Enemy& enemy, float dt, const Rectangle& player){
+	if (!enemy.isActive) return;
 	enemy.timer += dt;
+
+	// モーション停止: フレーム更新しない
+	enemy.currentFrame = 0;
+
 	switch (enemy.type) {
 		case EnemyType::WALKER: {
 			if (enemy.rect.x <= enemy.patrolMinX) {
-				enemy.vel.x = enemy.speed;//右向き
+				enemy.vel.x = enemy.speed;
+				enemy.facingRight = true;
 			}
 			else if (enemy.rect.x >= enemy.patrolMaxX) {
-				enemy.vel.x = -enemy.speed;//左向き
+				enemy.vel.x = -enemy.speed;
+				enemy.facingRight = false;
 			}
-			enemy.pos.x += enemy.vel.x * dt;//移動
+			enemy.pos.x += enemy.vel.x * dt;
 			break;
 		}
 		case EnemyType::FLYER: {
@@ -202,12 +255,13 @@ void EnemyUpdate(Enemy& enemy, float dt,const Rectangle& player){
 		case EnemyType::JUMPCOPY: {
 			if (enemy.rect.x <= enemy.patrolMinX) {
 				enemy.vel.x = enemy.speed;
+				enemy.facingRight = true;
 			}
 			else if (enemy.rect.x >= enemy.patrolMaxX) {
 				enemy.vel.x = -enemy.speed;
+				enemy.facingRight = false;
 			}
 			enemy.pos.x += enemy.vel.x * dt;
-
 
 			const float gravity   = 1600.0f;
 			const float jumpSpeed = 830.0f;
@@ -217,22 +271,22 @@ void EnemyUpdate(Enemy& enemy, float dt,const Rectangle& player){
 			const bool onGround = (enemy.pos.y >= groundY - eps);
 			if (onGround) {
 				enemy.pos.y = groundY;
-				if (enemy.vel.y > 0.0f)enemy.vel.y = 0.0f;//着地時に下向き速度をリセット
+				if (enemy.vel.y > 0.0f) enemy.vel.y = 0.0f;
 			}
 
 			const bool nearPlayer = playerSence(player, enemy, 220.0f);
 			const bool playerJumpPressed = (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP));
 
 			if (nearPlayer && onGround && playerJumpPressed) {
-				enemy.vel.y = -jumpSpeed;//プレイヤーがジャンプしたら敵もジャンプ
+				enemy.vel.y = -jumpSpeed;
 			}
 
-			enemy.vel.y += gravity * dt;//重力加速度を適用
-			enemy.pos.y += enemy.vel.y * dt;//位置を更新
+			enemy.vel.y += gravity * dt;
+			enemy.pos.y += enemy.vel.y * dt;
 
-			if (enemy.pos.y > groundY) {//地面に落ちた場合
-				enemy.pos.y = groundY;//地面に戻す
-				enemy.vel.y = 0.0f;//着地時に下向き速度をリセット
+			if (enemy.pos.y > groundY) {
+				enemy.pos.y = groundY;
+				enemy.vel.y = 0.0f;
 			}
 			break;
 		}
@@ -246,32 +300,50 @@ void EnemyUpdate(Enemy& enemy, float dt,const Rectangle& player){
 	}
 }
 
+void EnemyDraw(const Enemy& enemy) {
+	if (!enemy.isActive) return;
 
-void EnemyDraw(const Enemy& enemy){
-	if (!enemy.isActive)return;
-	switch (enemy.type) {
-		case EnemyType::WALKER: {
-			DrawRectangleRec(enemy.rect, RED);
-			break;
+	const Texture2D tex = (enemy.isHit && enemy.hitTexture.id != 0)
+		? enemy.hitTexture
+		: enemy.texture;
+
+	if (tex.id == 0) {
+		switch (enemy.type) {
+		case EnemyType::WALKER:   DrawRectangleRec(enemy.rect, RED); break;
+		case EnemyType::FLYER:    DrawRectangleRec(enemy.rect, BLUE); break;
+		case EnemyType::JUMPCOPY: DrawRectangleRec(enemy.rect, MAROON); break;
+		default:                  DrawRectangleRec(enemy.rect, GRAY); break;
 		}
-		case EnemyType::FLYER: {
-			DrawRectangleRec(enemy.rect, BLUE);
-			break;
-		}
-		default: {
-			DrawRectangleRec(enemy.rect, MAROON);
-			break;
-		}
-		case EnemyType::JUMPCOPY: {
-			DrawRectangleRec(enemy.rect, RED);
-			break;
-		}
+		return;
 	}
 
+	Rectangle src = {
+		0.0f,
+		0.0f,
+		(float)tex.width,
+		(float)tex.height
+	};
+
+	if (!enemy.facingRight) {
+		src.x = (float)tex.width;
+		src.width = -(float)tex.width;
+	}
+
+	const float centerX = enemy.rect.x + enemy.rect.width * 0.5f;
+	const float centerY = enemy.rect.y + enemy.rect.height * 0.5f;
+
+	Rectangle dst = {
+		centerX,
+		centerY + ENEMY_DRAW_Y_OFFSET,
+		enemy.rect.width * ENEMY_DRAW_SCALE,
+		enemy.rect.height * ENEMY_DRAW_SCALE
+	};
+
+	Vector2 origin = { dst.width * 0.5f, dst.height * 0.5f };
+	DrawTexturePro(tex, src, dst, origin, 0.0f, WHITE);
 }
 void EnemyReset(Enemy& enemy) {
 	enemy.isActive = false;
 	enemy.hp = 0;
-	enemy.vel = { 0.0f,0.0f };
-
+	enemy.vel = { 0.0f, 0.0f };
 }

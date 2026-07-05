@@ -11,6 +11,7 @@
 #include "ItemManager.h"
 #include "OjisanVisual.h"
 #include "ChengeStage.h"
+#include "AudioManager.h"
 #include <cmath>
 
 // ─────────────────────────────────────────────────────
@@ -36,7 +37,8 @@ void PlayerStateUpdate(PlayerState& ps,
     OjisanVisual& ojisan,
     Camera2D& cam,
     float         dt,
-    bool          isInvincible)
+    bool          isInvincible,
+    AudioManager& audio)
 {
     // 結果フラグをリセット
     ps.pendingDeath = false;
@@ -167,6 +169,7 @@ void PlayerStateUpdate(PlayerState& ps,
             if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
                 ps.velocity.y = -jumpSpeed * gravDir;
                 ps.onGround = false;
+                AudioPlaySfx(audio, SfxId::Jump);
             }
         }
     }

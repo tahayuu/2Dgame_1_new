@@ -20,6 +20,8 @@ struct PlayerParticleEffect {
 	float spawnInterval = 0.06f; //生成間隔（秒）
 };
 
+
+
 struct  PlayerVisual {
 	Texture2D texIdle{};
 	Texture2D texRun{};
@@ -64,6 +66,9 @@ struct StageVisual {
 	Texture2D texdeath{};
 	Texture2D title{};
 };
+
+
+
 // プレイヤーの見た目用データ読み込み・解放
 void PlayerVisualLoad(PlayerVisual& pv);
 void PlayerVisualUnload(PlayerVisual& pv);

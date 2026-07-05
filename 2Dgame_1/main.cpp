@@ -20,6 +20,7 @@
 #include "GameState.h"
 #include "TitleScene.h"
 #include "Player.h"
+#include "PlayerVisual.h"       
 
 int main() {
 
@@ -37,8 +38,10 @@ int main() {
     const int screenWidth = 1280;
     const int screenHeight = 720;
 
+    
     StageVisual sv;
     OjisanVisual ojisan;
+
     InitWindow(screenWidth, screenHeight, "step1_TeST");
 
     namespace fs = std::filesystem;
@@ -94,6 +97,7 @@ auto ResolveStageSaveBasePath = [&](const std::string& baseName) -> std::string 
 
 StageVisualLoad(sv);
 ojisan.Load();
+EnemyLoadTextures();
 
 Texture2D titleBg = LoadTexture("assets/images/stage/background/title4.png");
 Texture2D stage1Bg = LoadTexture("assets/images/stage/background/stage1.png");
@@ -346,7 +350,7 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 
         float dt = GetFrameTime();
 
-
+ 
 		const bool playTitleBgm = (gameState == GameState::START);
 		const bool inStageScene =
 			(gameState == GameState::PLAYING ||
@@ -354,7 +358,9 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 			 gameState == GameState::DEAD_SCREEN ||
 			 gameState == GameState::PAUSE);
 		const bool playStageBgm = inStageScene && (currentStage == 1 || currentStage == 2);
-		AudioUpdate(audio, playTitleBgm, playStageBgm, dt);// オーディオ更新
+        const bool playStage3Bgm = inStageScene && (currentStage == 3);
+        const bool playChooseStageBgm = inStageScene && (currentStage == 0);
+        AudioUpdate(audio, playTitleBgm, playStageBgm, playStage3Bgm, playChooseStageBgm, dt);// オーディオ更新
 
         // ===== エディタモード: BeginDrawing より前に完結させる =====
         if (gameState == GameState::EDITOR) {
@@ -488,7 +494,7 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 			}
 			const bool isInvincible = (editorExitInvTimer > 0.0f);
 
-			PlayerStateUpdate(playerState, stage, enemyManager, itemManager, ojisan, camera, dt, isInvincible);
+			PlayerStateUpdate(playerState, stage, enemyManager, itemManager, ojisan, camera, dt, isInvincible, audio);
 
 			if (playerState.pendingEnterEditor) {
 				EnterStageEditor();
@@ -497,6 +503,14 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 
 			if (playerState.pendingDeath) {
 				cause = playerState.lastDeathCause;
+                if ((cause == DeathCause::ENEMY_WALKER ||
+                    cause == DeathCause::ENEMY_FLYER ||
+                    cause == DeathCause::ENEMY_SHOOTER) &&
+                    enemyManager.touchedEnemyFromSide &&
+                    enemyManager.touchedEnemyIndex >= 0 &&
+                    enemyManager.touchedEnemyIndex < (int)enemyManager.enemies.size()) {
+                    enemyManager.enemies[enemyManager.touchedEnemyIndex].isHit = true;
+                }
 				RespawnPlayer();
 			}
 
@@ -752,6 +766,7 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
     enemyManager.Reset();
     itemManager.Reset();
     itemManager.Unload();
+    EnemyUnloadTextures(); // 敵のテクスチャ解放
     PlayerStateUnload(playerState);
     StageVisualUnload(sv);
     ojisan.Unload();

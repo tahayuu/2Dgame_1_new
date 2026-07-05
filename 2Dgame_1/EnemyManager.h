@@ -16,6 +16,8 @@ struct EnemyManager {
     */
 
 	bool playerTouched = false; //プレイヤーに触れたか
+	bool touchedEnemyFromSide = false; //プレイヤーが触れた敵の側面からか
+	int touchedEnemyIndex = -1;        //プレイヤーが触れた敵のインデックス
 	std::string touchedEnemyDialogKey = ""; //プレイヤーが触れた敵のダイアログキー
 
 

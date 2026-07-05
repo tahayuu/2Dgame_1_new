@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "PlayerVisual.h"
 #include "GameEvents.h"
+#include "AudioManager.h"
 #include "Item.h"
 
 struct Stage;
@@ -71,7 +72,9 @@ void PlayerStateUpdate(PlayerState& ps,
     OjisanVisual& ojisan,
     Camera2D& cam,
     float dt,
-    bool isInvincible);
+    bool isInvincible,
+	AudioManager& audio
+    );
 
 void PlayerStateDrawWorld(const PlayerState& ps,
     float editorExitInvTimer,
