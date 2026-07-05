@@ -169,6 +169,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OjisanDialog.cpp" />
     <ClCompile Include="OjisanVIsual.cpp" />
+    <ClCompile Include="player.cpp" />
     <ClCompile Include="PlayerVisual.cpp" />
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="StageCollision.cpp" />
@@ -184,6 +185,7 @@
     <ClCompile Include="StageInit_choseStage.cpp" />
     <ClCompile Include="StageInit_deback.cpp" />
     <ClCompile Include="StageTheme.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioManager.h" />
@@ -194,10 +196,12 @@
     <ClInclude Include="EnemyManager.h" />
     <ClInclude Include="GameEvents.h" />
     <ClInclude Include="GameObjects.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="ItemManager.h" />
     <ClInclude Include="OjisanDialog.h" />
     <ClInclude Include="OjisanVisual.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerVisual.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="StageCollision.h" />
@@ -213,6 +217,7 @@
     <ClInclude Include="StageInit_deback.h" />
     <ClInclude Include="StageTheme.h" />
     <ClInclude Include="StageTypes.h" />
+    <ClInclude Include="TitleScene.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="ojisan_lines.text">

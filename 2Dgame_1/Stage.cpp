@@ -1,6 +1,13 @@
 ﻿#include"Stage.h"
 #include "raylib.h"
 #include "StageTypes.h"
+#include "StageInit_1.h"
+#include "StageInit_2.h"
+#include "StageInit_3.h"
+#include "StageInit_deback.h"
+#include "GameObjects.h"
+#include "EnemyManager.h"
+#include "ItemManager.h"
 #include <cmath>
 //カーソル追従床の更新
 void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera) {
@@ -641,8 +648,6 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 
 
 
-
-
 		//ステージリセット
 		void StageReset(Stage & stage) {
 			for (int i = 0; i < stage.touchBreakBlockCount; i++) {
@@ -773,7 +778,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.upRisingCount = 0;
 			stage.upDownCount = 0;
 			stage.clearsCount = 0;
-			stage.clearsXCount = 0;
+		stage.clearsXCount = 0;
 			stage.splitPlatformCount = 0;
 			stage.itemBlockCount = 0;
 			stage.breakableBlockCount = 0;
@@ -810,3 +815,25 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.tempFloorCount = 0;
 			stage.tempFloorSwitchCount = 0;
 		}
+// （新規追加）
+
+
+void LoadSelectedStage(int selectStage, int& currentStage,
+                       Stage& stage, EnemyManager& em, ItemManager& im,
+                       /* stageDir等のパス情報 */ const std::string& stageBasePath)
+{
+    StageClear(stage);
+
+    switch (selectStage) {
+    case 0: StageInit_1(stage, em, im);     currentStage = 1;   break;
+    case 1: StageInit_debug(stage, em, im); currentStage = 99;  break;
+    case 2: StageInit_2(stage, em, im);     currentStage = 2;   break;
+    case 3: StageInit_3(stage, em, im);     currentStage = 3;   break;
+    // ...
+    }
+
+    im.saveItemsInit();
+    em.saveEnemiesInit();
+    em.RestorInitialEnemies();
+    im.RestorInitialItems();
+}
