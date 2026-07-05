@@ -154,3 +154,4 @@ moveUpPlatforms,12,4560,400,4800,80,0,0,0,0,0,0,""
 tempFloors,51,9520,480,160,80,2,0,0,0,0,0,""
 [ENEMIES]
 enemyTypeId,posX,posY,p0,p1,p2,p3,p4,p5
+3,450,600,120,150,0,0,0,0

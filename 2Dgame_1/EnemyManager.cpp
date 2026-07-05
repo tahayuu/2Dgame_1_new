@@ -24,12 +24,16 @@ void EnemyManager::EnemyCollisionAll(const Rectangle& player, float dt, Vector2&
 	touchedEnemyIndex = -1;
 	touchedEnemyDialogKey = "";
 
-	for (auto& e : enemies) {
-		if (e.isActive)EnemyCollision(e, player, dt, velocity);
+	for (int i = 0; i < (int)enemies.size(); ++i) {
+		auto& e = enemies[i];
+
+		if (e.isActive) EnemyCollision(e, player, dt, velocity);
 
 		if (e.PlayerTouch) {
 			playerTouched = true;
-			touchedEnemyDialogKey = e.dialogKey; //当たった敵のキーを保存
+			touchedEnemyDialogKey = e.dialogKey;
+			touchedEnemyIndex = i;
+			touchedEnemyFromSide = e.touchedFromSide;
 			e.PlayerTouch = false;
 		}
 	}

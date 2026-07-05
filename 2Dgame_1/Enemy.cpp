@@ -8,6 +8,7 @@ static Texture2D walkerTexture{};
 static Texture2D flyerTexture{};
 static Texture2D jumpcopyTexture{};
 static Texture2D hitTexture{};
+static Texture2D stompTexture{};
 static bool texturesLoaded = false;
 
 // スプライト設定（既存定数の近く）
@@ -36,9 +37,9 @@ void EnemyLoadTextures() {
 
 	walkerTexture = LoadTexture("assets/images/enemy/enemy1_walk.png");
 	flyerTexture = LoadTexture("assets/images/enemy/enemy1_Fly.png");
-	jumpcopyTexture = LoadTexture("assets/images/enemy/enemy1_JumpCopy.png");
+	jumpcopyTexture = LoadTexture("assets/images/enemy/enemy1_walk.png");
 	hitTexture = LoadTexture("assets/images/enemy/enemy1_Walk_kill_2.png"); 
-
+	stompTexture = LoadTexture("assets/images/enemy/enemy1_stomp.png");
 
 	TraceLog(LOG_INFO, "Enemy Textures Loaded - Walker ID: %d, Flyer ID: %d, JumpCopy ID: %d",
 		walkerTexture.id, flyerTexture.id, jumpcopyTexture.id);
@@ -52,6 +53,7 @@ void EnemyUnloadTextures() {
 	UnloadTexture(flyerTexture);
 	UnloadTexture(jumpcopyTexture);
 	UnloadTexture(hitTexture);
+	UnloadTexture(stompTexture); // 追加
 	texturesLoaded = false;
 }
 
@@ -128,6 +130,8 @@ static void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt,
 	if (!isMostlyHorizontal) {
 		if (overlapY && isCloseAbove && isFallingEnough) {
 			enemy.hp -= 1;
+			enemy.isStomped = true;
+			enemy.deathTimer = 0.0f;
 			if (velocity.x < 0.0f) velocity.x = -X;
 			else if (velocity.x > 0.0f) velocity.x = X;
 			velocity.y = -Y;
@@ -138,7 +142,8 @@ static void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt,
 	}
 	else {
 		enemy.PlayerTouch = true;
-		enemy.touchedFromSide = true;// プレイヤーが横から接触した場合のフラグを立てる
+		enemy.touchedFromSide = true;   // プレイヤーが側面から当たった
+		enemy.isHit = true;             // 追加: 側面衝突時だけテクスチャ切り替え
 	}
 }
 
@@ -160,15 +165,13 @@ void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
 	enemy.hp = 1;
 	enemy.PlayerTouch = false;
 	enemy.isHit = false;
-	enemy.touchedFromSide = false;
-	enemy.timer = 0.0f;
-	enemy.animTimer = 0.0f;
-	enemy.currentFrame = 0;
-	enemy.facingRight = true;
+	enemy.isStomped = false;
+	enemy.deathTimer = 0.0f;
 
 	enemy.rect = { spawnPos.x, spawnPos.y, ENEMY_HITBOX_W, ENEMY_HITBOX_H };
 	enemy.texture = GetEnemyTexture(type);
 	enemy.hitTexture = hitTexture;
+	enemy.stompTexture = stompTexture; // 追加
 
 	switch (type)
 	{
@@ -222,11 +225,16 @@ void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt, Vector2& ve
 
 void EnemyUpdate(Enemy& enemy, float dt, const Rectangle& player){
 	if (!enemy.isActive) return;
-	enemy.timer += dt;
 
-	// モーション停止: フレーム更新しない
-	enemy.currentFrame = 0;
+	if (enemy.isStomped) {
+		enemy.deathTimer += dt;
+		if (enemy.deathTimer >= 0.15f) {
+			enemy.isActive = false;
+		}
+		return;
+	}
 
+	// 既存の移動処理...
 	switch (enemy.type) {
 		case EnemyType::WALKER: {
 			if (enemy.rect.x <= enemy.patrolMinX) {
@@ -295,17 +303,26 @@ void EnemyUpdate(Enemy& enemy, float dt, const Rectangle& player){
 	enemy.rect.x = enemy.pos.x;
 	enemy.rect.y = enemy.pos.y;
 
+	// isHit の間は少し表示してから消す例
 	if (enemy.hp <= 0) {
-		enemy.isActive = false;
+		if (enemy.isHit) {
+			if (enemy.timer >= 0.15f) {
+				enemy.isActive = false;
+			}
+		}
+		else {
+			enemy.isActive = false;
+		}
 	}
 }
 
 void EnemyDraw(const Enemy& enemy) {
 	if (!enemy.isActive) return;
 
-	const Texture2D tex = (enemy.isHit && enemy.hitTexture.id != 0)
-		? enemy.hitTexture
-		: enemy.texture;
+	const Texture2D tex =
+		(enemy.isStomped && enemy.stompTexture.id != 0) ? enemy.stompTexture :
+		(enemy.isHit && enemy.hitTexture.id != 0) ? enemy.hitTexture :
+		enemy.texture;
 
 	if (tex.id == 0) {
 		switch (enemy.type) {
@@ -343,7 +360,10 @@ void EnemyDraw(const Enemy& enemy) {
 	DrawTexturePro(tex, src, dst, origin, 0.0f, WHITE);
 }
 void EnemyReset(Enemy& enemy) {
-	enemy.isActive = false;
-	enemy.hp = 0;
-	enemy.vel = { 0.0f, 0.0f };
+    enemy.isActive = false;
+    enemy.isHit = false;
+    enemy.isStomped = false;
+    enemy.deathTimer = 0.0f;
+    enemy.hp = 0;
+    enemy.vel = { 0.0f, 0.0f };
 }

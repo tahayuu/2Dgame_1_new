@@ -20,7 +20,8 @@ struct Enemy{
 	bool isActive;
 	bool PlayerTouch = false;
 	bool isHit = false;   // 追加: プレイヤー接触中の見た目切替
-	bool touchedFromSide = false; // 追加
+	bool isStomped = false;   // 追加: 踏みつけ用
+	bool touchedFromSide = false;
 	float patrolMinX;
 	float patrolMaxX;
 	float patrolMaxY;
@@ -29,9 +30,12 @@ struct Enemy{
 	std::string dialogKey = "";
 	Texture2D texture{};
 	Texture2D hitTexture{}; // 追加: 被弾時のテクスチャ
+	Texture2D stompTexture{};  // 追加
 	float animTimer = 0.0f;
 	int currentFrame = 0; // 現在のアニメーションフレーム
 	bool facingRight = true; // 敵の向き
+	bool isDying = false;
+	float deathTimer = 0.0f;  // 追加: 踏みつけ後の表示時間
 };
 
 void EnemyInit(Enemy& enemy, EnemyType type, Vector2 position);

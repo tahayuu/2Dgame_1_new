@@ -12,6 +12,7 @@
 - Ensure stable landing detection without fall motion during walking, as the user prioritizes this aspect.
 - Anchor Ojisan to the screen's bottom-left as a fixed UI element, unaffected by camera movement.
 - Implement a separate texture mode, activated by the B key, in addition to the stage editing mode (V).
+- 敵の死亡テクスチャは側面衝突時のみ反映し、踏みつけ時は通常の挙動のままにする。
 
 ## Audio Management
 - Manage BGM and sound effects in separate files, with only calls made in main.cpp.
