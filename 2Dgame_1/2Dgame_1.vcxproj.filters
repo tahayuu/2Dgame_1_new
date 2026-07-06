@@ -449,4 +449,8 @@
       <Filter>assets\data</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="create_transparent_douka.py" />
+    <None Include="create_transparent_douka.ps1" />
+  </ItemGroup>
 </Project>

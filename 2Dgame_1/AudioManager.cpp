@@ -44,13 +44,16 @@ bool AudioInit(AudioManager& a) {
     a.initialized = true;
     return true;
 }
-void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool playStage3Bgm, bool playChooseStageBgm, float dt) {
-    if (!a.initialized) return;
+void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool playStage3Bgm, bool playChooseStageBgm, bool inEditor, bool inUITab, float dt) {
+	if (!a.initialized) return;
 
-    const float targetTitle = playTitleBgm ? a.titleMaxVol : 0.0f;
-    const float targetStage = playStageBgm ? a.stageMaxVol : 0.0f;
-	const float targetStage3 = playStage3Bgm ? a.stage3MaxVol : 0.0f;
-	const float targetChooseStage = playChooseStageBgm ? a.chooseStageMaxVol : 0.0f;
+	// エディタ中またはUI タブ中は音量を下げる
+	float volumeScale = (inEditor || inUITab) ? a.editorBgmVol : 1.0f;
+
+	const float targetTitle = playTitleBgm ? (a.titleMaxVol * volumeScale) : 0.0f;
+	const float targetStage = playStageBgm ? (a.stageMaxVol * volumeScale) : 0.0f;
+	const float targetStage3 = playStage3Bgm ? (a.stage3MaxVol * volumeScale) : 0.0f;
+	const float targetChooseStage = playChooseStageBgm ? (a.chooseStageMaxVol * volumeScale) : 0.0f;
 
     if ((targetTitle > 0.0f || a.titleVol > 0.001f) && !IsMusicStreamPlaying(a.titleBgm)) PlayMusicStream(a.titleBgm);
     if ((targetStage > 0.0f || a.stageVol > 0.001f) && !IsMusicStreamPlaying(a.stageBgm)) PlayMusicStream(a.stageBgm);

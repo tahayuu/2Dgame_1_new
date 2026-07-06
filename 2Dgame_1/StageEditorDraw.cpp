@@ -253,64 +253,38 @@ void EditorDrawUI(StageEditor& ed) {
     }
 
     // ================================================================
-    // === 左下に操作ガイドを表示 ===
+    // === 右下に操作ガイドを表示 ===
     // ================================================================
     {
-        const float guideX = 10.0f;
-        const float guideY = ed.screenH - 220.0f; // 下部から十分な距離
-        const float guideW = 280.0f;
-        const float guideH = 210.0f;
+        const float guideW = 260.0f;
+        const float guideH = 180.0f;
+        const float guideX = ed.screenW - guideW - 10.0f;
+        const float guideY = ed.screenH - guideH - (int)ed.BOTTOM_H - 10.0f;
 
         DrawRectangleRounded({guideX, guideY, guideW, guideH}, 0.08f, 4, ColorAlpha(BLACK, 0.7f));
         DrawRectangleRoundedLinesEx({guideX, guideY, guideW, guideH}, 0.08f, 4, 1, ColorAlpha(WHITE, 0.3f));
 
-        float gy = guideY + 6.0f;
-        const float lineH = 13.0f;
+        float gy = guideY + 8.0f;
+        const float lineH = 12.0f;
 
-        if (hasFont) {
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■ 操作ガイド"),
-                {guideX + 8, gy}, 11, 1, YELLOW);
-        } else {
-            DrawText("QUICK GUIDE", (int)guideX + 8, (int)gy, 10, YELLOW);
-        }
-        gy += lineH + 2;
+        // タイトル (常に英語で統一)
+        DrawText("EDITOR CONTROLS", (int)guideX + 8, (int)gy, 10, YELLOW);
+        gy += lineH + 3;
 
         // 基本操作
-        if (hasFont) {
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■配置: 左クリック"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■選択: T キー"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■削除: 右クリック / Del"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH + 2;
+        DrawText("Place: LClick", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
+        DrawText("Select: T  | Delete: RClick/Del", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 1;
 
-            // コピー＆ペースト
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■コピー: C キー (選択時)"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■貼付: P キー"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH + 2;
+        // コピー＆ペースト
+        DrawText("Copy: C  | Paste: P", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
+        DrawText("Size: - / =", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 1;
 
-            // サイズ変更
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■大きくする: + キー"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■小さくする: - キー"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH + 2;
+        // スプライト操作
+        DrawText("Sprite: [ / ]  | Flip: H/J", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
+        DrawText("Rotate: K(CCW) / L(CW)", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 1;
 
-            // スプライト操作
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■見た目切替: [ / ] キー"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■反転: H(左右) J(上下)"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
-            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■回転: K(反時計) L(時計)"),
-                {guideX + 8, gy}, 10, 1, LIGHTGRAY);
-        } else {
-            DrawText("Place: LClick", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
-            DrawText("Select: T | Delete: RClick/Del", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 2;
-            DrawText("Copy: C | Paste: P", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
-            DrawText("Size: + / -", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 2;
-            DrawText("Sprite: [ ] | Flip: H/J", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
-            DrawText("Rotate: K/L", (int)guideX + 8, (int)gy, 9, LIGHTGRAY);
-        }
+        // 保存
+        DrawText("Save: Ctrl+S  | Undo: Ctrl+Z", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
     }
 
     DrawPropertyPanel(ed);        // 通常オブジェクトのパネル（既存）

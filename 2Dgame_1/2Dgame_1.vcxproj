@@ -285,6 +285,10 @@
   <ItemGroup>
     <Text Include="memo.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="create_transparent_douka.ps1" />
+    <None Include="create_transparent_douka.py" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

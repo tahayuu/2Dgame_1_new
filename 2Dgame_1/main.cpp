@@ -352,17 +352,24 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 
         float dt = GetFrameTime();
 
- 
+
 		const bool playTitleBgm = (gameState == GameState::START);
 		const bool inStageScene =
 			(gameState == GameState::PLAYING ||
 			 gameState == GameState::DEADING_SCREEN ||
 			 gameState == GameState::DEAD_SCREEN ||
-			 gameState == GameState::PAUSE);
+			 gameState == GameState::PAUSE ||
+			 gameState == GameState::EDITOR);  // エディタ中もステージBGMを流す
 		const bool playStageBgm = inStageScene && (currentStage == 1 || currentStage == 2);
-        const bool playStage3Bgm = inStageScene && (currentStage == 3);
-        const bool playChooseStageBgm = inStageScene && (currentStage == 0);
-        AudioUpdate(audio, playTitleBgm, playStageBgm, playStage3Bgm, playChooseStageBgm, dt);// オーディオ更新
+		const bool playStage3Bgm = inStageScene && (currentStage == 3);
+		const bool playChooseStageBgm = inStageScene && (currentStage == 0);
+
+		// エディタモード中、またはUIパネルが開いている場合は音量を下げる
+		bool inEditor = (gameState == GameState::EDITOR);
+		bool inUITab = (gameState == GameState::EDITOR) && 
+					   (stageEditor.propSelectedIdx >= 0 || stageEditor.enemyMenuOpen);
+
+		AudioUpdate(audio, playTitleBgm, playStageBgm, playStage3Bgm, playChooseStageBgm, inEditor, inUITab, dt);// オーディオ更新
 
         // ===== エディタモード: BeginDrawing より前に完結させる =====
         if (gameState == GameState::EDITOR) {
