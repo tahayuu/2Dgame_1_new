@@ -9,6 +9,17 @@ void StageThemeLoad(StageTheme& theme, const char* topPath, const char* bodyPath
     theme.hasTextures  = (theme.platformTop.id != 0 && theme.platformBody.id != 0);
 }
 
+void StageThemeLoadObjectTextures(
+    StageTheme& theme,
+    const char* itemBlockPath,
+    const char* normalBlockPath,
+    const char* arrowPath
+) {
+    theme.itemBlock = LoadTexture(itemBlockPath);
+    theme.nomalBlock = LoadTexture(normalBlockPath);
+    theme.arrowTex = LoadTexture(arrowPath);
+}
+
 void StageThemeLoadLR(StageTheme& theme, const char* leftPath, const char* rightPath, float tileSize) {
     theme.platformLeft  = LoadTexture(leftPath);
     theme.platformRight = LoadTexture(rightPath);
@@ -38,6 +49,7 @@ void StageThemeUnload(StageTheme& theme) {
     if (theme.platformRight.id != 0) UnloadTexture(theme.platformRight);
     if (theme.itemBlock.id != 0) UnloadTexture(theme.itemBlock);
 	if (theme.nomalBlock.id != 0) UnloadTexture(theme.nomalBlock);
+	if (theme.arrowTex.id != 0) UnloadTexture(theme.arrowTex);
     theme = StageTheme{};
 }
 

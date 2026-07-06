@@ -171,6 +171,7 @@
     <ClCompile Include="OjisanVIsual.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="PlayerVisual.cpp" />
+    <ClCompile Include="SpriteDatabase.cpp" />
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="StageCollision.cpp" />
     <ClCompile Include="StageDraw.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="OjisanVisual.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerVisual.h" />
+    <ClInclude Include="SpriteDatabase.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="StageCollision.h" />
     <ClInclude Include="StageDraw.h" />

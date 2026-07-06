@@ -8,11 +8,19 @@ struct StageTheme {
     Texture2D platformRight{};   // 右端列テクスチャ
 	Texture2D itemBlock{};// アイテムブロックのテクスチャ
 	Texture2D nomalBlock{};//普通ブロックのテクスチャ
+	Texture2D arrowTex{};	  // 矢印のテクスチャ
     float tileSize = 50.0f;
     bool hasTextures = false;
     bool useLeftRight = false;   // true: 左右モード / false: 上下モード
 };
+void StageThemeLoadObjectTextures(
+    StageTheme& theme,
+    const char* itemBlockPath,
+    const char* normalBlockPath,
+    const char* arrowPath
+);
 
+void StageThemeLoadObjectTextures(StageTheme& theme);
 void StageThemeLoad(StageTheme& theme, const char* topPath, const char* bodyPath, float tileSize);
 void StageThemeLoadLR(StageTheme& theme, const char* leftPath, const char* rightPath, float tileSize);
 void StageThemeLoadAll(StageTheme& theme, const char* topPath, const char* bodyPath, const char* leftPath, const char* rightPath, float tileSize);

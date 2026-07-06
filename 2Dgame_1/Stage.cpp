@@ -809,11 +809,12 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.cursorBottomCount = 0;
 			stage.magnetCount = 0;
 			stage.deathBlockCount = 0;
-			stage.spikeBouncer​Count = 0;
+			stage.spikeBouncerCount = 0;
 			stage.craneCount = 0;
 			stage.ojisanPunchAreaCount = 0;
 			stage.tempFloorCount = 0;
 			stage.tempFloorSwitchCount = 0;
+			stage.decorArrowCount = 0;
 		}
 // （新規追加）
 

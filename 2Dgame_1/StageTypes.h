@@ -4,6 +4,7 @@
 #include "CameraController.h"
 #include "StageTheme.h"
 #include "TiledMap.h"  
+#include "SpriteDatabase.h" 
 static constexpr int MAX_PLATFORMS = 128;//普通床の最大数conteexpr:コンパイル時定数
 static constexpr int MAX_HAZARDS = 16;  //とげの最大数
 static constexpr int MAX_CLEAR = 16;    //透明ブロックの最大数
@@ -173,8 +174,8 @@ struct Stage {
 	//スパイク型トランポリン
 	static constexpr int MAX_SPIKE_BOUNCERS = 16;
 	SpikeBouncer spikeBouncers[MAX_SPIKE_BOUNCERS];
-	SpikeBouncer spikeBouncer​Init[MAX_SPIKE_BOUNCERS];
-	int spikeBouncer​Count = 0;
+	SpikeBouncer spikeBouncerInit[MAX_SPIKE_BOUNCERS];
+	int spikeBouncerCount = 0;
 	//死ぬブロック
 	Rectangle deathBlocks[MAX_HAZARDS];
 	Rectangle deathBlocksInit[MAX_HAZARDS];
@@ -285,9 +286,35 @@ struct Stage {
 	TempFloor tempFloors[MAX_TEMP_FLOORS];
 	TempFloor tempFloorsInit[MAX_TEMP_FLOORS];
 	int tempFloorCount = 0;
+
 	// 一時的に消える床のスイッチ
 	TempFloorSwitch tempFloorSwitches[MAX_TEMP_FLOORS];
 	TempFloorSwitch tempFloorSwitchesInit[MAX_TEMP_FLOORS];
 	int tempFloorSwitchCount = 0;
+
+	static constexpr int MAX_DECOR_ARROWS = 16;
+	DecorArrow decorArrows[MAX_DECOR_ARROWS];
+	int decorArrowCount = 0;
+
+
+	// ================================================================
+// 見た目専用スプライト情報（当たり判定・ギミック処理には一切使わない）
+// ----------------------------------------------------------------
+// エディタで配置した PlacedObject の spriteId / rotation / flipX / flipY を
+// そのまま保持するための「描画専用」データ。
+// ここに入っている情報は EditorExportToStage で書き込まれ、
+// StageDraw 側で見た目を上書きしたい場合にだけ参照される想定。
+// （当たり判定は各ギミック配列(platforms等)の rect が引き続き使われる）
+// ================================================================
+	struct SpriteInstance {
+		Rectangle rect = {};                 // 描画位置・大きさ（対応するギミックのrectと同じ値）
+		SpriteId  spriteId = SpriteId::None;  // 描画に使う画像パーツ
+		float     rotation = 0.0f;            // 見た目の回転角度（度）
+		bool      flipX = false;              // 左右反転
+		bool      flipY = false;              // 上下反転
+	};
+	static constexpr int MAX_SPRITE_INSTANCES = 512;
+	SpriteInstance spriteInstances[MAX_SPRITE_INSTANCES];
+	int spriteInstanceCount = 0;
 };
 	

@@ -94,6 +94,12 @@
     <Filter Include="assets\images\font">
       <UniqueIdentifier>{1dbc0b2d-6fbf-4a3f-9afd-9063892dbbf7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\Texture">
+      <UniqueIdentifier>{8591cf78-ba79-4c39-bdb5-09184c122d43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Texture">
+      <UniqueIdentifier>{f54890e1-068d-4363-9e57-87742d38ad9c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -179,6 +185,9 @@
     </ClCompile>
     <ClCompile Include="player.cpp">
       <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteDatabase.cpp">
+      <Filter>ソース ファイル\Texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>ヘッダー ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteDatabase.h">
+      <Filter>ヘッダー ファイル\Texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

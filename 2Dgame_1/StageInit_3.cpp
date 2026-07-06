@@ -10,6 +10,12 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
         "assets/images/stage/stage_3/ground4.png",
         50.0f);
 
+    StageThemeLoadObjectTextures(
+        stage.theme,
+        "assets/images/stage/stage_1/itemblock.png",
+        "assets/images/stage/stage_1/normalblock.png",
+        "assets/images/items/Arrow.png"
+    );
     // =====================================================
     //  地上レイヤー  (Y: 0 ～ 720)
     //  穴: x=700~900 に地下への縦穴

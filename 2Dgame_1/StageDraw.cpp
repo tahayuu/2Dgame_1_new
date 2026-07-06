@@ -1,6 +1,9 @@
 ﻿#include "StageDraw.h"
 #include "Stage.h"
+#include "SpriteDatabase.h"
 #include <cmath>
+
+
 
 // トゲ描画関数（実装）
 void DrawSpikes(Rectangle h, float spikeW) {
@@ -18,8 +21,36 @@ void DrawSpikes(Rectangle h, float spikeW) {
 	}
 }
 
+// 矢印描画関数（テクスチャ版）
+static void DrawArrowTexture(const Texture2D& tex, Rectangle rect, float angleDeg) {
+	if (tex.id == 0) {
+		DrawRectangleRec(rect, GREEN);
+		DrawRectangleLinesEx(rect, 2, DARKGREEN);
+		return;
+	}
 
+	Rectangle src = {
+		0.0f, 0.0f,
+		(float)tex.width,
+		(float)tex.height
+	};
 
+	// DrawTexturePro は dst の x,y が「描画位置」ではなく
+	// origin と組み合わせるので、中心基準で描く
+	Rectangle dst = {
+		rect.x + rect.width * 0.5f,
+		rect.y + rect.height * 0.5f,
+		rect.width,
+		rect.height
+	};
+
+	Vector2 origin = {
+		rect.width * 0.5f,
+		rect.height * 0.5f
+	};
+
+	DrawTexturePro(tex, src, dst, origin, angleDeg, WHITE);
+}
 
 // 描画
 void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int heldSpringIndex) {
@@ -225,7 +256,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		const auto& th = stage.trackingHazards[i];
 		DrawSpikes(th.rect, spikeW);
 	}
-	for (int i = 0; i < stage.spikeBouncer​Count; i++) {
+	for (int i = 0; i < stage.spikeBouncerCount; i++) {
 		const auto& mhY = stage.spikeBouncers[i];
 		DrawSpikes(mhY.rect, spikeW);
 	}
@@ -244,6 +275,20 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.upRisingCount; i++) {
 		const auto& ur = stage.upRisingPlatforms[i];
 		DrawRectangleRec(ur.rect, DARKGRAY);
+	}
+	
+	// デコレーション矢印
+	for (int i = 0; i < stage.decorArrowCount; i++) {
+		const auto& a = stage.decorArrows[i];
+		DrawArrowTexture(stage.theme.arrowTex, a.rect, a.angleDeg);
+	}
+
+	// ================================================================
+	// エディタで設定したスプライト（見た目のみ）を描画
+	// ================================================================
+	for (int i = 0; i < stage.spriteInstanceCount; i++) {
+		const auto& si = stage.spriteInstances[i];
+		SpriteDatabase::DrawSprite(si.spriteId, si.rect, si.rotation, si.flipX, si.flipY, WHITE);
 	}
 
 	// 回転する鉄球
@@ -357,12 +402,15 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		}
 
 	}
-
+	
+	// クリアドア
 	for (int i = 0; i < stage.exitDoorCount; i++) {
 		const auto& ed = stage.exitDoors[i];
 		DrawRectangleRec(ed.rect, BLACK);
 		DrawRectangleLinesEx(ed.rect, 3, DARKGRAY);
 	}
+
+
 
 	// ワープホール
 	for (int i = 0; i < stage.warpCount; i++) {

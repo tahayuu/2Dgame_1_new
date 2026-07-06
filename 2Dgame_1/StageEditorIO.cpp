@@ -11,6 +11,10 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
     StageClear(stage);
     int c[(int)EditorObjectType::COUNT] = {};
 
+    // 見た目専用データ(SpriteId)の書き出し先をリセット
+// （StageClear がゼロ初期化していない可能性があるため念のため明示的に初期化）
+    stage.spriteInstanceCount = 0;
+
     // SWITCH_BUTTON を配置順に収集 → SWITCH_PLATFORM と 1:1 でペアリング
     std::vector<Rectangle> switchBtnRects;
     int switchPlatformTotal = 0;
@@ -376,7 +380,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 sb.rect = o.rect;
                 sb.bounceVelosity = { o.params[0], o.params[1] };
                 sb.startY = o.rect.y;
-                stage.spikeBouncer​Init[i] = sb;
+                stage.spikeBouncerInit[i] = sb;
             }break;
 
         case EditorObjectType::SPRING:
@@ -438,7 +442,32 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 stage.tempFloorSwitchesInit[i] = sw;
             } break;
 
+        case EditorObjectType::DECOR_ARROW:
+            if (c[t] < Stage::MAX_DECOR_ARROWS) {
+                int i = c[t]++;
+                stage.decorArrows[i].rect = o.rect;
+                stage.decorArrows[i].angleDeg = o.params[0];
+            }
+            break;
+
         default: break;
+        }
+
+        // ================================================================
+        // 見た目(Sprite)情報の反映
+        // ----------------------------------------------------------------
+        // ここは上の switch(o.type) とは完全に独立した処理。
+        // 「当たり判定・ギミック(o.type)がどれであっても」、
+        // spriteId が設定されていれば見た目専用データとして書き出す。
+        // stage.spriteInstances は描画専用で、衝突判定には一切使われない。
+        // ================================================================
+        if (o.spriteId != SpriteId::None && stage.spriteInstanceCount < Stage::MAX_SPRITE_INSTANCES) {
+            auto& si = stage.spriteInstances[stage.spriteInstanceCount++];
+            si.rect = o.rect;
+            si.spriteId = o.spriteId;
+            si.rotation = o.rotation;
+            si.flipX = o.flipX;
+            si.flipY = o.flipY;
         }
     }
     stage.platformCount = c[0];  stage.backPlatformCount = c[1];
@@ -465,7 +494,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 	stage.commentBlockCount = c[41];
 	stage.cursorBottomCount = c[42];
 	stage.deathBlockCount = c[43];
-	stage.spikeBouncer​Count = c[44];
+	stage.spikeBouncerCount = c[44];
 	stage.springCount = c[45];
 	stage.craneLaunchPadCount = c[46];
 	stage.craneCount = c[47];
@@ -473,6 +502,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 	stage.warpCount = c[49];
 	stage.tempFloorCount = c[(int)EditorObjectType::TEMP_FLOOR];              // 51
 	stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
+    stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
 
 	StageThemeLoadAll(stage.theme,
         "assets/images/stage/stage_1/ground1.png",
@@ -481,6 +511,12 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         "assets/images/stage/stage_1/ground4.png",
         50.0f);
 
+    StageThemeLoadObjectTextures(
+        stage.theme,
+        "assets/images/stage/stage_1/itemblock.png",
+        "assets/images/stage/stage_1/normalblock.png",
+        "assets/images/items/Arrow.png"
+    );
     enemyManager.Init();
 
 	for (const auto& pe : ed.placedEnemies) {// placedEnemies を Stage に反映
@@ -537,7 +573,7 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         IMPORT_RAW_P(DEATH_BLOCK, s.deathBlocks, s.deathBlockCount)
         IMPORT_RAW_P(OJISAN_PUNCH_AREA, s.ojisanPunchAreas, s.ojisanPunchAreaCount)
 
-        for (int i = 0; i < s.spikeBouncer​Count; i++) {
+        for (int i = 0; i < s.spikeBouncerCount; i++) {
             PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, s.spikeBouncers[i].rect };
             o.params[0] = s.spikeBouncers[i].bounceVelosity.x;
             o.params[1] = s.spikeBouncers[i].bounceVelosity.y;
@@ -591,7 +627,7 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.params[2] = s.cursorBottoms[i].maxDistance;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.spikeBouncer​Count; i++) {
+    for (int i = 0; i < s.spikeBouncerCount; i++) {
         PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, s.spikeBouncers[i].rect };
         o.params[0] = s.spikeBouncers[i].bounceVelosity.x;
         o.params[1] = s.spikeBouncers[i].bounceVelosity.y;
@@ -770,6 +806,33 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.params[1] = s.tempFloorSwitches[i].oneShot ? 1.0f : 0.0f;
         ed.objects.push_back(o);
     }
+    for (int i = 0; i < s.decorArrowCount; i++) {
+        PlacedObject o = { EditorObjectType::DECOR_ARROW, s.decorArrows[i].rect };
+        o.params[0] = s.decorArrows[i].angleDeg;
+        ed.objects.push_back(o);
+    }
+    // ================================================================
+ // 見た目(Sprite)情報の復元
+ // ----------------------------------------------------------------
+ // stage.spriteInstances には「rect + spriteId + rotation + flip」が
+ // 入っているので、同じ rect を持つ ed.objects を探して spriteId 等を
+ // 書き戻す（rect の一致でマッチングする簡易的な方法）。
+ // 見つからない場合はそのまま SpriteId::None（見た目なし）になる。
+ // ================================================================
+    for (int i = 0; i < s.spriteInstanceCount; i++) {
+        const auto& si = s.spriteInstances[i];
+        for (auto& o : ed.objects) {
+            if (o.spriteId == SpriteId::None &&
+                o.rect.x == si.rect.x && o.rect.y == si.rect.y &&
+                o.rect.width == si.rect.width && o.rect.height == si.rect.height) {
+                o.spriteId = si.spriteId;
+                o.rotation = si.rotation;
+                o.flipX = si.flipX;
+                o.flipY = si.flipY;
+                break;
+            }
+        }
+    }
 #undef IMPORT_RAW_P
 #undef IMPORT_RECT_P
 }
@@ -784,7 +847,14 @@ bool EditorSaveJSON(const StageEditor& ed, const char* filename) {
         ofs << "    { \"type\": \"" << GetNameEN((int)o.type)
             << "\", \"typeId\": " << (int)o.type
             << ", \"x\": " << o.rect.x << ", \"y\": " << o.rect.y
-            << ", \"w\": " << o.rect.width << ", \"h\": " << o.rect.height << " }";
+            << ", \"w\": " << o.rect.width << ", \"h\": " << o.rect.height
+            // ★ 見た目(Sprite)情報も保存しておく（現状これを読むLoad関数は未実装だが、
+            //    将来 EditorLoadJSON を作るときのために先に対応しておく）
+            << ", \"spriteId\": \"" << SpriteDatabase::GetSpriteName(o.spriteId) << "\""
+            << ", \"rotation\": " << o.rotation
+            << ", \"flipX\": " << (o.flipX ? "true" : "false")
+            << ", \"flipY\": " << (o.flipY ? "true" : "false")
+            << " }";
         if (i + 1 < ed.objects.size()) ofs << ",";
         ofs << "\n";
     }
@@ -799,7 +869,10 @@ bool EditorSaveCSV(const StageEditor& ed, const char* filename) {
     if (!ofs.is_open()) return false;
 
     // 通常オブジェクト用の見出し行を書き込む
-    ofs << "type,typeId,x,y,w,h,p0,p1,p2,p3,p4,p5,text\n";
+    // ★ spriteId,rotation,flipX,flipY を末尾に追加（既存の列はそのまま維持）
+    //   古いファイルにはこの4列が無いが、読み込み側で「無ければデフォルト値」に
+    //   するようにしてあるので、古いステージファイルも問題なく読み込める。
+    ofs << "type,typeId,x,y,w,h,p0,p1,p2,p3,p4,p5,text,spriteId,rotation,flipX,flipY\n";
 
     // 配置済みの通常オブジェクトを1つずつ保存する
     for (const auto& o : ed.objects) {
@@ -815,7 +888,15 @@ bool EditorSaveCSV(const StageEditor& ed, const char* filename) {
 
         // オブジェクトのテキストを保存する
         // ダブルクォーテーションで囲んでCSVに書き込む
-        ofs << ",\"" << o.text << "\"\n";
+        ofs << ",\"" << o.text << "\"";
+
+        // ★ 見た目(Sprite)情報を保存する
+        // spriteId は名前文字列で保存する（enumの並び順が将来変わっても壊れにくいように）
+        ofs << "," << SpriteDatabase::GetSpriteName(o.spriteId)
+            << "," << o.rotation
+            << "," << (o.flipX ? 1 : 0)
+            << "," << (o.flipY ? 1 : 0)
+            << "\n";
     }
 
     // ここから敵データであることを示す目印
@@ -877,7 +958,7 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
                 float pv;
                 if (ss >> cm >> pv) 
                     /*カンマと数値をちゃんと読み取れたら true
-                      読み取れなかったら false*/
+                      読み取りれなかったら false*/
                     e.params[i] = pv;
             }
             ed.placedEnemies.push_back(e);
@@ -920,10 +1001,64 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
         if (ss.peek() == ',' || ss.peek() == ' ') ss.get();
         std::string textField;
         std::getline(ss, textField);
-        // ダブルクォートを除去
-        if (textField.size() >= 2 && textField.front() == '"' && textField.back() == '"')
-            textField = textField.substr(1, textField.size() - 2);
-        obj.text = textField;
+
+        // ================================================================
+        // ★ 見た目(Sprite)情報の読み取り
+        // ----------------------------------------------------------------
+        // textField の中に「"コメント",spriteName,rotation,flipX,flipY」が
+        // まとめて入ってきてしまうため、まず textField 自体をカンマで
+        // 再分割して、末尾4項目を Sprite情報として取り出す。
+        // 古い形式のファイル（Sprite情報が無い）の場合は分割数が足りないので、
+        // その場合は何もせず spriteId=None のデフォルトのままにする。
+        // ================================================================
+        {
+            // ダブルクォートで囲まれた text 部分と、その後ろの4項目を分離する
+            std::string textPart = textField;
+            std::string spriteName, rotStr, flipXStr, flipYStr;
+            bool hasSpriteInfo = false;
+
+            // ダブルクォートの終わりの位置を探す
+            size_t quoteEnd = std::string::npos;
+            if (!textPart.empty() && textPart.front() == '"') {
+                quoteEnd = textPart.find_last_of('"');
+            }
+
+            if (quoteEnd != std::string::npos && quoteEnd + 1 < textPart.size()) {
+                // ダブルクォーテーションの後ろに残っている部分（先頭のカンマを除去）
+                std::string rest = textPart.substr(quoteEnd + 1);
+                if (!rest.empty() && rest.front() == ',') rest.erase(0, 1);
+
+                std::istringstream restSs(rest);
+                if (std::getline(restSs, spriteName, ',') &&
+                    std::getline(restSs, rotStr, ',') &&
+                    std::getline(restSs, flipXStr, ',') &&
+                    std::getline(restSs, flipYStr, ',')) {
+                    hasSpriteInfo = true;
+                }
+
+                // text本体だけを残す（前後のダブルクォートを除去）
+                textPart = textPart.substr(0, quoteEnd + 1);
+            }
+
+            if (textPart.size() >= 2 && textPart.front() == '"' && textPart.back() == '"')
+                textPart = textPart.substr(1, textPart.size() - 2);
+            obj.text = textPart;
+
+            if (hasSpriteInfo) {
+                // 名前文字列から SpriteId を復元（見つからなければ None）
+                obj.spriteId = SpriteDatabase::FindSpriteIdByName(spriteName.c_str());
+                obj.rotation = (float)atof(rotStr.c_str());
+                obj.flipX = (atoi(flipXStr.c_str()) != 0);
+                obj.flipY = (atoi(flipYStr.c_str()) != 0);
+            }
+            else {
+                // ★ 古いファイル（Sprite情報なし）の場合はデフォルト値のまま
+                obj.spriteId = SpriteId::None;
+                obj.rotation = 0.0f;
+                obj.flipX = false;
+                obj.flipY = false;
+            }
+        }
 
         ed.objects.push_back(obj);
     }

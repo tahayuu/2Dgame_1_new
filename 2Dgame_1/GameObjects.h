@@ -580,6 +580,11 @@ struct TempFloorSwitch {
 	bool hover = false;//カーソルが上にあるか
 };
 
+struct DecorArrow {
+    Rectangle rect;
+    float angleDeg = 0.0f;
+};
+
 // トゲ描画関数（宣言）
 void DrawSpikes(Rectangle h, float spikeW);
 

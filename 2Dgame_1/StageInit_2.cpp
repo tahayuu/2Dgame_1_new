@@ -11,8 +11,12 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 		"assets/images/stage/stage_1/ground1.png",
 		"assets/images/stage/stage_1/ground2.png",
 		50.0f);
-	stage.theme.itemBlock = LoadTexture("assets/images/stage/stage_1/itemblock.png");
-	stage.theme.nomalBlock = LoadTexture("assets/images/stage/stage_1/normalblock.png");
+	StageThemeLoadObjectTextures(
+		stage.theme,
+		"assets/images/stage/stage_1/itemblock.png",
+		"assets/images/stage/stage_1/normalblock.png",
+		"assets/images/items/Arrow.png"
+	);
 	//普通床
 	stage.platforms[0] = { 0, 600, 2500, 200 };
 	stage.platforms[1] = { 1000, 500, 100, 100 };

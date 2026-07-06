@@ -799,7 +799,7 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 	// スパイク型トランポリン（横方向の衝突）
-	for (int i = 0; i < stage.spikeBouncer​Count; i++) {
+	for (int i = 0; i < stage.spikeBouncerCount; i++) {
 		ResolveSolidX(stage.spikeBouncers[i].rect, player, velocity, prevPlayer);
 	}
 
@@ -1117,7 +1117,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//スパイク型トランポリン
-	for (int i = 0; i < stage.spikeBouncer​Count; i++) {
+	for (int i = 0; i < stage.spikeBouncerCount; i++) {
 		auto& sb = stage.spikeBouncers[i];
 		if (CheckCollisionRecs(player, sb.rect) && velocity.y > 0) {
 			player.y = sb.rect.y - player.height;
@@ -1126,7 +1126,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 			onGround = true;
 		}
 	}
-	for (int i = 0; i < stage.spikeBouncer​Count; i++) {
+	for (int i = 0; i < stage.spikeBouncerCount; i++) {
 		ResolveSolidX(stage.spikeBouncers[i].rect, player, velocity, prevPlayer);
 	}
 

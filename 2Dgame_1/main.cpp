@@ -20,7 +20,8 @@
 #include "GameState.h"
 #include "TitleScene.h"
 #include "Player.h"
-#include "PlayerVisual.h"       
+#include "PlayerVisual.h"      
+#include "SpriteDatabase.h"
 
 int main() {
 
@@ -98,6 +99,7 @@ auto ResolveStageSaveBasePath = [&](const std::string& baseName) -> std::string 
 StageVisualLoad(sv);
 ojisan.Load();
 EnemyLoadTextures();
+SpriteDatabase::Load(); // ← 追加：SpriteIdごとの切り出し済みPNG（assets/images/sprites/*.png）を読み込む
 
 Texture2D titleBg = LoadTexture("assets/images/stage/background/title4.png");
 Texture2D stage1Bg = LoadTexture("assets/images/stage/background/stage1.png");
@@ -522,7 +524,7 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 			if (stage.exitDoorTriggered >= 0) {
 				if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
 					int targetStage = stage.exitDoors[stage.exitDoorTriggered].targetStage;
-					titleScene.selectStage = targetStage;
+				 titleScene.selectStage = targetStage;
 					LoadSelectedStage();
 					ResetPlayerToDefault(1.0f);
 					gameState = GameState::PLAYING;
@@ -767,6 +769,7 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
     itemManager.Reset();
     itemManager.Unload();
     EnemyUnloadTextures(); // 敵のテクスチャ解放
+    SpriteDatabase::Unload(); // ← 追加：スプライトアトラスの解放
     PlayerStateUnload(playerState);
     StageVisualUnload(sv);
     ojisan.Unload();

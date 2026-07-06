@@ -1,5 +1,46 @@
 #include "StageEditorInternal.h"
 #include "DialogManager.h"  
+
+// ================================================================
+static Texture2D gEditorArrowTex{};
+static bool gEditorArrowLoaded = false;
+
+static void EnsureEditorArrowLoaded() {
+    if (!gEditorArrowLoaded) {
+        gEditorArrowTex = LoadTexture("assets/images/arrow.png");
+        gEditorArrowLoaded = true;
+    }
+}
+
+static void DrawEditorArrowTexture(Rectangle rect, float angleDeg) {
+    EnsureEditorArrowLoaded();
+
+    if (gEditorArrowTex.id == 0) {
+        DrawRectangleRec(rect, GREEN);
+        DrawRectangleLinesEx(rect, 2, DARKGREEN);
+        return;
+    }
+
+    Rectangle src = {
+        0.0f, 0.0f,
+        (float)gEditorArrowTex.width,
+        (float)gEditorArrowTex.height
+    };
+
+    Rectangle dst = {
+        rect.x + rect.width * 0.5f,
+        rect.y + rect.height * 0.5f,
+        rect.width,
+        rect.height
+    };
+
+    Vector2 origin = {
+        rect.width * 0.5f,
+        rect.height * 0.5f
+    };
+
+    DrawTexturePro(gEditorArrowTex, src, dst, origin, angleDeg, WHITE);
+}
 // ================================================================
 void EditorDraw(const StageEditor& ed) {
     if (!ed.active) return;
@@ -16,11 +57,33 @@ void EditorDraw(const StageEditor& ed) {
     DrawLineV({ 0, top }, { 0, bottom }, ColorAlpha(GREEN, 0.4f));
     DrawLineV({ left, 0 }, { right, 0 }, ColorAlpha(RED, 0.4f));
 
+
     for (const auto& obj : ed.objects) {
         int t = (int)obj.type;
-        DrawRectangleRec(obj.rect, ColorAlpha(GetColor(t), 0.7f));
-        DrawRectangleLinesEx(obj.rect, 2, BLACK);
-        DrawText(GetNameEN(t), (int)obj.rect.x + 2, (int)obj.rect.y + 2, 10, BLACK);
+
+        // ================================================================
+        // 見た目(SpriteId)が設定されている場合はスプライト描画を優先する。
+        // ・当たり判定(obj.rect)やギミック種別(obj.type)には一切影響しない。
+        // ・spriteId が None のときは、今まで通りの各ギミックの仮描画を使う
+        //   （既存ギミックの見た目を壊さないため）。
+        // ================================================================
+        if (obj.spriteId != SpriteId::None) {
+            SpriteDatabase::DrawSprite(obj.spriteId, obj.rect, obj.rotation,
+                obj.flipX, obj.flipY, WHITE);
+            // 選択中かどうか分かりやすいように、枠線だけは重ねて描く
+            DrawRectangleLinesEx(obj.rect, 1, ColorAlpha(WHITE, 0.5f));
+        }
+        else if (obj.type == EditorObjectType::DECOR_ARROW) {
+            DrawRectangleRec(obj.rect, ColorAlpha(GetColor(t), 0.15f));
+            DrawRectangleLinesEx(obj.rect, 2, BLACK);
+            DrawEditorArrowTexture(obj.rect, obj.params[0]);
+            DrawText(GetNameEN(t), (int)obj.rect.x + 2, (int)obj.rect.y + 2, 10, BLACK);
+        }
+        else {
+            DrawRectangleRec(obj.rect, ColorAlpha(GetColor(t), 0.7f));
+            DrawRectangleLinesEx(obj.rect, 2, BLACK);
+            DrawText(GetNameEN(t), (int)obj.rect.x + 2, (int)obj.rect.y + 2, 10, BLACK);
+        }
     }
 
     for (int i = 0; i < (int)ed.placedEnemies.size(); i++) {
@@ -187,6 +250,67 @@ void EditorDrawUI(StageEditor& ed) {
     if (ed.saveNotifyTimer > 0.0f) {
         float a = (ed.saveNotifyTimer > 1.0f) ? 1.0f : ed.saveNotifyTimer;
         DrawText("Saved!", ed.screenW / 2 - 30, (int)ed.TOOLBAR_H + 12, 24, ColorAlpha(GREEN, a));
+    }
+
+    // ================================================================
+    // === 左下に操作ガイドを表示 ===
+    // ================================================================
+    {
+        const float guideX = 10.0f;
+        const float guideY = ed.screenH - 220.0f; // 下部から十分な距離
+        const float guideW = 280.0f;
+        const float guideH = 210.0f;
+
+        DrawRectangleRounded({guideX, guideY, guideW, guideH}, 0.08f, 4, ColorAlpha(BLACK, 0.7f));
+        DrawRectangleRoundedLinesEx({guideX, guideY, guideW, guideH}, 0.08f, 4, 1, ColorAlpha(WHITE, 0.3f));
+
+        float gy = guideY + 6.0f;
+        const float lineH = 13.0f;
+
+        if (hasFont) {
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■ 操作ガイド"),
+                {guideX + 8, gy}, 11, 1, YELLOW);
+        } else {
+            DrawText("QUICK GUIDE", (int)guideX + 8, (int)gy, 10, YELLOW);
+        }
+        gy += lineH + 2;
+
+        // 基本操作
+        if (hasFont) {
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■配置: 左クリック"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■選択: T キー"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■削除: 右クリック / Del"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH + 2;
+
+            // コピー＆ペースト
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■コピー: C キー (選択時)"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■貼付: P キー"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH + 2;
+
+            // サイズ変更
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■大きくする: + キー"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■小さくする: - キー"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH + 2;
+
+            // スプライト操作
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■見た目切替: [ / ] キー"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■反転: H(左右) J(上下)"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY); gy += lineH;
+            DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"■回転: K(反時計) L(時計)"),
+                {guideX + 8, gy}, 10, 1, LIGHTGRAY);
+        } else {
+            DrawText("Place: LClick", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
+            DrawText("Select: T | Delete: RClick/Del", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 2;
+            DrawText("Copy: C | Paste: P", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
+            DrawText("Size: + / -", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 2;
+            DrawText("Sprite: [ ] | Flip: H/J", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
+            DrawText("Rotate: K/L", (int)guideX + 8, (int)gy, 9, LIGHTGRAY);
+        }
     }
 
     DrawPropertyPanel(ed);        // 通常オブジェクトのパネル（既存）
@@ -404,6 +528,42 @@ void DrawPropertyPanel(const StageEditor& ed) {
             y += PROP_LINE_H;
         }
     }
+
+    // ================================================================
+    // === Sprite(見た目) 情報表示欄 ===
+    // ----------------------------------------------------------------
+    // EditorObjectType(ギミック)とは別に、見た目専用の SpriteId /
+    // rotation / flipX / flipY を表示する。
+    // 変更はキー操作（[ ] H J K L）で行う。GetPropPanelRect() 側で
+    // この表示分の高さを確保しているので、両方セットで変更すること。
+    // ================================================================
+    y += 4;
+    DrawLineEx({ panel.x + 8, y }, { panel.x + panel.width - 8, y }, 1, ColorAlpha(WHITE, 0.2f));
+    y += 8;
+
+    // 見出し
+    Color spriteHeadCol = (sel.spriteId != SpriteId::None) ? SKYBLUE : GRAY;
+    if (hasFont)
+        DrawTextEx(ed.uiFont,
+            reinterpret_cast<const char*>(u8"見た目(Sprite)"),
+            { panel.x + 10, y }, 13, 1, spriteHeadCol);
+    else
+        DrawText("Sprite", (int)panel.x + 10, (int)y, 12, spriteHeadCol);
+    y += PROP_LINE_H;
+
+    // 現在の SpriteId 名
+    const char* spriteName = SpriteDatabase::GetSpriteName(sel.spriteId);
+    DrawText(TextFormat("[ ] %s", spriteName),
+        (int)panel.x + 12, (int)y + 2, 12, WHITE);
+    y += PROP_LINE_H;
+
+    // rotation / flipX / flipY の状態
+    DrawText(TextFormat("K/L rot:%.0f  H:flipX(%s)  J:flipY(%s)",
+        sel.rotation,
+        sel.flipX ? "ON" : "OFF",
+        sel.flipY ? "ON" : "OFF"),
+        (int)panel.x + 12, (int)y + 2, 11, LIGHTGRAY);
+    y += PROP_LINE_H;
 }
 
 // ================================================================

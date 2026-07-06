@@ -5,6 +5,7 @@
 #include "EnemyManager.h"
 #include <vector>
 #include <string>
+#include "SpriteDatabase.h" 
 
 // StageTypes.h gimmick names
 enum class EditorObjectType {
@@ -61,7 +62,8 @@ enum class EditorObjectType {
     ENEMY,                  // 50
 	TEMP_FLOOR,             // 51
 	TEMP_FLOOR_SWITCH,      // 52
-	COUNT,                  // 53
+    DECOR_ARROW,            // 53
+	COUNT,                  // 54
 };
 
 static constexpr int MAX_OBJ_PARAMS = 6;
@@ -75,10 +77,20 @@ struct PlacedEnemy {// 敵を配置するための構造体
 };
 
 struct PlacedObject {
-	EditorObjectType type;
-	Rectangle rect;
-	float params[MAX_OBJ_PARAMS] = {};
-	std::string text;  // コメントブロック等で使用するテキスト 
+    EditorObjectType type;
+    Rectangle rect;
+    float params[MAX_OBJ_PARAMS] = {};
+    std::string text;  // コメントブロック等で使用するテキスト 
+
+    // ================================================================
+    // ここから「見た目専用」のデータ（当たり判定・ギミック処理には使わない）
+    // EditorObjectType はギミック(当たり判定・挙動)、
+    // spriteId 以下は見た目(描画)だけを担当する。
+    // ================================================================
+    SpriteId spriteId = SpriteId::None; // 描画に使う画像パーツ（Noneなら今まで通りの仮描画）
+    float rotation = 0.0f;              // 見た目の追加回転角度（度）。rect(当たり判定)には影響しない
+    bool flipX = false;                 // 左右反転して描画するか
+    bool flipY = false;                 // 上下反転して描画するか
 };
 
 // --- Texture Paint用 ---
@@ -160,18 +172,24 @@ struct StageEditor {
     char propTextBuf[256] = {};     // テキスト入力バッファ
     int propTextCursor = 0;         // カーソル位置
 
-    //=================
-    //敵配置機能
-    //=================
-     
+	//=================
+	//敵配置機能
+	//=================
+
 	std::vector<PlacedEnemy> placedEnemies;// 配置された敵のリスト
-    EnemyType currentEnemyType = EnemyType::WALKER;  
+	EnemyType currentEnemyType = EnemyType::WALKER;  
 	int selectedEnemyIdx = -1; // 選択中の敵インデックス
-    
-   //敵UI状態
+
+	//敵UI状態
 	bool enemyMenuOpen = false; // 敵配置メニューが開いているか
 	Rectangle enemyMenuRect = {};// 敵配置メニューの矩形
 	int hoveredEnemyType = -1;// ホバー中の敵タイプインデックス
+
+	// ================================================================
+	// コピー＆ペースト機能（クリップボード）
+	// ================================================================
+	PlacedObject clipboard = {}; // コピーしたオブジェクトを一時保存
+	bool hasClipboard = false;   // クリップボードに有効なデータがあるか
 };
 
 void EditorInit(StageEditor& ed, int screenWidth, int screenHeight, Font uiFont);

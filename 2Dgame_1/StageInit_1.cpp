@@ -9,7 +9,13 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 		"assets/images/stage/stage_1/ground3.png",   // left edge
 		"assets/images/stage/stage_1/ground4.png",   // right edge
 		50.0f);
-	
+
+	StageThemeLoadObjectTextures(
+		stage.theme,
+		"assets/images/stage/stage_1/itemblock.png",
+		"assets/images/stage/stage_1/normalblock.png",
+		"assets/images/items/Arrow.png"
+	);
 	//普通床
 	stage.platforms[0] = { 0, 600, 3300, 200 };
 	stage.platforms[1] = { 1000, 500, 100, 100 };
