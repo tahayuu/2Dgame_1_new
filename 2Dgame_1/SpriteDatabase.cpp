@@ -9,10 +9,6 @@ namespace {
     // アトラス方式とは違い、1つの SpriteId につき「切り出し済みの1枚のPNG」を
     // まるごと読み込む方式にしている。
     //
-    // path : assets/images/sprites/ 以下に置く画像ファイルのパス。
-    //        ★まだ画像を用意していない場合は空文字列のままでOK
-    //          （その場合は読み込みをスキップし、DrawSprite側で何もしない）。
-    //
     // 新しい画像パーツを増やしたいときは、
     //   1. SpriteDatabase.h の SpriteId に列挙子を追加する（COUNT の直前）
     //   2. ここに対応する行（name, path）を追加する
