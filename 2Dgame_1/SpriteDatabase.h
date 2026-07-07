@@ -30,6 +30,8 @@ enum class SpriteId {
 	Door,
 	Fence,
 	Beam,
+	ground1,
+	ground2,
 
 	COUNT
 };

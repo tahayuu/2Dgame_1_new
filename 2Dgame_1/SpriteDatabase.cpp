@@ -21,6 +21,7 @@ namespace {
     };
 
     const SpriteEntry g_spriteTable[] = {
+        /*stage_3*/
         // id                      name             path（切り出し済みPNG）
         { SpriteId::None,          "None",          "" }, // 見た目なし
         { SpriteId::MetalFloor01,  "MetalFloor01",  "assets/images/stage/stage_3/tile1.png" },
@@ -30,10 +31,14 @@ namespace {
         { SpriteId::Ladder01,      "Ladder01",      "assets/images/stage/stage_3/object2.png" },
         { SpriteId::PipeStraight,  "PipeStraight",  "assets/images/stage/stage_3/floar2.png" },
         { SpriteId::PipeCorner,    "PipeCorner",    "assets/images/stage/stage_3/wall1.png" },
-        { SpriteId::Vent,          "Vent",          "assets/images/stage/stage_3/vent.png" },
-        { SpriteId::Door,          "Door",          "assets/images/stage/stage_3/door.png" },
-        { SpriteId::Fence,         "Fence",         "assets/images/stage/stage_3/fence.png" },
-        { SpriteId::Beam,          "Beam",          "assets/images/stage/stage_3/beam.png" },
+        { SpriteId::Vent,          "Vent",          "assets/images/stage/stage_3/nedle1.png" },
+        { SpriteId::Door,          "Door",          "assets/images/stage/stage_3/nedle2.png" },
+        /*stage_1 stage_2*/
+
+        { SpriteId::Fence,         "Fence",         "assets/images/stage/stage_1/signbord1.png" },
+        { SpriteId::Beam,          "Beam",          "assets/images/stage/stage_1/ground.png" },
+        { SpriteId::ground1,         "ground1",         "assets/images/stage/stage_1/ground_2.png" },
+        { SpriteId::ground2,          "ground2",          "assets/images/stage/stage_1/ground.png" },
     };
 
     constexpr int kSpriteTableCount = sizeof(g_spriteTable) / sizeof(g_spriteTable[0]);

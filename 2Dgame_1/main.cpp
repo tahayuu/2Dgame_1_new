@@ -183,6 +183,20 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
         u8"\uFF08\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\uFF09";                   // （が見つかりません）
     allDialogText += reinterpret_cast<const char*>(commentHintChars8);
 
+    // ひらがな網羅（必要に応じて拡張）
+    allDialogText += reinterpret_cast<const char*>(u8"ぁあぃいぅうぇえぉお"
+    "かがきぎくぐけげこご"
+    "さざしじすずせぜそぞ"
+    "ただちぢっつづてでとど"
+    "なにぬねの"
+    "はばぱひびぴふぶぷへべぺほぼぽ"
+    "まみむめも"
+    "ゃやゅゆょよ"
+    "らりるれろ"
+    "ゎわゐゑをんー"
+        "上乙"
+        );
+
     // 結合したテキストからコードポイントを生成
     int ojisanCpCount = 0;
     int* ojisanCps = LoadCodepoints(allDialogText.c_str(), &ojisanCpCount);
@@ -438,6 +452,7 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
             gameState = GameState::DEADING_SCREEN;
             deadTime = 0.0f;
             deadingTime = 0.0f;
+            velocity = { 0.0f, 0.0f }; // 死亡時にプレイヤーの速度をリセット
             enemyManager.playerTouched = false;
             if (cause != DeathCause::OJISAN_PUNCH) {
                 isOjisanPunchDeath = false;
@@ -546,24 +561,48 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 			}
 		}
 
-        //死亡硬直画面
+		//死亡硬直画面
 		else if (gameState == GameState::DEADING_SCREEN) {//死亡してから少しの間、プレイヤーの操作を受け付けない状態
-            deadingTime += dt;
+			deadingTime += dt;
 
-            if (deadingTime >= deadingstate) {
-                gameState = GameState::DEAD_SCREEN;
-                deadTime = 0.0f;
-            }
-        }
+			// ギミックは死亡中も動き続ける
+			StageUpdate(stage, dt, itemManager, camera);
+			HazardUpdate(stage, playerState.rect, dt);
+			enemyManager.UpdateAll(dt, playerState.rect);
+			itemManager.UpdateAll(dt, playerState.rect, velocity);
 
-        //死亡画面
-        else if (gameState == GameState::DEAD_SCREEN) {
-            deadTime += dt;
+			// 死亡中はプレイヤーをその場で止める
+			playerState.velocity = { 0.0f, 0.0f };
 
-            if (deadTime >= deadDelay && (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
-                RestartGame();
-            }
-        }
+			// ビジュアル更新
+			PlayerVisualUpdate(playerState.visual, dt, playerState.velocity, playerState.onGround);
+
+			if (deadingTime >= deadingstate) {
+				gameState = GameState::DEAD_SCREEN;
+				deadTime = 0.0f;
+			}
+		}
+
+		//死亡画面
+		else if (gameState == GameState::DEAD_SCREEN) {
+			deadTime += dt;
+
+			// ギミックは死亡中も動き続ける
+			StageUpdate(stage, dt, itemManager, camera);
+			HazardUpdate(stage, playerState.rect, dt);
+			enemyManager.UpdateAll(dt, playerState.rect);
+			itemManager.UpdateAll(dt, playerState.rect, velocity);
+
+			// 死亡中はプレイヤーをその場で止める
+			playerState.velocity = { 0.0f, 0.0f };
+
+			// ビジュアル更新
+			PlayerVisualUpdate(playerState.visual, dt, playerState.velocity, playerState.onGround);
+
+			if (deadTime >= deadDelay && (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
+				RestartGame();
+			}
+		}
 
 		else if (gameState == GameState::START) {
 			if (TitleSceneUpdate(titleScene, gameState, dt)) {

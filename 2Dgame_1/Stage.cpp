@@ -815,6 +815,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.tempFloorCount = 0;
 			stage.tempFloorSwitchCount = 0;
 			stage.decorArrowCount = 0;
+			stage.decoSpriteCount = 0;
 		}
 // （新規追加）
 

@@ -58,6 +58,7 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {//•	�
     /* 51 TEMP_FLOOR            */ { 1, {{"showSec",2.0f,false}} },
     /* 52 TEMP_FLOOR_SWITCH     */ { 2, {{"targetFloor",-1,false},{"oneShot",1,true}} },
     /* 53 DECOR_ARROW           */ { 1, {{"angleDeg",0.0f,false}} },
+    /* 54 DECOR_SPRITE          */ { 0, {} },  // 当たり判定なし・テクスチャ配置専用（パラメータ不要）
 };
 
 
@@ -183,7 +184,8 @@ static const char* const EN_NAMES[(int)EditorObjectType::COUNT] = {
     "fallingPlatforms","upRisingPlatforms","upDouwnPlatforms","clearBlocks","clearBlocksX",
     "switchPlatforms","fallingTexts","exitDoors","layerDoors","respawn","switchButtons",
     "commentBlocks","cursorButtons","deathBlocks","spikeBouncers","springs",
-	"craneLaunchPads","cranes","ojisanPunchAreas","warpHoles","enemies","tempFloors","tempFloorSwitches","decorArrows"
+	"craneLaunchPads","cranes","ojisanPunchAreas","warpHoles","enemies","tempFloors","tempFloorSwitches","decorArrows",
+    "decorSprites"
 };
 
 static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
@@ -197,7 +199,7 @@ static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
     u8"switchPlatforms",u8"fallingTexts",u8"exitDoors",u8"layerDoors",u8"respawn",u8"switchButtons",
     u8"commentBlocks",u8"cursorButtons",u8"deathBlocks",u8"spikeBouncers",u8"springs",
 	u8"craneLaunchPads",u8"cranes",u8"ojisanPunchAreas",u8"warpHoles",u8"enemies",u8"tempFloors",u8"tempFloorSwitches"
-    ,u8"decorArrows"
+	,u8"decorArrows",u8"decorSprites"
 };
 
 const char* GetNameJP(int i) {
@@ -264,6 +266,7 @@ static const Color TYPE_COLORS[(int)EditorObjectType::COUNT] = {
     {120,220,255,255},   // 51 TEMP_FLOOR
    {255,180, 60,255},   // 52 TEMP_FLOOR_SWITCH
    {100, 255, 180, 255},   // 53 DECOR_ARROW
+      {255, 255, 100, 200},   // 54 DECO_SPRITE
 };
 
 Color GetColor(int i) {
@@ -364,6 +367,16 @@ void DrawObjectIcon(int typeIdx, Rectangle r) {
         DrawText("E", (int)(cx - 6), (int)(cy - 8), 16, BLACK);
     }
 
+    else if (typeIdx == (int)EditorObjectType::DECOR_SPRITE) {
+        // 絵のフレームっぽいアイコン（当たり判定なしを示すため薄い色）
+        DrawRectangleRec(r, ColorAlpha({255,255,100,255}, 0.3f));
+        DrawRectangleLinesEx(r, 2, {200, 180, 0, 200});
+        float cx = r.x + r.width * 0.5f;
+        float cy = r.y + r.height * 0.5f;
+        // 対角線でスプライト感を表現
+        DrawLineEx({r.x + 3, r.y + 3}, {r.x + r.width - 3, r.y + r.height - 3}, 1.5f, {200,180,0,200});
+        DrawLineEx({r.x + r.width - 3, r.y + 3}, {r.x + 3, r.y + r.height - 3}, 1.5f, {200,180,0,200});
+    }
     else {
         DrawRectangleRec(r, c);
         DrawRectangleLinesEx(r, 1, ColorAlpha(BLACK, 0.4f));

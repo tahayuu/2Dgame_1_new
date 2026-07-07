@@ -63,7 +63,8 @@ enum class EditorObjectType {
 	TEMP_FLOOR,             // 51
 	TEMP_FLOOR_SWITCH,      // 52
     DECOR_ARROW,            // 53
-	COUNT,                  // 54
+	DECOR_SPRITE,           // 54
+	COUNT,                  // 55
 };
 
 static constexpr int MAX_OBJ_PARAMS = 6;

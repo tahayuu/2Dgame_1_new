@@ -449,6 +449,15 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 stage.decorArrows[i].angleDeg = o.params[0];
             }
             break;
+        case EditorObjectType::DECOR_SPRITE:
+            if (stage.decoSpriteCount < Stage::MAX_DECO_SPRITES) {
+                auto& ds = stage.decoSprites[stage.decoSpriteCount++];
+                ds.rect = o.rect;
+                ds.spriteId = o.spriteId;  // テクスチャはエディタの spriteId を使う
+                ds.rotation = o.rotation;
+                ds.flipX = o.flipX;
+                ds.flipY = o.flipY;
+            }
 
         default: break;
         }
@@ -502,6 +511,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 	stage.warpCount = c[49];
 	stage.tempFloorCount = c[(int)EditorObjectType::TEMP_FLOOR];              // 51
 	stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
+    stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
     stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
 
 	StageThemeLoadAll(stage.theme,
@@ -809,6 +819,17 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
     for (int i = 0; i < s.decorArrowCount; i++) {
         PlacedObject o = { EditorObjectType::DECOR_ARROW, s.decorArrows[i].rect };
         o.params[0] = s.decorArrows[i].angleDeg;
+        ed.objects.push_back(o);
+    }
+    for (int i = 0; i < s.decoSpriteCount; i++) {
+        PlacedObject o;
+        o.type = EditorObjectType::DECOR_SPRITE;
+        o.rect = s.decoSprites[i].rect;
+        o.spriteId = s.decoSprites[i].spriteId;
+        o.rotation = s.decoSprites[i].rotation;
+        o.flipX = s.decoSprites[i].flipX;
+        o.flipY = s.decoSprites[i].flipY;
+        InitDefaultParams(o);
         ed.objects.push_back(o);
     }
     // ================================================================

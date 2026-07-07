@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include"Item.h"
+#include"SpriteDatabase.h"
 //壊せるブロック
 struct BreakableBlock {
     Rectangle rect;
@@ -584,6 +585,15 @@ struct DecorArrow {
     Rectangle rect;
     float angleDeg = 0.0f;
 };
+
+struct DecoSprite {
+	Rectangle rect;
+	SpriteId spriteId = SpriteId::None;  // 描画に使う画像パーツ
+	float rotation = 0.0f;
+	bool flipX = false;
+	bool flipY = false;
+};
+
 
 // トゲ描画関数（宣言）
 void DrawSpikes(Rectangle h, float spikeW);

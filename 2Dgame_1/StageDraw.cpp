@@ -3,7 +3,92 @@
 #include "SpriteDatabase.h"
 #include <cmath>
 
+static bool IsAlmostEqual(float a, float b, float eps = 0.01f) {
+	return fabsf(a - b) <= eps;
+}
 
+static bool IsSameRect(const Rectangle& a, const Rectangle& b) {
+	return IsAlmostEqual(a.x, b.x) &&
+		IsAlmostEqual(a.y, b.y) &&
+		IsAlmostEqual(a.width, b.width) &&
+		IsAlmostEqual(a.height, b.height);
+}
+
+static bool HasSpriteOverride(const Stage& stage, const Rectangle& rect) {
+	for (int i = 0; i < stage.spriteInstanceCount; i++) {
+		const auto& si = stage.spriteInstances[i];
+		if (si.spriteId == SpriteId::None) continue;
+		if (IsSameRect(si.rect, rect)) return true;
+	}
+	return false;
+}
+
+static const Stage::SpriteInstance* FindSpriteOverrideByInitRect(const Stage& stage, const Rectangle& initRect) {
+	for (int i = 0; i < stage.spriteInstanceCount; i++) {
+		const auto& si = stage.spriteInstances[i];
+		if (si.spriteId == SpriteId::None) continue;
+		if (IsSameRect(si.rect, initRect)) return &si;
+	}
+	return nullptr;
+}
+
+// 動くギミック用：initRectでスプライトを検索してcurrentRectに描画する
+// 見つかればtrueを返す（デフォルト描画をスキップする判定に使う）
+static bool TryDrawMovingGimmickSprite(const Stage& stage, const Rectangle& initRect, const Rectangle& currentRect) {
+	const auto* si = FindSpriteOverrideByInitRect(stage, initRect);
+	if (si == nullptr || si->spriteId == SpriteId::None) return false;
+	SpriteDatabase::DrawSprite(si->spriteId, currentRect, si->rotation, si->flipX, si->flipY, WHITE);
+	return true;
+}
+
+// 動くギミック用針描画（スプライト上書きがあればそちらを、なければデフォルト針を描画）
+static void DrawMovingSpikeWithOverride(const Stage& stage, const Rectangle& currentRect, const Rectangle& initRect, float spikeW) {
+	if (!TryDrawMovingGimmickSprite(stage, initRect, currentRect)) {
+		DrawSpikes(currentRect, spikeW);
+	}
+}
+
+// spriteInstancesの末尾ループで二重描画しないよう、動くギミックの初期rectかどうかを判定する
+static bool IsGimmickDrawnInline(const Stage& stage, const Rectangle& rect) {
+	// 動く針系
+	for (int i = 0; i < stage.moveCount; i++) if (IsSameRect(stage.moveHazardsInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.moveExtYCount; i++) if (IsSameRect(stage.moveHazardsExtYInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) if (IsSameRect(stage.moveDownHazardsExtYInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.moveExtXCount; i++) if (IsSameRect(stage.moveHazardsExtXInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.moveHazardRightCount; i++) if (IsSameRect(stage.moveHazardsRightInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.trackingHazardCount; i++) if (IsSameRect(stage.trackingHazardsInit[i].rect, rect)) return true;
+	// エレベーター
+	for (int i = 0; i < stage.elevatorCount; i++) if (IsSameRect(stage.elevatorsInit[i].rect, rect)) return true;
+	// 落下床
+	for (int i = 0; i < stage.fallingCount; i++) if (IsSameRect(stage.fallingPlatformsInit[i].rect, rect)) return true;
+	// 上昇床
+	for (int i = 0; i < stage.upRisingCount; i++) if (IsSameRect(stage.upRisingPlatformsInit[i].rect, rect)) return true;
+	// 往復上昇床
+	for (int i = 0; i < stage.upDownCount; i++) if (IsSameRect(stage.upDouwnPlatformsInit[i].rect, rect)) return true;
+	// 乗ると上昇する床
+	for (int i = 0; i < stage.moveUpPlatformCount; i++) if (IsSameRect(stage.moveUpplatformsInit[i].rect, rect)) return true;
+	// 移動低下床
+	for (int i = 0; i < stage.moveDownPlatformCount; i++) if (IsSameRect(stage.moveDownplatformsInit[i].rect, rect)) return true;
+	// カーソル追従床
+	for (int i = 0; i < stage.cursorPlatformCount; i++) if (IsSameRect(stage.cursorplatformsInit[i].rect, rect)) return true;
+	// 吹っ飛ばし壁
+	for (int i = 0; i < stage.knockBackWallCount; i++) if (IsSameRect(stage.knockBackWallsInit[i].rect, rect)) return true;
+	// 乗ると動く床X
+	for (int i = 0; i < stage.movePlatformCountX; i++) if (IsSameRect(stage.moveplatformsXInit[i].rect, rect)) return true;
+	// スイッチ床
+	for (int i = 0; i < stage.switchPlatformCount; i++) if (IsSameRect(stage.switchplatformsInit[i].rect, rect)) return true;
+	// わかれる床（base rect）
+	for (int i = 0; i < stage.splitPlatformCount; i++) if (IsSameRect(stage.splitplatformsInit[i].base, rect)) return true;
+	// クレーン
+	for (int i = 0; i < stage.craneCount; i++) if (IsSameRect(stage.cranesInit[i].bodyRect, rect)) return true;
+	// 円軌道床（centerベースで判定）
+	for (int i = 0; i < stage.circlePlatformCount; i++) {
+		float cx = rect.x + rect.width / 2.0f, cy = rect.y + rect.height / 2.0f;
+		if (IsAlmostEqual(cx, stage.circleplatformsInit[i].center.x) &&
+			IsAlmostEqual(cy, stage.circleplatformsInit[i].center.y)) return true;
+	}
+	return false;
+}
 
 // トゲ描画関数（実装）
 void DrawSpikes(Rectangle h, float spikeW) {
@@ -62,6 +147,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	// ===== 奥レイヤーの床（常に先に描画＝背面） =====
 	for (int i = 0; i < stage.backPlatformCount; i++) {
 		const auto& p = stage.backPlatforms[i];
+		if (HasSpriteOverride(stage, p)) continue;
 
 		// 位置はそのまま、サイズだけ縮小（中心基準）
 		float sw = p.width * bScale;
@@ -110,6 +196,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 
 	// ===== 手前レイヤーの普通床 =====
 	for (int i = 0; i < stage.platformCount; i++) {
+		if (HasSpriteOverride(stage, stage.platforms[i])) continue;
 		if (stage.currentLayer == 0) {
 			DrawPlatformTextured(stage.platforms[i], stage.theme);
 		}
@@ -122,6 +209,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//氷床
 	for (int i = 0; i < stage.icePlatformCount; i++) {
 		const auto& ice = stage.icePlatforms[i];
+		if (HasSpriteOverride(stage, ice.rect)) continue;
 		DrawRectangleRec(stage.icePlatforms[i].rect, SKYBLUE);
 		DrawLineEx(
 			{ ice.rect.x + 5, ice.rect.y + 3 },
@@ -134,6 +222,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//アイテムブロック
 	for (int i = 0; i < stage.itemBlockCount; i++) {
 		const auto& ib = stage.itemBlocks[i];
+		if (HasSpriteOverride(stage, ib.rect)) continue;
 		if (stage.theme.itemBlock.id != 0) {
 			Rectangle src = { 0, 0, (float)stage.theme.itemBlock.width, (float)stage.theme.itemBlock.height };
 			DrawTexturePro(stage.theme.itemBlock, src, ib.rect, { 0, 0 }, 0, WHITE);
@@ -146,6 +235,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//カーソルボタン（クリックギミック）
 	for (int i = 0; i < stage.cursorBottomCount; i++) {
 		const auto& cb = stage.cursorBottoms[i];
+		if (HasSpriteOverride(stage, cb.rect)) continue;
 		Color col = cb.triggered ? ORANGE : (cb.isActive ? YELLOW : GOLD);
 		DrawRectangleRec(cb.rect, col);
 		DrawRectangleLinesEx(cb.rect, 2, DARKBROWN);
@@ -154,27 +244,33 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//移動低下床
 	for (int i = 0; i < stage.moveDownPlatformCount; i++) {
 		const auto& md = stage.moveDownPlatforms[i];
-		DrawRectangleRec(md.rect, BROWN);
-		DrawLineEx(
-			{ md.rect.x + 5, md.rect.y + 3 },
-			{ md.rect.x + md.rect.width - 5,md.rect.y + 3 }, 5.0f, BLACK
-		);
+		if (!TryDrawMovingGimmickSprite(stage, stage.moveDownplatformsInit[i].rect, md.rect)) {
+			DrawRectangleRec(md.rect, BROWN);
+			DrawLineEx(
+				{ md.rect.x + 5, md.rect.y + 3 },
+				{ md.rect.x + md.rect.width - 5,md.rect.y + 3 }, 5.0f, BLACK
+			);
+		}
 	}
 	//ジャンプ台
 	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
 		const auto& jp = stage.jumpPlatfroms[i];
+		if (HasSpriteOverride(stage, jp.rect)) continue;
 		DrawRectangleRec(jp.rect, GREEN);
 	}
 
 	//ふっとばし壁
 	for (int i = 0; i < stage.knockBackWallCount; i++) {
 		const auto& kbw = stage.knockBackWalls[i];
-		DrawRectangleRec(kbw.rect, ORANGE);
+		if (!TryDrawMovingGimmickSprite(stage, stage.knockBackWallsInit[i].rect, kbw.rect)) {
+			DrawRectangleRec(kbw.rect, ORANGE);
+		}
 	}
 
 	//人を発射する砲台
 	for (int i = 0; i < stage.batteryHumanCount; i++) {
 		const auto& bh = stage.batteryHumans[i];
+		if (HasSpriteOverride(stage, bh.rect)) continue;
 		DrawRectangleRec(bh.rect, DARKGREEN);
 		DrawLineEx(
 			{ bh.rect.x + bh.rect.width, bh.rect.y + bh.rect.height / 2 - 5 },
@@ -185,12 +281,15 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//カーソル追従床
 	for (int i = 0; i < stage.cursorPlatformCount; i++) {
 		const auto& cp = stage.cursorPlatforms[i];
-		DrawRectangleRec(cp.rect, GOLD);
+		if (!TryDrawMovingGimmickSprite(stage, stage.cursorplatformsInit[i].rect, cp.rect)) {
+			DrawRectangleRec(cp.rect, GOLD);
+		}
 	}
 
 	//磁石（引き寄せ）
 	for (int i = 0; i < stage.magnetCount; i++) {
 		const auto& mg = stage.magnets[i];
+		if (HasSpriteOverride(stage, mg.rect)) continue;
 		DrawRectangleRec(mg.rect, DARKPURPLE);
 		DrawLineEx(
 			{ mg.rect.x + 5, mg.rect.y + mg.rect.height / 2 },
@@ -200,81 +299,100 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//往復上昇床
 	for (int i = 0; i < stage.upDownCount; i++) {
 		const auto& ud = stage.upDouwnPlatforms[i];
-		DrawRectangleRec(ud.rect, PURPLE);
-		Rectangle hit = ud.rect;
-		DrawRectangleLinesEx(hit, 2, GREEN);
+		if (!TryDrawMovingGimmickSprite(stage, stage.upDouwnPlatformsInit[i].rect, ud.rect)) {
+			DrawRectangleRec(ud.rect, PURPLE);
+			DrawRectangleLinesEx(ud.rect, 2, GREEN);
+		}
 	}
 
 	//円軌道床
 	for (int i = 0; i < stage.circlePlatformCount; i++) {
 		const auto& cp = stage.circlePlatforms[i];
-		DrawRectangleRec(cp.GetRect(), DARKGRAY);
+		const auto& cpInit = stage.circleplatformsInit[i];
+		// centerを基準にした疑似initRectでスプライトを検索
+		Rectangle pseudoInit = { cpInit.center.x - cpInit.armLength, cpInit.center.y - cpInit.armLength,
+			cpInit.armLength * 2.0f, cpInit.armLength * 2.0f };
+		if (!TryDrawMovingGimmickSprite(stage, pseudoInit, cp.GetRect())) {
+			DrawRectangleRec(cp.GetRect(), DARKGRAY);
+		}
 	}
 	//乗ると動く床X
 	for (int i = 0; i < stage.moveUpPlatformCount; i++) {
 		const auto& mu = stage.moveUpPlatforms[i];
-		DrawRectangleRec(mu.rect, RED);
-		DrawLineEx(
-			{ mu.rect.x + 5, mu.rect.y + 3 },
-			{ mu.rect.x + mu.rect.width - 5,mu.rect.y + 3 }, 10.0f, ORANGE
-		);
+		if (!TryDrawMovingGimmickSprite(stage, stage.moveUpplatformsInit[i].rect, mu.rect)) {
+			DrawRectangleRec(mu.rect, RED);
+			DrawLineEx(
+				{ mu.rect.x + 5, mu.rect.y + 3 },
+				{ mu.rect.x + mu.rect.width - 5,mu.rect.y + 3 }, 10.0f, ORANGE
+			);
+		}
 	}
 	//落下床
 	for (int i = 0; i < stage.fallingCount; i++) {
-		DrawRectangleRec(stage.fallingPlatforms[i].rect, GRAY);
+		const auto& fp = stage.fallingPlatforms[i];
+		if (!TryDrawMovingGimmickSprite(stage, stage.fallingPlatformsInit[i].rect, fp.rect)) {
+			DrawRectangleRec(fp.rect, GRAY);
+		}
 	}
 	//とげ
 	for (int i = 0; i < stage.hazardCount; i++) {
+		if (HasSpriteOverride(stage, stage.hazards[i])) continue;
 		DrawSpikes(stage.hazards[i], spikeW);
 	}
 	//移動拡張とげY
 	for (int i = 0; i < stage.moveExtYCount; i++) {
 		const auto& mhY = stage.moveHazardsExtY[i];
-		DrawSpikes(mhY.rect, spikeW);
+		DrawMovingSpikeWithOverride(stage, mhY.rect, stage.moveHazardsExtYInit[i].rect, spikeW);
 	}
 	//下に下がるとげY
 	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) {
 		const auto& mdhY = stage.moveDownHazardsExtY[i];
-		DrawSpikes(mdhY.rect, spikeW);
+		DrawMovingSpikeWithOverride(stage, mdhY.rect, stage.moveDownHazardsExtYInit[i].rect, spikeW);
 	}
 	//移動拡張とげX
 	for (int i = 0; i < stage.moveExtXCount; i++) {
 		const auto& mhX = stage.moveHazardsExtX[i];
-		DrawSpikes(mhX.rect, spikeW);
+		DrawMovingSpikeWithOverride(stage, mhX.rect, stage.moveHazardsExtXInit[i].rect, spikeW);
 	}
 	for (int i = 0; i < stage.moveHazardRightCount; i++) {
 		const auto& mhr = stage.moveHazardsRight[i];
-		DrawSpikes(mhr.rect, spikeW);
+		DrawMovingSpikeWithOverride(stage, mhr.rect, stage.moveHazardsRightInit[i].rect, spikeW);
 	}
 	//動くとげ
 	for (int i = 0; i < stage.moveCount; i++) {
 		const auto& mh = stage.moveHazards[i];
-		DrawSpikes(mh.rect, spikeW);
+		DrawMovingSpikeWithOverride(stage, mh.rect, stage.moveHazardsInit[i].rect, spikeW);
 	}
 	//追尾するとげ
 	for (int i = 0; i < stage.trackingHazardCount; i++) {
 		const auto& th = stage.trackingHazards[i];
-		DrawSpikes(th.rect, spikeW);
+		DrawMovingSpikeWithOverride(stage, th.rect, stage.trackingHazardsInit[i].rect, spikeW);
 	}
 	for (int i = 0; i < stage.spikeBouncerCount; i++) {
 		const auto& mhY = stage.spikeBouncers[i];
+		if (HasSpriteOverride(stage, mhY.rect)) continue;
 		DrawSpikes(mhY.rect, spikeW);
 	}
 	//わかれる床
 	for (int i = 0; i < stage.splitPlatformCount; i++) {
 		const auto& sp = stage.splitPlatforms[i];
-		if (!sp.triggered) {
-			DrawRectangleRec(sp.base, BLUE);
-		}
-		else {
-			DrawRectangleRec(sp.left, BLUE);
-			DrawRectangleRec(sp.right, BLUE);
+		Rectangle currentRect = sp.triggered ? sp.left : sp.base;
+		if (!TryDrawMovingGimmickSprite(stage, stage.splitplatformsInit[i].base, currentRect)) {
+			if (!sp.triggered) {
+				DrawRectangleRec(sp.base, BLUE);
+			}
+			else {
+				DrawRectangleRec(sp.left, BLUE);
+				DrawRectangleRec(sp.right, BLUE);
+			}
 		}
 	}
 	//上昇床
 	for (int i = 0; i < stage.upRisingCount; i++) {
 		const auto& ur = stage.upRisingPlatforms[i];
-		DrawRectangleRec(ur.rect, DARKGRAY);
+		if (!TryDrawMovingGimmickSprite(stage, stage.upRisingPlatformsInit[i].rect, ur.rect)) {
+			DrawRectangleRec(ur.rect, DARKGRAY);
+		}
 	}
 	
 	// デコレーション矢印
@@ -282,13 +400,21 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		const auto& a = stage.decorArrows[i];
 		DrawArrowTexture(stage.theme.arrowTex, a.rect, a.angleDeg);
 	}
+	for (int i = 0; i < stage.decoSpriteCount; i++) {
+		const auto& ds = stage.decoSprites[i];
+		if (ds.spriteId == SpriteId::None) continue;  // テクスチャ未設定はスキップ
+		SpriteDatabase::DrawSprite(ds.spriteId, ds.rect, ds.rotation, ds.flipX, ds.flipY, WHITE);
+	}
 
 	// ================================================================
 	// エディタで設定したスプライト（見た目のみ）を描画
+	// 動的ギミックの initRect に紐づく spriteInstance はインライン描画済みなのでスキップ
 	// ================================================================
 	for (int i = 0; i < stage.spriteInstanceCount; i++) {
 		const auto& si = stage.spriteInstances[i];
-		// 透過テクスチャ（douka.png など）を描画
+		if (si.spriteId == SpriteId::None) continue;
+		if (IsGimmickDrawnInline(stage, si.rect)) continue;
+		// 静的ギミック上書き or 床上書きなどを描画
 		SpriteDatabase::DrawSprite(si.spriteId, si.rect, si.rotation, si.flipX, si.flipY, WHITE);
 	}
 
@@ -359,22 +485,22 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//乗ると動く床X
 	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		const auto& mpx = stage.movePlatformsX[i];
-		DrawRectangleRec(mpx.rect, DARKGRAY);
+		if (!TryDrawMovingGimmickSprite(stage, stage.moveplatformsXInit[i].rect, mpx.rect)) {
+			DrawRectangleRec(mpx.rect, DARKGRAY);
+		}
 	}
 	//スイッチによって動作する床
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
-		if (stage.switchPlatforms[i].switchedOn) {
-			DrawRectangleRec(stage.switchPlatforms[i].rect, LIGHTGRAY);
+		const auto& sw = stage.switchPlatforms[i];
+		if (!TryDrawMovingGimmickSprite(stage, stage.switchplatformsInit[i].rect, sw.rect)) {
+			DrawRectangleRec(sw.rect, LIGHTGRAY);
 		}
-		else {
-			DrawRectangleRec(stage.switchPlatforms[i].rect, LIGHTGRAY);
-		}
-		//DrawRectangleRec(stage.switchPlatforms[i].SwitchRect, GREEN);
 	}
 	//壊せるブロック
 	for (int i = 0; i < stage.breakableBlockCount; i++) {
 		const auto& nb = stage.breakableBlocks[i];
 		if (nb.isBroken) continue;
+		if (HasSpriteOverride(stage, nb.rect)) continue;
 
 		if (stage.theme.nomalBlock.id != 0) {
 			Rectangle src = { 0, 0, (float)stage.theme.nomalBlock.width, (float)stage.theme.nomalBlock.height };
@@ -407,6 +533,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	// クリアドア
 	for (int i = 0; i < stage.exitDoorCount; i++) {
 		const auto& ed = stage.exitDoors[i];
+		if (HasSpriteOverride(stage, ed.rect)) continue;
 		DrawRectangleRec(ed.rect, BLACK);
 		DrawRectangleLinesEx(ed.rect, 3, DARKGRAY);
 	}
@@ -416,6 +543,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	// ワープホール
 	for (int i = 0; i < stage.warpCount; i++) {
 		const auto& warp = stage.warps[i];
+		if (HasSpriteOverride(stage, warp.rect)) continue;
 		float cx = warp.rect.x + warp.rect.width / 2;
 		float cy = warp.rect.y + warp.rect.height / 2;
 		float rad = std::min(warp.rect.width, warp.rect.height) / 2;
@@ -441,23 +569,26 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//エレベーター
 	for (int i = 0; i < stage.elevatorCount; i++) {
 		const auto& ev = stage.elevators[i];
-		// レール（移動範囲）
-		float railX = ev.rect.x + ev.rect.width / 2 - 2;
-		DrawRectangle((int)railX, (int)ev.upperY, 4,
-			(int)(ev.lowerY - ev.upperY + ev.rect.height), ColorAlpha(GRAY, 0.3f));
-		// 本体
-		DrawRectangleRec(ev.rect, DARKBLUE);
-		DrawRectangleLinesEx(ev.rect, 2, SKYBLUE);
-		// 上下矢印
-		float cx = ev.rect.x + ev.rect.width / 2;
-		float cy = ev.rect.y + ev.rect.height / 2;
-		DrawTriangle({ cx - 6, cy }, { cx + 6, cy }, { cx, cy - 8 }, WHITE);
-		DrawTriangle({ cx + 6, cy + 4 }, { cx - 6, cy + 4 }, { cx, cy + 12 }, WHITE);
+		if (!TryDrawMovingGimmickSprite(stage, stage.elevatorsInit[i].rect, ev.rect)) {
+			// レール（移動範囲）
+			float railX = ev.rect.x + ev.rect.width / 2 - 2;
+			DrawRectangle((int)railX, (int)ev.upperY, 4,
+				(int)(ev.lowerY - ev.upperY + ev.rect.height), ColorAlpha(GRAY, 0.3f));
+			// 本体
+			DrawRectangleRec(ev.rect, DARKBLUE);
+			DrawRectangleLinesEx(ev.rect, 2, SKYBLUE);
+			// 上下矢印
+			float cx = ev.rect.x + ev.rect.width / 2;
+			float cy = ev.rect.y + ev.rect.height / 2;
+			DrawTriangle({ cx - 6, cy }, { cx + 6, cy }, { cx, cy - 8 }, WHITE);
+			DrawTriangle({ cx + 6, cy + 4 }, { cx - 6, cy + 4 }, { cx, cy + 12 }, WHITE);
+		}
 	}
 
 	//重力反転ブロック
 	for (int i = 0; i < stage.gravityBlockCount; i++) {
 		const auto& gb = stage.gravityBlocks[i];
+		if (HasSpriteOverride(stage, gb.rect)) continue;
 		DrawRectangleRec(gb.rect, PURPLE);
 		//矢印マーク（上下）を描画
 		float cx = gb.rect.x + gb.rect.width / 2;
@@ -506,6 +637,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
 		const auto& bb = stage.bottomBreakBlocks[i];
 		if (bb.isBroken) continue;
+		if (HasSpriteOverride(stage, bb.rect)) continue;
 
 		float progress = bb.triggered ? (bb.timer / bb.breakDelay) : 0.0f;
 		if (progress > 1.0f) progress = 1.0f;
@@ -538,6 +670,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.springCount; i++) {
 		const auto& sp = stage.springs[i];
 		if (!sp.isActive) continue;
+		if (HasSpriteOverride(stage, sp.rect)) continue;
 
 		// ばね本体を描画（コイル状）
 		DrawRectangleRec(sp.rect, PINK);
@@ -559,6 +692,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//クレーン発射台の描画
 	for (int i = 0; i < stage.craneLaunchPadCount; i++) {
 		const auto& clp = stage.craneLaunchPads[i];
+		if (HasSpriteOverride(stage, clp.rect)) continue;
 		DrawRectangleRec(clp.rect, DARKGREEN);
 		DrawRectangleLinesEx(clp.rect, 2, GREEN);
 	}
@@ -599,11 +733,13 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.tempFloorCount; i++) {
 		const auto& tf = stage.tempFloors[i];
 		if (!tf.visible) continue;
+		if (HasSpriteOverride(stage, tf.rect)) continue;
 		DrawRectangleRec(tf.rect, { 120,220,255,220 });
 		DrawRectangleLinesEx(tf.rect, 2, BLUE);
 	}
 	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
 		const auto& sw = stage.tempFloorSwitches[i];
+		if (HasSpriteOverride(stage, sw.rect)) continue;
 		Color c = sw.triggered ? ORANGE : (sw.hover ? YELLOW : GOLD);
 		DrawRectangleRec(sw.rect, c);
 		DrawRectangleLinesEx(sw.rect, 2, BROWN);

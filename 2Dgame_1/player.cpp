@@ -308,7 +308,7 @@ void PlayerStateUpdate(PlayerState& ps,
         if (!cb.triggered && CheckCollisionRecs(ps.rect, cb.rect)) {
             cb.triggered = true;
             cb.cooldown = cb.duration + 1.0f;
-            ojisan.TriggerMessage(cb.message, cb.duration, nullptr, true);
+            ojisan.TriggerMessage(cb.message, cb.duration, nullptr, false);
         }
         if (cb.triggered && !CheckCollisionRecs(ps.rect, cb.rect)) {
             cb.triggered = false;

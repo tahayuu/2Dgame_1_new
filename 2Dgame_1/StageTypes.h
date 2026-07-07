@@ -316,5 +316,8 @@ struct Stage {
 	static constexpr int MAX_SPRITE_INSTANCES = 512;
 	SpriteInstance spriteInstances[MAX_SPRITE_INSTANCES];
 	int spriteInstanceCount = 0;
+	static constexpr int MAX_DECO_SPRITES = 128;
+	DecoSprite decoSprites[MAX_DECO_SPRITES];
+	int decoSpriteCount = 0;
 };
 	
