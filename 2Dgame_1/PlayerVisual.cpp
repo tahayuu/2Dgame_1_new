@@ -6,6 +6,7 @@ void PlayerVisualLoad(PlayerVisual& pv) {
 	pv.texJump = LoadTexture("assets/images/player/male_hero-jump.png");
 	pv.texFall = LoadTexture("assets/images/player/male_hero-fall.png");
 	pv.texidleturn = LoadTexture("assets/images/player/male_hero-idle_turn.png");
+	pv.texDeath = LoadTexture("assets/images/player/male_hero-death.png");
 }
 
 void StageVisualLoad(StageVisual& sv) {
@@ -23,6 +24,7 @@ void PlayerVisualUnload(PlayerVisual& pv) {
 	if (pv.texJump.id != 0) UnloadTexture(pv.texJump);
 	if (pv.texFall.id != 0) UnloadTexture(pv.texFall);
 	if (pv.texidleturn.id != 0) UnloadTexture(pv.texidleturn);
+	if (pv.texDeath.id != 0) UnloadTexture(pv.texDeath);
 }
 
 void StageVisualUnload(StageVisual& sv) {
@@ -70,6 +72,19 @@ void TitleVisualDrawScreen(const StageVisual& sv, int screenW, int screenH) {
 	}
 
 void PlayerVisualUpdate(PlayerVisual& pv, float dt, const Vector2& velocity, bool onGround) {
+
+	if(pv.isDying) {
+		pv.deathTimer += dt;
+		float deathFrameTime = 1.0f / pv.deathFPS;//死亡アニメの1コマの時間
+		if (pv.deathTimer >= deathFrameTime) {//もしdeathTimerが1/deathFPSを超えたらコマを1つ進める
+			pv.deathTimer -= deathFrameTime;//死亡アニメの1コマ分の時間を引く
+			if (pv.deathFrame < pv.deathFrameCount - 1) {//死亡アニメの最後のコマまで行っていないなら
+				pv.deathFrame++;//死亡アニメのコマ番号を1つ進める
+			}
+		}
+		return;//死亡中はそれ以外のアニメを更新しない
+	}
+
 	if (velocity.x > 1.0f) pv.facingRight = true;
 	else if (velocity.x < -1.0f) pv.facingRight = false;
 	/*絶対値 もし velocity.x が 0 より小さいなら
@@ -120,9 +135,15 @@ void PlayerVisualUpdate(PlayerVisual& pv, float dt, const Vector2& velocity, boo
 }
 
 //プレイヤーの見た目を今の状態で正しく描画する
-void PlayerVisualDraw(const PlayerVisual& pv, const Rectangle& player,const Vector2& velocity, bool gravityReversed, float layerScale) {
+void PlayerVisualDraw(const PlayerVisual& pv, const Rectangle& player, const Vector2& velocity, bool gravityReversed, float layerScale) {
 	Texture2D tex;
+	int frameIndex;
 	//どのテクスチャを使うか
+	if (pv.isDying) {
+		tex = pv.texDeath;
+		frameIndex = pv.deathFrame;
+	}
+	else {
 	if (pv.isJumping) {
 		tex = pv.texJump;
 	}
@@ -135,8 +156,6 @@ void PlayerVisualDraw(const PlayerVisual& pv, const Rectangle& player,const Vect
 	else {
 		tex = pv.texIdle;
 	}
-	//何コマ目を描くか
-	int frameIndex;
 	if (pv.isJumping) {
 		frameIndex = pv.jumpFrame;
 	}
@@ -149,6 +168,7 @@ void PlayerVisualDraw(const PlayerVisual& pv, const Rectangle& player,const Vect
 	else {
 		frameIndex = pv.idleFrame;
 	}
+}
 	
 	// テクスチャが読み込まれていない場合は青い四角を描くだけにする
 	if (tex.id == 0) {
@@ -158,8 +178,11 @@ void PlayerVisualDraw(const PlayerVisual& pv, const Rectangle& player,const Vect
 	
 	//テクスチャの何コマ目を描くか計算
 	float frameW = 0.0f;
-	if (pv.isJumping) {
-		frameW = (float)tex.width / pv.jumpFrameCount;
+	if (pv.isDying) {
+	    frameW = (float)tex.width / pv.deathFrameCount;
+	}
+	else if (pv.isJumping) {
+	    frameW = (float)tex.width / pv.jumpFrameCount;
 	}
 	else if (pv.isFalling) {
 		 frameW = (float)tex.width / pv.fallFrameCount;

@@ -24,9 +24,9 @@ namespace {
         /*stage_3*/
         // id                      name             path（切り出し済みPNG）
         { SpriteId::None,          "None",          "" }, // 見た目なし
-        { SpriteId::MetalFloor01,  "MetalFloor01",  "assets/images/stage/stage_3/tile1.png" },
-        { SpriteId::MetalFloor02,  "MetalFloor02",  "assets/images/stage/stage_3/tile2.png" },
-        { SpriteId::MetalWall01,   "MetalWall01",   "assets/images/stage/stage_3/tile3.png" },
+        { SpriteId::MetalFloor01,  "MetalFloor01",  "assets/images/stage/stage_3/wall_2.png" },
+        { SpriteId::MetalFloor02,  "MetalFloor02",  "assets/images/stage/stage_3/wall_1.png" },
+        { SpriteId::MetalWall01,   "MetalWall01",   "assets/images/stage/stage_3/ground_1.png" },
         { SpriteId::MetalWall02,   "MetalWall02",   "assets/images/stage/stage_3/object1.png" },
         { SpriteId::Ladder01,      "Ladder01",      "assets/images/stage/stage_3/object2.png" },
         { SpriteId::PipeStraight,  "PipeStraight",  "assets/images/stage/stage_3/floar2.png" },

@@ -57,6 +57,10 @@ struct PlayerState {
     bool pendingDeath = false;
     bool pendingEnterEditor = false;
     DeathCause lastDeathCause = DeathCause::FALL;
+    
+	bool isPlayingDeathAnimation = false;// 死亡アニメーション再生中か
+	float deathAnimationTimer = 0.0f;    // 死亡アニメーションの経過時間
+	float deathAnimationDuration = 1.3f; // 死亡アニメーションの総時間
 
     Item item{};
     PlayerVisual visual{};

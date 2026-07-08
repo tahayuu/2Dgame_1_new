@@ -28,31 +28,37 @@ struct  PlayerVisual {
 	Texture2D texJump{};
 	Texture2D texFall{};
 	Texture2D texidleturn{};
+	Texture2D texDeath{};
 
 	int idleFrame = 0;//いま何コマ目の画像を使っているか
 	int runFrame = 0;
 	int jumpFrame = 0;
 	int fallFrame = 0;
+	int deathFrame = 0;
 
 	float idleTimer = 0.0f;//アニメーション用タイマー
 	float runTimer = 0.0f;
 	float jumpTimer = 0.0f;
 	float fallTimer = 0.0f;
+	float deathTimer = 0.0f;
 
 	const float idleFPS = 10.0f;//待機アニメの1秒あたりのコマ数
 	const float runFPS = 12.0f;
 	const float jumpFPS = 8.0f;
 	const float fallFPS = 8.0f;
+	const float deathFPS = 10.0f;
 
 	bool facingRight = true;//向き
 	bool isRunning = false;//走っているか
 	bool isJumping = false;//ジャンプ中か
 	bool isFalling = false;//落下中か
+	bool isDying = false;//死亡中か
 
 	float drawSvale = 5.0f;//見た目の拡大率
 	int frameCount = 10;//アニメのコマ数
-	int jumpFrameCount = 6;
-	int fallFrameCount = 4;
+	int jumpFrameCount  = 6;
+	int fallFrameCount  = 4;
+	int deathFrameCount = 23;
 
 	PlayerParticleEffect jumpEffect{};
 };

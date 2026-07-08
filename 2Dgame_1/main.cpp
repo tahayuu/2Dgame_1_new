@@ -193,7 +193,7 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
     "まみむめも"
     "ゃやゅゆょよ"
     "らりるれろ"
-    "ゎわゐゑをんー"
+    "わわゐゑをんー"
         "上乙"
         );
 
@@ -449,6 +449,9 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 
         auto RespawnPlayer = [&]() {
             deaths++;
+            playerState.visual.isDying = true;
+            playerState.visual.deathFrame = 0;
+            playerState.visual.deathTimer = 0.0f;
             gameState = GameState::DEADING_SCREEN;
             deadTime = 0.0f;
             deadingTime = 0.0f;
@@ -491,6 +494,9 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
             stage.gravityReversed = false;
             stage.currentLayer = 0;
             isOjisanPunchDeath = false;
+            playerState.visual.isDying = false;
+            playerState.visual.deathFrame = 0;
+            playerState.visual.deathTimer = 0.0f;
             ojisan.showPunch = false;  // パンチフラグをリセット
 
             StageReset(stage);
@@ -526,17 +532,24 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 			}
 
 			if (playerState.pendingDeath) {
-				cause = playerState.lastDeathCause;
+                cause = playerState.lastDeathCause;
+
+                // 死亡アニメ開始
+                playerState.visual.isDying = true;
+                playerState.visual.deathFrame = 0;
+                playerState.visual.deathTimer = 0.0f;
+
                 if ((cause == DeathCause::ENEMY_WALKER ||
-                    cause == DeathCause::ENEMY_FLYER ||
-                    cause == DeathCause::ENEMY_SHOOTER) &&
+                     cause == DeathCause::ENEMY_FLYER ||
+                     cause == DeathCause::ENEMY_SHOOTER) &&
                     enemyManager.touchedEnemyFromSide &&
                     enemyManager.touchedEnemyIndex >= 0 &&
                     enemyManager.touchedEnemyIndex < (int)enemyManager.enemies.size()) {
                     enemyManager.enemies[enemyManager.touchedEnemyIndex].isHit = true;
                 }
-				RespawnPlayer();
-			}
+
+                RespawnPlayer();
+            }
 
 			if (gameState != GameState::PLAYING) {
 				continue;
