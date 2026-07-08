@@ -1,6 +1,13 @@
 #pragma once
 #include "raylib.h"
 
+// ================================================================
+// AudioManager.h の役割
+// ---------------------------------------------------------------
+// ・BGM/SEリソースと音量フェード状態をまとめて管理する。
+// ・main からは初期化/更新/再生/終了APIのみを呼ぶ想定。
+// ================================================================
+
 enum class SfxId {
     Jump,
     Damage,
@@ -37,8 +44,12 @@ struct AudioManager {
     bool initialized = false;
 };
 
+// 目的: オーディオデバイスとBGM/SEを初期化する。
 bool AudioInit(AudioManager& a);
+// 目的: 各BGMの目標音量へフェードさせながら再生状態を更新する。
 void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool playStage3Bgm,
     bool playChooseStageBgm, bool inEditor, bool inUITab, float dt);
+// 目的: 指定SEを再生する。
 void AudioPlaySfx(AudioManager& a, SfxId id);
+// 目的: すべての音声リソースを解放する。
 void AudioShutdown(AudioManager& a);

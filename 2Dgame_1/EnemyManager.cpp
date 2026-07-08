@@ -1,5 +1,12 @@
 ﻿#include "EnemyManager.h"
 
+// ================================================================
+// EnemyManager.cpp の役割
+// ---------------------------------------------------------------
+// ・Enemy単体APIをまとめて呼び出し、敵群のライフサイクルを管理する。
+// ・プレイヤーとの接触結果を1フレーム単位で取りまとめる。
+// ================================================================
+
 void EnemyManager::Init()
 {
 	//•	ゲーム開始・ステージ切替時に内部配列を「空」にして、追加に備えるため。
@@ -18,6 +25,7 @@ void EnemyManager::Spawn(EnemyType Type, Vector2 pos){
 	enemies.push_back(enemy);
 }
 //敵とプレイヤーの当たり判定
+// 目的: 各敵の接触判定を回し、プレイヤー接触情報を1つに集約する。
 void EnemyManager::EnemyCollisionAll(const Rectangle& player, float dt, Vector2& velocity) {
 	playerTouched = false;
 	touchedEnemyFromSide = false;

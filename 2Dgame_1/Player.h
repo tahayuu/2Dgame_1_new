@@ -5,6 +5,13 @@
 #include "AudioManager.h"
 #include "Item.h"
 
+// ================================================================
+// Player.h の役割
+// ---------------------------------------------------------------
+// ・プレイヤー更新に必要な状態(PlayerState)と公開APIを定義する。
+// ・移動/死亡/演出フラグを1か所に集約し、main側は結果フラグを参照する設計。
+// ================================================================
+
 struct Stage;
 struct EnemyManager;
 struct ItemManager;
@@ -66,24 +73,31 @@ struct PlayerState {
     PlayerVisual visual{};
 };
 
+// 目的: プレイヤー描画資源を初期化する。
 void PlayerStateInit(PlayerState& ps);
+// 目的: プレイヤー描画資源を解放する。
 void PlayerStateUnload(PlayerState& ps);
 
+// 目的: 1フレーム分のプレイヤー操作・物理・死亡判定を更新する。
+// 入力: stage/enemy/item/camera と入力状態。
+// 出力: pendingDeath / pendingEnterEditor などの結果フラグを更新する。
 void PlayerStateUpdate(PlayerState& ps,
-    Stage& stage,
-    EnemyManager& em,
-    ItemManager& im,
-    OjisanVisual& ojisan,
-    Camera2D& cam,
-    float dt,
-    bool isInvincible,
+	Stage& stage,
+	EnemyManager& em,
+	ItemManager& im,
+	OjisanVisual& ojisan,
+	Camera2D& cam,
+	float dt,
+	bool isInvincible,
 	AudioManager& audio
-    );
+	);
 
+// 目的: ワールド座標系でプレイヤー本体と粒子を描画する。
 void PlayerStateDrawWorld(const PlayerState& ps,
-    float editorExitInvTimer,
-    bool isDeadScreen);
+	float editorExitInvTimer,
+	bool isDeadScreen);
 
+// 目的: スクリーン座標系の死亡演出（おじさんパンチ）を描画する。
 void PlayerStateDrawScreen(const PlayerState& ps,
-    bool isDeadScreen,
-    const Texture2D& punchEffect);
+	bool isDeadScreen,
+	const Texture2D& punchEffect);

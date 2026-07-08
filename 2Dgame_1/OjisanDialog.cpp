@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-
+// OjisanDialog.cpp の役割: 死亡原因/回数/場所に応じた台詞キーを組み立てる。
 static std::unordered_map<int, int> deathCounts;
 
 // ===== 死因を文字列に変換するヘルパー =====
@@ -38,6 +38,7 @@ static std::string CauseToString(DeathCause cause) {
 //    death_unknown|おじさん「何があった？」
 // =============================================================
 
+// 目的: コンテキストに応じて優先順で台詞キーを探索し、最適な1文を返す。
 std::string GetOjiSanLine(const OjisanContext& ctx) {  
     DialogManager& dm = DialogManager::Instance();
 	std::string causeName = CauseToString(ctx.cause);// 死因を文字列に変換

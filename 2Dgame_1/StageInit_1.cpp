@@ -1,5 +1,7 @@
 ﻿#include "Stage.h"
 
+// StageInit_1.cpp の役割: ステージ1の固定初期配置を定義する。
+// 目的: 地形/敵/アイテム/初期化用配列を設定する。
 void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemManager) {//&は参照（本物を使う）よってmain.cppに反映される
 
 

@@ -2,6 +2,13 @@
 #include "Stage.h"
 #include <cmath>
 
+// ================================================================
+// StageHazard.cpp の役割
+// ---------------------------------------------------------------
+// ・危険ギミック（トゲ、追尾、回転球、落下文字など）の起動・更新・判定を実装する。
+// ・当たり判定そのものと、ギミックの状態遷移を同ファイルで管理している。
+// ================================================================
+
 //===========================================
 // 内部ヘルパー関数（static）
 //===========================================
@@ -326,7 +333,9 @@ bool StageHitRisingSpike(const Stage& stage, const Rectangle& player) {
 	return false;
 }
 
-// オブジェクトに当たったか
+// 目的: ステージ内の全危険オブジェクト接触を一括判定する。
+// 入力: stage と player矩形。
+// 出力: どれか1つでも接触していれば true。
 bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage& 本物を使うけど、変更は禁止
 	for (int i = 0; i < stage.hazardCount; i++) {
 		if (CheckCollisionRecs(player, stage.hazards[i])) {
@@ -433,6 +442,8 @@ bool clearCheck(const Stage& stage, const Rectangle& player) {
 	return false;
 }
 
+// 目的: 動的ハザードのトリガ検知と位置更新をまとめて処理する。
+// 注意: 呼び出し順は体感や難易度に影響するため、並び替え時は要検証。
 void HazardUpdate(Stage& stage, const Rectangle& player, float dt) {
 	UpMoveHazard(stage, player, dt);//とげが出てくる
 	UpMoveHazardExtY(stage, player, dt);//とげが出てくる(y軸延長)

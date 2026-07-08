@@ -2,7 +2,8 @@
 #include"EnemyManager.h"
 #include"ItemManager.h"
 
-
+// StageInit_deback.cpp の役割: デバッグ検証用の集約ステージを作る。
+// 注意: 試験用に多種ギミックを同居させているため、本番ステージ設定とは切り分ける。
 void StageInit_debug(Stage& stage,EnemyManager& enemyManager,ItemManager& itemManager) {
 
 	// デバッグ用テクスチャ（パスは必要に応じて変更）

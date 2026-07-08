@@ -5,6 +5,14 @@
 #include "StageTheme.h"
 #include "TiledMap.h"  
 #include "SpriteDatabase.h" 
+
+// ================================================================
+// StageTypes.h の役割
+// ---------------------------------------------------------------
+// ・Stage が保持する全ギミック配列と、その初期化用配列を定義する。
+// ・ゲーム中の実行時データと、リセット用データを同居させる設計。
+// ================================================================
+
 static constexpr int MAX_PLATFORMS = 128;//普通床の最大数conteexpr:コンパイル時定数
 static constexpr int MAX_HAZARDS = 16;  //とげの最大数
 static constexpr int MAX_CLEAR = 16;    //透明ブロックの最大数
@@ -17,7 +25,8 @@ static constexpr int MAX_UPRISING = 16; //上昇床の最大数
 static constexpr int MAX_FALLINGTEXT = 16; //落下文字の最大数
 static constexpr int MAX_MOVEPLATFORM = 16; //乗ると動く床の最大数
 
-//ステージに関するデータ
+// ステージ実行時の中核データ。
+// 注意: カウント値と配列の整合が崩れると描画/衝突の両方に影響する。
 struct Stage {
 
     //普通床

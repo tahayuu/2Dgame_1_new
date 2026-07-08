@@ -3,9 +3,13 @@
 #include "Item.h"
 #include <vector>
 #include "GameObjects.h" 
-//•	ItemManager はゲーム内のアイテム（床にある回収可能なオブジェクト）をまとめて管理
-// ワールド上のアイテム（出現・描画・当たり判定）の管理と、プレイヤーに付与された効果（activeItems）
-// の経過管理
+
+// ================================================================
+// ItemManager.h の役割
+// ---------------------------------------------------------------
+// ・ワールド上アイテムの出現/回収/描画を管理する。
+// ・回収後の効果(ActiveItem)を時間管理し、Playerへブースト値を提供する。
+// ================================================================
 struct ItemManager {
 	std::vector<Item> items;//可変長配列
 	std::vector<Item> itemsInit;//初期配置用配列
@@ -23,19 +27,27 @@ struct ItemManager {
 	};
 	std::vector<ActiveItem> activeItems; // 現在効果中のアイテムリスト
 
-	void ApplyItemEffect(ItemType type, ItemManager& itemManag, Item& item); // アイテム効果を適用
+	// 目的: 回収時にアイテム種別ごとの効果を activeItems へ反映する。
+	void ApplyItemEffect(ItemType type, ItemManager& itemManag, Item& item);
 
-    void Init();                                         // 初期化（必要ならプリロード）
-	// Spawn の引数にデフォルト値を付与（呼び出し側の互換性確保)
-	void Spawn(ItemType Type, Vector2 pos, Vector2 initialVel = {0.0f,0.0f}, bool emerging = false);        // アイテムを生成（追加）
-	
-    void ItemCollisionAll(Item& item, const Rectangle& player, float dt, Vector2& velocity); // 敵とプレイヤーの当たり判定
-    void UpdateAll(float dt, const Rectangle& player,Vector2& velocity, ItemBlock* itemBlock = nullptr);   // すべて更新
-    void DrawAll();                                      // すべて描画
-    void Reset();            // すべて無効化 / リセット
-	void saveItemsInit(); //初期配置保存
+	// 目的: 管理配列と効果状態を初期化する。
+	void Init();
+	// 目的: アイテム1つを生成して管理配列へ追加する。
+	void Spawn(ItemType Type, Vector2 pos, Vector2 initialVel = {0.0f,0.0f}, bool emerging = false);
 
-	void RestorInitialItems(); //初期配置に戻す
+	// 目的: プレイヤー回収判定を行う。
+	void ItemCollisionAll(Item& item, const Rectangle& player, float dt, Vector2& velocity);
+	// 目的: アイテム移動・効果時間・無敵状態を更新する。
+	void UpdateAll(float dt, const Rectangle& player,Vector2& velocity, ItemBlock* itemBlock = nullptr);
+	// 目的: ワールド上の有効アイテムを描画する。
+	void DrawAll();
+	// 目的: 管理状態をリセットする。
+	void Reset();
+	// 目的: 現在配置を初期配置として保存する。
+	void saveItemsInit();
+
+	// 目的: 保存済み初期配置を復元する。
+	void RestorInitialItems();
 
 	float GetActiveItems() const; // 効果中のアイテム情報を取得
 	float GetSpeedBoost() const;

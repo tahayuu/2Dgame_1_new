@@ -9,7 +9,15 @@
 #include "EnemyManager.h"
 #include "ItemManager.h"
 #include <cmath>
-//カーソル追従床の更新
+
+// ================================================================
+// Stage.cpp の役割
+// ---------------------------------------------------------------
+// ・ステージ内ギミックの状態更新、初期化、リセット処理を実装する。
+// ・描画(StageDraw)や当たり判定(StageCollision/StageHazard)と責務を分離している。
+// ================================================================
+
+// 目的: カーソル追従床の追従処理を更新する。
 void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera) {
 	Vector2 mouseScreen = GetMousePosition(); // 画面座標
 	Vector2 mousePos = GetScreenToWorld2D(mouseScreen, camera); // ワールド座標に変換
@@ -120,7 +128,7 @@ static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom&
 	}
 }
 
-//カーソルによって動作するギミックの更新
+// 目的: カーソル床スイッチのクリック検知と連動起動を処理する。
 void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
 	Vector2 mouseScreen = GetMousePosition(); // 画面座標
 	Vector2 mousePos = GetScreenToWorld2D(mouseScreen, camera); // ワールド座標に変換
@@ -190,7 +198,10 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera) {
 
 }
 
-//床更新
+// 目的: ステージ内の動的ギミックを1フレーム分更新する。
+// 入力: stage、経過時間dt、アイテム管理、カメラ。
+// 出力: 各ギミックの位置・状態フラグが更新される。
+// 注意: プレイヤー挙動に影響が大きいため、更新順変更時は要検証。
 void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camera) {
 	//一時床ギミックの更新
 	UpdateTempFloorGimmick(stage, dt, camera);
@@ -649,6 +660,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 
 
 		//ステージリセット
+		// 目的: ステージ内の可変ギミックを初期状態へ戻す。
 		void StageReset(Stage & stage) {
 			for (int i = 0; i < stage.touchBreakBlockCount; i++) {
 				stage.touchBreakBlocks[i] = stage.touchBreakBlocksInit[i];
@@ -754,6 +766,8 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 	
 		
 
+		// 目的: ステージ切替前にカウント類を安全に初期化する。
+		// 目的: ステージ切替前にカウント類を安全に初期化する。
 		void StageClear(Stage& stage) {
 			StageThemeUnload(stage.theme);
 			stage.touchBreakBlockCount = 0;

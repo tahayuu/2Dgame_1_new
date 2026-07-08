@@ -39,25 +39,45 @@ constexpr float PROP_HEADER_H = 58.0f;
 // ================================================================
 // 共有ヘルパー関数 (StageEditor.cpp で定義)
 // ================================================================
-const TypeParamInfo& EdGetTypeInfo(EditorObjectType t);//オブジェクトタイプに応じたパラメータ情報を取得する
-void        InitDefaultParams(PlacedObject& obj);//	オブジェクトタイプに応じたデフォルトパラメータを初期化する
-const char* GetNameEN(int i);//オブジェクトタイプに応じた英語名を取得する
-const char* GetNameJP(int i);//オブジェクトタイプに応じた名前を取得する
-Color       GetColor(int i);//オブジェクトタイプに応じた色を取得する
-Rectangle   GetPropPanelRect(const StageEditor& ed);//プロパティパネルの矩形を取得する
-Rectangle   GetBtnRect(const StageEditor& ed, int visibleIdx);//ツールバーのボタン矩形を取得する
-void        AdjustToolbarOffset(StageEditor& ed);//ツールバーのオフセットを調整する（ボタン数に応じて中央寄せ）
-void        DrawObjectIcon(int typeIdx, Rectangle r);//オブジェクトアイコンを描画する
-void        DrawPropertyPanel(const StageEditor& ed);//プロパティパネルを描画する
-Vector2     SnapToGrid(Vector2 world, float grid);//ワールド座標をグリッドにスナップする
-std::string FitLabelToWidth(const char* text, int fontSize, float maxWidth);//テキストを指定幅に収まるように切り詰める（末尾に "..." を付加）
+// 指定したオブジェクトタイプが持つ「編集可能パラメータ定義」を返す
+const TypeParamInfo& EdGetTypeInfo(EditorObjectType t);
+// オブジェクト生成時に、タイプごとのデフォルト値を params に設定する
+void        InitDefaultParams(PlacedObject& obj);
+// ツールバー表示用の英語ラベルを取得する
+const char* GetNameEN(int i);
+// UI表示用の日本語ラベルを取得する
+const char* GetNameJP(int i);
+// タイプごとの識別色（エディタ描画用）を取得する
+Color       GetColor(int i);
+// 右側プロパティパネルの表示範囲（位置とサイズ）を計算する
+Rectangle   GetPropPanelRect(const StageEditor& ed);
+// 表示中ツールバーの n 番目ボタン矩形を取得する
+Rectangle   GetBtnRect(const StageEditor& ed, int visibleIdx);
+// 現在選択中タイプが見切れないようにツールバーの表示オフセットを補正する
+void        AdjustToolbarOffset(StageEditor& ed);
+// ツールバー内で使う簡易アイコンを描画する
+void        DrawObjectIcon(int typeIdx, Rectangle r);
+// 選択中オブジェクトのパラメータ編集パネルを描画する
+void        DrawPropertyPanel(const StageEditor& ed);
+// ワールド座標を現在のグリッド単位へ丸める
+Vector2     SnapToGrid(Vector2 world, float grid);
+// 長いラベル文字列を指定幅に収まるように省略表示する
+std::string FitLabelToWidth(const char* text, int fontSize, float maxWidth);
 
+// 敵タイプごとの編集パラメータ定義を返す
 const EnemyTypeParamInfo& EdGetEnemyTypeInfo(EnemyType t);
-void                      InitDefaultEnemyParams(PlacedEnemy& enemy);//敵のタイプに応じたデフォルトパラメータを初期化する
-int                       GetEnemyAtWorldPos(const StageEditor& ed, Vector2 worldPos);//敵の配置位置を取得する
-Rectangle                 GetEnemyRect(const PlacedEnemy& enemy);//敵の矩形を取得する
-void                      EditorAddEnemy(StageEditor& ed, EnemyType type,Vector2 worldPos);//敵を追加する
-void                      EditorRemoveEnemy(StageEditor& ed, int enemyIdx);//敵を削除する
-void                      EditorSetEnemyParam(StageEditor& ed, int enemyIdx, int paramIdx, float value);//敵のパラメータを設定する
+// 敵配置データをタイプごとのデフォルト値で初期化する
+void                      InitDefaultEnemyParams(PlacedEnemy& enemy);
+// 指定座標に重なっている敵のインデックスを取得する（未ヒット時は-1）
+int                       GetEnemyAtWorldPos(const StageEditor& ed, Vector2 worldPos);
+// 敵の当たり判定矩形（エディタ選択用）を返す
+Rectangle                 GetEnemyRect(const PlacedEnemy& enemy);
+// 新しい敵を配置リストへ追加する
+void                      EditorAddEnemy(StageEditor& ed, EnemyType type,Vector2 worldPos);
+// 指定インデックスの敵を削除し、選択状態も整合させる
+void                      EditorRemoveEnemy(StageEditor& ed, int enemyIdx);
+// 敵パラメータ1項目を更新する
+void                      EditorSetEnemyParam(StageEditor& ed, int enemyIdx, int paramIdx, float value);
 
-void DrawEnemyPropertyPanel(StageEditor& ed);//敵のプロパティパネルを描画する)
+// 敵専用のプロパティ編集パネルを描画する
+void DrawEnemyPropertyPanel(StageEditor& ed);

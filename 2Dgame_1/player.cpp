@@ -17,6 +17,7 @@
 // ─────────────────────────────────────────────────────
 //  初期化・後処理
 // ─────────────────────────────────────────────────────
+// 目的: 描画素材(PlayerVisual)を読み込み、更新開始前の状態を作る。
 void PlayerStateInit(PlayerState& ps)
 {
     PlayerVisualLoad(ps.visual);
@@ -30,6 +31,10 @@ void PlayerStateUnload(PlayerState& ps)
 // ─────────────────────────────────────────────────────
 //  毎フレーム更新
 // ─────────────────────────────────────────────────────
+// 目的: 入力・物理・ギミック・敵/アイテム接触を統合してプレイヤー状態を確定する。
+// 入力: ステージ状態、各マネージャ、カメラ、経過時間。
+// 出力: ps の位置/速度/死亡フラグ/演出フラグが更新される。
+// 注意: 戻り値を使わない設計のため、main側は pendingDeath 等を必ず参照する。
 void PlayerStateUpdate(PlayerState& ps,
     Stage& stage,
     EnemyManager& em,
@@ -319,6 +324,7 @@ void PlayerStateUpdate(PlayerState& ps,
 // ─────────────────────────────────────────────────────
 //  描画（ワールド座標）BeginMode2D の中で呼ぶ
 // ─────────────────────────────────────────────────────
+// 目的: ゲーム世界内に存在するプレイヤー表示を描画する。
 void PlayerStateDrawWorld(const PlayerState& ps,
     float              editorExitInvTimer,
     bool               isDeadScreen)

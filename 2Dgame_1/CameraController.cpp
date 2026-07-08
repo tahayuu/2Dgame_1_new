@@ -1,5 +1,6 @@
 #include "CameraController.h"
 
+// CameraController.cpp の役割: カメラ追従ロジック本体。
 void UpdateCamera(
     Camera2D& camera,
     const Rectangle& player,

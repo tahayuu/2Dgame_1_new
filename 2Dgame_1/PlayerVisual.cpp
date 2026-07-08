@@ -1,5 +1,7 @@
 ﻿#include"PlayerVisual.h"
 #include <cmath>
+
+// PlayerVisual.cpp の役割: プレイヤー/背景の見た目更新と描画を実装する。
 void PlayerVisualLoad(PlayerVisual& pv) {
 	pv.texIdle = LoadTexture("assets/images/player/male_hero-idle.png");
 	pv.texRun = LoadTexture("assets/images/player/male_hero-run.png");
@@ -71,6 +73,8 @@ void TitleVisualDrawScreen(const StageVisual& sv, int screenW, int screenH) {
 		DrawTexturePro(sv.background, src, dst, { 0.0f,0.0f }, 0.0f, WHITE);
 	}
 
+// 目的: 速度と接地状態からアニメーション状態を更新する。
+// 注意: isDying 中は他アニメ更新を止める。
 void PlayerVisualUpdate(PlayerVisual& pv, float dt, const Vector2& velocity, bool onGround) {
 
 	if(pv.isDying) {

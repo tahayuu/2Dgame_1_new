@@ -2,6 +2,13 @@
 #include "Enemy.h"
 #include <vector>
 
+// ================================================================
+// EnemyManager.h の役割
+// ---------------------------------------------------------------
+// ・敵配列の生成/更新/描画/リセットを一括管理する。
+// ・プレイヤー接触結果（側面衝突かどうか等）を集約して外部へ渡す。
+// ================================================================
+
 struct EnemyManager {
     std::vector<Enemy> enemies;
 	std::vector<Enemy> enemiesInit; //初期配置用配列
@@ -21,13 +28,21 @@ struct EnemyManager {
 	std::string touchedEnemyDialogKey = ""; //プレイヤーが触れた敵のダイアログキー
 
 
-    void Init();                                         // 初期化（必要ならプリロード）
-    void Spawn(EnemyType Type, Vector2 pos);             // 敵を生成（追加）
-	void EnemyCollisionAll( const Rectangle& player, float dt,Vector2& velocity); // 敵とプレイヤーの当たり判定
-    void UpdateAll(float dt, const Rectangle& player);   // すべて更新
-    void DrawAll();                                      // すべて描画
-    void Reset();                                        // すべて無効化 / リセット
+    // 目的: 管理配列と接触フラグを初期化する。
+        void Init();
+    // 目的: 敵1体を生成して管理配列へ追加する。
+        void Spawn(EnemyType Type, Vector2 pos);
+	// 目的: 全敵との接触を更新し、プレイヤー接触情報を集約する。
+		void EnemyCollisionAll( const Rectangle& player, float dt,Vector2& velocity);
+    // 目的: 全敵のAI更新と非アクティブ削除を行う。
+        void UpdateAll(float dt, const Rectangle& player);
+    // 目的: 管理中の全敵を描画する。
+        void DrawAll();
+    // 目的: 敵状態をリセットし、配列をクリアする。
+        void Reset();
 
-	void saveEnemiesInit(); //初期配置保存
-	void RestorInitialEnemies(); //初期配置に戻す
+	// 目的: 現在敵配置を初期状態として保存する。
+		void saveEnemiesInit();
+	// 目的: 保存した初期配置へ戻す。
+		void RestorInitialEnemies();
 };

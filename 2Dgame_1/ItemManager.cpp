@@ -1,5 +1,12 @@
 ﻿#include "ItemManager.h"
 
+// ================================================================
+// ItemManager.cpp の役割
+// ---------------------------------------------------------------
+// ・アイテム本体の更新と、回収後効果(activeItems)の時間管理を実装する。
+// ・Playerは GetSpeedBoost/GetJumpBoost を通して効果値を受け取る。
+// ================================================================
+
 void ItemManager::Init()
 {
 	//•	ゲーム開始・ステージ切替時に内部配列を「空」にして、追加に備えるため。
@@ -42,7 +49,8 @@ void ItemManager::ItemCollisionAll(Item& item, const Rectangle& player, float dt
 	}
 } 
 
-// すべて更新
+// 目的: ワールドアイテム状態と、効果中アイテムの残り時間を同時更新する。
+// 注意: activeItems の管理は Playerの移動性能に直結するため削除条件変更に注意。
 void ItemManager::UpdateAll(float dt, const Rectangle& player,Vector2& velocity, ItemBlock* itemBlock) {
 	for (auto& item : items) {
 		// 飛び出し中も更新して移動させる
@@ -106,7 +114,7 @@ void ItemManager::Reset() {
 	invincible = false;
 }                            
 
-// アイテム効果を適用
+// 目的: 回収されたアイテムを activeItems へ登録し、必要なら即時フラグを更新する。
 void ItemManager::ApplyItemEffect(ItemType type, ItemManager& itemManag, Item& item) {
 	float duration = 5.0f;
 	if (type == ItemType::invinciblePotion)duration = itemManag.invincibleDuration;

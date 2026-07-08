@@ -3,6 +3,13 @@
 #include "SpriteDatabase.h"
 #include <cmath>
 
+// ================================================================
+// StageDraw.cpp の役割
+// ---------------------------------------------------------------
+// ・ステージ内オブジェクトの可視化を一括管理する。
+// ・type(挙動)と spriteOverride(見た目)の両方を考慮して描画順を制御する。
+// ================================================================
+
 static bool IsAlmostEqual(float a, float b, float eps = 0.01f) {
 	return fabsf(a - b) <= eps;
 }
@@ -137,7 +144,11 @@ static void DrawArrowTexture(const Texture2D& tex, Rectangle rect, float angleDe
 	DrawTexturePro(tex, src, dst, origin, angleDeg, WHITE);
 }
 
-// 描画
+// 目的: ステージ中の全ギミックを適切なレイヤ順で描画する中核関数。
+// 入力: stage（現在状態）、spikeW（トゲ幅）、player（一部ギミック描画参照用）。
+// 出力: 描画のみ（stageデータは変更しない）。
+// 注意: 移動ギミックのスプライト上書きは initRect 基準で対応しているため、
+//       Export/Import の初期矩形管理と整合が必要。
 void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int heldSpringIndex) {
 	// ===== Tiled タイルレイヤーを最初に描画（背景） =====
 	const float bScale = stage.BACK_LAYER_SCALE;

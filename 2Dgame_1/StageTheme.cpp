@@ -1,6 +1,14 @@
 #include "StageTheme.h"
 #include <cmath>
 
+// ================================================================
+// StageTheme.cpp の役割
+// ---------------------------------------------------------------
+// ・ステージ床/ブロックの見た目リソースを読み込み・解放・描画する。
+// ・StageCollision とは分離し、見た目変更が当たり判定へ波及しない構成にしている。
+// ================================================================
+
+// 目的: シンプルな上面+内部テクスチャ構成を有効化する。
 void StageThemeLoad(StageTheme& theme, const char* topPath, const char* bodyPath, float tileSize) {
     theme.platformTop  = LoadTexture(topPath);
     theme.platformBody = LoadTexture(bodyPath);
@@ -28,6 +36,7 @@ void StageThemeLoadLR(StageTheme& theme, const char* leftPath, const char* right
     theme.hasTextures   = (theme.platformLeft.id != 0 && theme.platformRight.id != 0);
 }
 
+// 目的: 4方向分の画像をまとめて読み込み、テーマを一度で完成させる。
 void StageThemeLoadAll(StageTheme& theme,
     const char* topPath, const char* bodyPath,
     const char* leftPath, const char* rightPath, float tileSize)
@@ -42,6 +51,7 @@ void StageThemeLoadAll(StageTheme& theme,
                            theme.platformLeft.id != 0 && theme.platformRight.id != 0);
 }
 
+// 目的: テーマで保持するGPUテクスチャを漏れなく解放する。
 void StageThemeUnload(StageTheme& theme) {
     if (theme.platformTop.id   != 0) UnloadTexture(theme.platformTop);
     if (theme.platformBody.id  != 0) UnloadTexture(theme.platformBody);
@@ -80,6 +90,8 @@ static void DrawTextureTiledColumn(
     }
 }
 
+// 目的: 床1つを tileSize 単位で分割し、端や中央を崩さずに描画する。
+// 注意: ここは描画専用。衝突判定サイズは rect 側で管理する。
 void DrawPlatformTextured(Rectangle rect, const StageTheme& theme) {
     if (!theme.hasTextures) {
         DrawRectangleRec(rect, DARKGRAY);

@@ -4,6 +4,7 @@
 #include "ItemManager.h"
 #include"StageCollision.h"
 
+// Item.cpp の役割: アイテム単体の初期化/更新/描画処理を実装する。
 void ItemInit(Item& item, ItemType type, Vector2 position) {
 	item.type = type;
 	item.rect = { position.x,position.y,32,32 };
@@ -37,6 +38,7 @@ void ItemCollision(Item& item, const Rectangle& player, float dt, Vector2 veloci
 	}
 }
 // 効果中のアイテムを更新
+// 目的: 出現演出中(isEmerged)の位置更新と有効化切替を管理する。
 void ItemUpdate(Item& item, float dt,Vector2& velocity) {
 	// 非表示／未出現のアイテムは無視
 	if (!item.isActive && !item.isEmerged) return;

@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <vector>
 
+// OjisanVisual.cpp の役割: 右下固定UIとしてのおじさん表示と吹き出し描画を実装する。
 OjisanVisual::OjisanVisual()
 	: portrait{ 0,0,0,0,0 }, bubble{ 0,0,0,0,0 }, ojisanPunch{ 0,0,0,0,0 }, punchEffect{ 0,0,0,0,0 }, message(""),
 	showMessage(false), timer(0.0f), duration(0.0f),
@@ -35,6 +36,7 @@ void OjisanVisual::Unload() {
 	if (punchEffect.id != 0) UnloadTexture(punchEffect);
 }
 
+// 目的: 新しいメッセージ表示を開始し、表示時間とフォントモードを設定する。
 void OjisanVisual::TriggerMessage(const std::string& text, float durationSeconds,
                                    const Font* overrideFont, bool forceDefaultFont) {
     message = text;

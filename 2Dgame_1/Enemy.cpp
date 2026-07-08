@@ -3,6 +3,13 @@
 #include"StageCollision.h"
 #include<cmath>
 
+// ================================================================
+// Enemy.cpp の役割
+// ---------------------------------------------------------------
+// ・敵の初期化、接触判定、移動更新、描画を実装する。
+// ・側面衝突と踏みつけを分離し、見た目切替と死亡遷移を管理する。
+// ================================================================
+
 // テクスチャの静的管理
 static Texture2D walkerTexture{};
 static Texture2D flyerTexture{};
@@ -32,6 +39,8 @@ const float ENEMY_CROP_RIGHT = 10.0f;     // 右を少し切る
 const float ENEMY_CROP_TOP = 0.0f;
 const float ENEMY_CROP_BOTTOM = 0.0f;
 
+// 目的: 敵種別ごとの画像と被弾/踏みつけ画像を読み込む。
+// 注意: 二重読み込みを防ぐため texturesLoaded でガードする。
 void EnemyLoadTextures() {
 	if (texturesLoaded) return;
 
@@ -156,6 +165,9 @@ static bool playerSence(const Rectangle& player,const Enemy& enemy,float rangeX)
 //==========================
 // 公開関数の定義
 //==========================
+// 目的: 敵1体の初期状態を type に応じて設定する。
+// 入力: 敵タイプとスポーン位置。
+// 出力: enemy の移動範囲/初期HP/使用テクスチャが決まる。
 void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
 	enemy.type = type;
 	enemy.pos = spawnPos;
@@ -202,6 +214,8 @@ void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
 	enemy.rect.y = enemy.pos.y;
 }
 
+// 目的: プレイヤー接触の結果を enemy 状態へ反映する。
+// 注意: 踏みつけ成功時は isStomped、側面接触時は isHit/touchedFromSide を立てる。
 void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity) {
 	if (!enemy.isActive) return;
 	enemy.timer += dt;
@@ -223,6 +237,7 @@ void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt, Vector2& ve
 	}
 }
 
+// 目的: 敵AIの移動と死亡遷移を更新する。
 void EnemyUpdate(Enemy& enemy, float dt, const Rectangle& player){
 	if (!enemy.isActive) return;
 
@@ -316,6 +331,7 @@ void EnemyUpdate(Enemy& enemy, float dt, const Rectangle& player){
 	}
 }
 
+// 目的: enemy の状態に応じて通常/被弾/踏みつけテクスチャを描き分ける。
 void EnemyDraw(const Enemy& enemy) {
 	if (!enemy.isActive) return;
 

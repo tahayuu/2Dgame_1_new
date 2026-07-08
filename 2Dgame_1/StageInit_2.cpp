@@ -1,4 +1,7 @@
 ﻿#include "Stage.h"
+
+// StageInit_2.cpp の役割: ステージ2の固定初期配置を定義する。
+// 注意: dialogKey 付き敵配置があり、DialogManager側のキー名と整合が必要。
 void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemManager) {//&は参照（本物を使う）よってmain.cppに反映される
 
 	StageThemeLoadAll(stage.theme,

@@ -1,5 +1,7 @@
 ﻿#include "Stage.h"
 
+// StageInit_3.cpp の役割: ステージ3（縦構造あり）の初期配置を定義する。
+// 目的: 地上/地下レイヤーを含む地形とギミック配置を構築する。
 void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemManager) {
 
     // ステージ3用テクスチャ（パスは必要に応じて変更）

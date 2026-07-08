@@ -23,8 +23,16 @@
 #include "PlayerVisual.h"      
 #include "SpriteDatabase.h"
 
+// ================================================================
+// main.cpp の役割
+// ---------------------------------------------------------------
+// ・ゲーム全体の初期化、メインループ、シーン遷移、終了処理を統括する。
+// ・各サブシステム（Stage/Player/Editor/Audio/Title）を接続するハブ。
+// ================================================================
+
 int main() {
 
+	// 目的: 実行時の全システムを初期化し、シーン遷移ループを駆動する。
 	GameState gameState = GameState::START;
 	GameState pausePrevState = GameState::PLAYING; // ポーズ前の状態を保持
 	int pauseSelectIdx = 0; // 0=ゲームにもどる, 1=タイトルに戻る, 2=ゲーム終了

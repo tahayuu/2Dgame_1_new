@@ -1,6 +1,8 @@
 #include"Stage.h"
 #include "StageInit_choseStage.h"
 
+// StageInit_choseStage.cpp の役割: ステージ選択用マップを初期化する。
+// 目的: 出口ドアで targetStage を選ばせるハブステージを作る。
 void StageInit_choseStage(Stage& stage, EnemyManager& enemyManager)
 {
 	// ステージ選択画面用テクスチャ（パスは必要に応じて変更）

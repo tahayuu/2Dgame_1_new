@@ -2,6 +2,13 @@
 #include <string>
 #include "GameEvents.h"
 
+// ================================================================
+// OjisanDialog.h の役割
+// ---------------------------------------------------------------
+// ・死亡文脈(OjisanContext)から、おじさん台詞を引くAPIを定義する。
+// ・DialogManager のキー設計と連携して文言を切り替える。
+// ================================================================
+
 struct OjisanContext {
 	DeathCause cause = DeathCause::UNKNOWN;
 	std::string areaName = "";

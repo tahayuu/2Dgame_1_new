@@ -3,6 +3,14 @@
 #include"GameObjects.h"
 #include <cmath>
 
+// ================================================================
+// StageCollision.cpp の役割
+// ---------------------------------------------------------------
+// ・プレイヤーと各ギミックの衝突を解決する実装本体。
+// ・着地安定性のため、前フレーム位置(prevPlayer)を使った判定を多用している。
+// ・ギミック追加時は X解決/Y解決/移動床追従 の3系統を確認する。
+// ================================================================
+
 //===========================================
 // 内部ヘルパー関数（static）
 //===========================================
@@ -694,7 +702,10 @@ static void TryBreakFromBelowOnly(Stage& stage, const Rectangle& prev, Rectangle
 // 公開関数の実装
 //===========================================
 
-//当たり判定をまとめて処理（ｘ方向）
+// 目的: X方向の衝突を先に解決し、壁押し戻しと横移動停止を行う。
+// 入力: stage、プレイヤー矩形/速度、前フレーム矩形。
+// 出力: player.x / velocity.x を補正。
+// 注意: 「前フレームで上にいたか」を使う処理が多く、着地誤判定を防いでいる。
 void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,Rectangle& prevPlayer) {
 	TrySpawnClearFromSide(stage, prevPlayer, player, velocity);
 	//普通床（現在のレイヤーのみ衝突）
@@ -950,7 +961,10 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	
 }
 
-//当たり判定をまとめて処理（ｙ方向）地面に乗っているなら true
+// 目的: Y方向の衝突を解決し、着地/頭ぶつけ/床ギミック反応を確定する。
+// 入力: stage、前フレーム矩形、現在矩形、速度。
+// 出力: player.y / velocity.y を補正し、着地時 true を返す。
+// 注意: ジャンプ入力バッファや崩壊床トリガなど、ゲーム感触に直結する処理が集中。
 bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player, Vector2& velocity, Rectangle& prev, float dt) {
 	static float jumpBoostBuffer = 0.0f;
 	const float jumpBoostBufferTime = 0.4f;
@@ -1602,7 +1616,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 			return onGround;
 		}
 
-//プレイヤーが氷床に乗っているか判定
+// 目的: 氷床の上に立っているかを判定し、Player側の移動制御切替に使う。
 bool IsOnIcePlatform(const Stage& stage,const Rectangle player){
 	for (int i = 0; i < stage.icePlatformCount; i++) {
 		auto& ip = stage.icePlatforms[i];
@@ -1650,12 +1664,15 @@ bool IsOnMoveUpPlatform(const Stage& stage,const Rectangle player){
 }
 
 
+// 目的: 動く床に乗っている間、プレイヤー位置を床の移動量へ追従させる。
 void MoveUpdateWithPlayrer(Stage& stage, Rectangle& player, Vector2& velocity, float dt) {
 	MoveWithPlayer(stage, player, velocity, dt);
 	MoveWithUpDownPlatform(stage, player, velocity, dt);
 	MoveWithCirclePlatform(stage, player, velocity, dt);
 }
 
+// 目的: エレベーター本体の移動と、搭乗中プレイヤーの同期移動を処理する。
+// 注意: ここを変更する際は StageResolveY の乗り判定との整合を確認する。
 void ElevatorUpdate(Stage& stage, Rectangle& player, Vector2& velocity, float dt) {
 	stage.playerInElevator = false;
 

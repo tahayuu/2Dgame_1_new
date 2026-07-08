@@ -5,7 +5,22 @@
 #include <sstream>
 
 // ================================================================
-//  Export (editor -> Stage)
+// StageEditorIO.cpp の役割
+// ---------------------------------------------------------------
+// ・エディタ編集用データ(PlacedObject / PlacedEnemy)と、
+//   実行用データ(Stage / EnemyManager)を相互変換する。
+// ・CSV/JSON 保存読込もこのファイルが担当する。
+// ・重要設計: type(挙動)と spriteId(見た目)は別経路で保持する。
+//   そのため、Export/Import/CSVの3箇所で対応を揃える必要がある。
+// ================================================================
+
+// ================================================================
+// 目的: エディタ上の配置データを、ゲーム実行用の Stage 構造へ変換する。
+// 入力: ed.objects / ed.placedEnemies。
+// 出力: stage と enemyManager がプレイ可能な初期状態に再構築される。
+// 注意:
+// ・params[p0..p5] の意味は type ごとに異なる（StageEditor.cpp の TYPE_PARAMS と対応）。
+// ・見た目(spriteId/rotation/flip)は stage.spriteInstances へ別途書き出す。
 // ================================================================
 void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemyManager) {
     StageClear(stage);
@@ -27,6 +42,14 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 
     for (const auto& o : ed.objects) {
         int t = (int)o.type;
+
+        // ------------------------------------------------------------
+        // 変換の基本ルール
+        // ・o.type で「どの Stage 配列へ入れるか」を決める。
+        // ・o.params[n] を、対応ギミックの意味ある項目へ展開する。
+        //   例) MOVE_PLATFORM_X: p0=速度, p1=距離, p2=遅延
+        // ・この switch が Export の正本なので、Import/CSV と常に整合させる。
+        // ------------------------------------------------------------
         switch (o.type) {
         case EditorObjectType::PLATFORM:
             if (c[t] < MAX_PLATFORMS) stage.platforms[c[t]++] = o.rect; break;
@@ -150,6 +173,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         case EditorObjectType::MOVE_PLATFORM_X:
             if (c[t] < MAX_MOVEPLATFORM) {
                 int i = c[t]++; auto& m = stage.movePlatformsX[i];
+                // p0=moveSpeed, p1=moveDistance, p2=delay
                 m.rect = o.rect; m.moveSpeed = o.params[0]; m.moveDistance = o.params[1];
                 m.timer = 0; m.delay = o.params[2]; m.triggerd = false; m.ismoved = false; m.onplayer = false;
                 stage.moveplatformsXInit[i] = m;
@@ -196,6 +220,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         case EditorObjectType::TRACKING_HAZARD:
             if (c[t] < MAX_HAZARDS) {
                 int i = c[t]++; auto& h = stage.trackingHazards[i];
+                // p0=speed, p1=trackingRange, p2=maxDistance, p3=returnToStart(0/1)
                 h.rect = o.rect; h.startPos = { o.rect.x,o.rect.y };
                 h.speed = o.params[0]; h.trackingRange = o.params[1]; h.maxDistance = o.params[2];
                 h.isTracking = false; h.returnToStart = (o.params[3] != 0.0f);
@@ -334,7 +359,9 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
             if (c[t] < Stage::MAX_COMMENT_BLOCKS) {
                 int i = c[t]++; auto& cb = stage.commentBlocks[i];
                 cb.rect = o.rect;
-                // '@' で始まる場合は DialogManager のキーとして解決
+                // コメントブロックと DialogManager の接続点。
+                // text が "@キー名" の形式なら、固定文ではなく辞書(ojisan_lines.text)から取得する。
+                // これにより、同じステージ配置のまま台詞文言だけ差し替えやすくなる。
                 if (!o.text.empty() && o.text[0] == '@') {
                     const std::string key = o.text.substr(1);
                     auto& dm = DialogManager::Instance();
@@ -342,6 +369,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 } else {
                     cb.message = o.text;
                 }
+                // p0=duration（表示秒数）
                 cb.duration = o.params[0];
                 cb.triggered = false;
                 cb.cooldown = 0.0f;
@@ -367,6 +395,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 int i = c[t]++;
                 auto& cb = stage.cursorBottoms[i];
                 cb.rect = o.rect;
+                // p0=targetRollingBall, p1=oneShot(0/1), p2=maxDistance
                 cb.targetRollingBall = (int)o.params[0];
                 cb.oneShot = (o.params[1] != 0.0f);
                 cb.maxDistance = o.params[2];
@@ -405,6 +434,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         case EditorObjectType::CRANE:
             if (c[t] < Stage::MAX_CRANES) {
                 int i = c[t]++; auto& cr = stage.cranes[i];
+                // p0=maxArmLength, p1=detectRangeY(実装上 detectRangeX に投入),
+                // p2=carrySpeedX, p3=carryDir, p4=carryDist
                 cr.bodyRect = o.rect;
                 cr.ceilingY = o.rect.y;
                 cr.maxArmLength = o.params[0];
@@ -552,7 +583,12 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 }
 
 // ================================================================
-//  Import (Stage -> editor)
+// 目的: 実行用 Stage データを、再編集できる PlacedObject 形式へ戻す。
+// 入力: Stage(実行時構造)。
+// 出力: ed.objects / ed.placedEnemies を再構築。
+// 注意:
+// ・Exportと逆変換の関係なので、片方を変えたら必ず両方更新する。
+// ・見た目(spriteId/rotation/flip)は末尾の spriteInstances 復元処理で上書きする。
 // ================================================================
 void EditorImportFromStage(StageEditor& ed, const Stage& s) {
     ed.objects.clear();
@@ -859,6 +895,10 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 }
 
 // ================================================================
+// 目的: エディタ配置を JSON で外部保存する。
+// 入力: ed とファイル名。
+// 出力: 保存成功なら true。
+// 注意: 現状は JSON 読込関数がないため、確認/バックアップ用途が中心。
 bool EditorSaveJSON(const StageEditor& ed, const char* filename) {
     std::ofstream ofs(filename);
     if (!ofs.is_open()) return false;
@@ -882,6 +922,10 @@ bool EditorSaveJSON(const StageEditor& ed, const char* filename) {
     ofs << "  ]\n}\n";
     return true;
 }
+// 目的: エディタの標準保存形式(CSV)を書き出す。
+// 入力: ed とファイル名。
+// 出力: 保存成功なら true。
+// 注意: オブジェクト本体(type/rect/params/text)と見た目(sprite)を同時保存する。
 bool EditorSaveCSV(const StageEditor& ed, const char* filename) {
     // 指定されたファイル名で書き込み用ファイルを開く
     std::ofstream ofs(filename);
@@ -944,6 +988,10 @@ bool EditorSaveCSV(const StageEditor& ed, const char* filename) {
     return true;
 }
 
+// 目的: CSVからエディタ編集状態を復元する。
+// 入力: 読み込むCSVファイル。
+// 出力: ed.objects / ed.placedEnemies を更新し、成功時 true。
+// 注意: 古いCSV（sprite列なし）も読めるよう、欠損列はデフォルト補完する。
 bool EditorLoadCSV(StageEditor& ed, const char* filename) {
     std::ifstream ifs(filename);
     if (!ifs.is_open()) return false;

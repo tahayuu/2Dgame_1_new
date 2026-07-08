@@ -4,6 +4,13 @@
 // 前方宣言
 struct Stage;
 
+// ================================================================
+// StageHazard.h の役割
+// ---------------------------------------------------------------
+// ・危険ギミックの当たり判定APIと更新APIを公開する。
+// ・Player側は StageHitHazard/HazardUpdate を通して一括利用する。
+// ================================================================
+
 //===========================================
 // ハザード（危険物）の当たり判定（個別）
 //===========================================
@@ -23,9 +30,11 @@ bool StageHitRollingBall    (const Stage& stage, const Rectangle& player); // 転
 //===========================================
 // まとめて判定（既存コードとの互換用）
 //===========================================
+// 目的: 全ハザード判定をまとめて実行する統合入口。
 bool StageHitHazard(const Stage& stage, const Rectangle& player);
 
 // 透明ブロックに当たったか
+// 目的: 透明クリアブロックへの接触判定。
 bool clearCheck(const Stage& stage, const Rectangle& player);
 
 //===========================================
@@ -36,5 +45,7 @@ void UpMoveHazardExtY       (Stage& stage, const Rectangle& player, float dt);
 void MoveHazarardNearRight  (Stage& stage, const Rectangle& player, float dt);
 void TrackingHazardMove     (Stage& stage, const Rectangle& player, float dt);
 void StageSenseFallingTexts (Stage& stage, const Rectangle& player, float dt);
+// 目的: 危険ギミックの起動判定と移動更新を1フレーム分進める。
 void HazardUpdate           (Stage& stage, const Rectangle& player, float dt);
+// 目的: 危険ギミックをステージ初期状態へ戻す。
 void HazardReset            (Stage& stage);

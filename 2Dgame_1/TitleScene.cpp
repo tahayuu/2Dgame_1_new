@@ -1,5 +1,6 @@
 #include "TitleScene.h"
 
+// TitleScene.cpp の役割: タイトル入力と選択UIの描画を実装する。
 void TitleSceneInit(TitleScene& ts, Texture2D bg, Font& font, AudioManager& audio)
 {
     ts.bg = bg;
@@ -7,7 +8,8 @@ void TitleSceneInit(TitleScene& ts, Texture2D bg, Font& font, AudioManager& audi
     ts.audio = &audio;
 }
 
-// 更新：main.cpp の GameState::START ブロック（945〜993行）をここへ
+// 目的: タイトル入力を処理し、開始確定時に gameState を PLAYING へ進める。
+// 出力: true のとき main 側で LoadSelectedStage を呼ぶ契機になる。
 bool TitleSceneUpdate(TitleScene& ts, GameState& gameState, float dt)
 {
     if (!ts.isSelectingStage && IsKeyPressed(KEY_SPACE)) {

@@ -1,6 +1,13 @@
 #pragma once
 #include "raylib.h"
 
+// ================================================================
+// CameraController.h の役割
+// ---------------------------------------------------------------
+// ・プレイヤー位置とステージ寸法に基づくカメラ追従設定を定義する。
+// ・2層ステージ（地上/地下）向けのゾーン固定挙動も扱う。
+// ================================================================
+
 // ステージごとのカメラ挙動設定
 struct CameraConfig {
     bool  twoLayered = false;  // 2段構造ステージか（true=地上/地下で固定、シャフトで追従）
@@ -9,7 +16,8 @@ struct CameraConfig {
     float lerpSpeed = 10.0f; // ゾーン切替時の補間速度
 };
 
-// カメラ更新（main.cpp から毎フレーム呼ぶ）
+// 目的: カメラtargetを更新し、横方向クランプと縦方向ゾーン補間を適用する。
+// 注意: twoLayered 有効時は shaftEnterY/shaftExitY の設定が体感に直結する。
 void UpdateCamera(
     Camera2D& camera,
     const Rectangle& player,
