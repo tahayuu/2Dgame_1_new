@@ -21,11 +21,12 @@ static bool IsSameRect(const Rectangle& a, const Rectangle& b) {
 		IsAlmostEqual(a.height, b.height);
 }
 
+// spriteInstancesに同じrectのスプライト上書きがあるかどうかを判定する
 static bool HasSpriteOverride(const Stage& stage, const Rectangle& rect) {
-	for (int i = 0; i < stage.spriteInstanceCount; i++) {
-		const auto& si = stage.spriteInstances[i];
-		if (si.spriteId == SpriteId::None) continue;
-		if (IsSameRect(si.rect, rect)) return true;
+	for (int i = 0; i < stage.spriteInstanceCount; i++) {// spriteInstancesの末尾ループで二重描画しないよう、動くギミックの初期rectかどうかを判定する
+		const auto& si = stage.spriteInstances[i];// spriteIdがNoneなら描画なしなのでスキップ
+		if (si.spriteId == SpriteId::None) continue;// rectが一致するなら上書きあり
+		if (IsSameRect(si.rect, rect)) return true;// rectが一致しないなら次のspriteInstanceをチェック
 	}
 	return false;
 }
@@ -246,10 +247,21 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//カーソルボタン（クリックギミック）
 	for (int i = 0; i < stage.cursorBottomCount; i++) {
 		const auto& cb = stage.cursorBottoms[i];
-		if (HasSpriteOverride(stage, cb.rect)) continue;
-		Color col = cb.triggered ? ORANGE : (cb.isActive ? YELLOW : GOLD);
-		DrawRectangleRec(cb.rect, col);
-		DrawRectangleLinesEx(cb.rect, 2, DARKBROWN);
+		if (HasSpriteOverride(stage, cb.rect)) continue;// spriteOverrideがあれば描画しない
+		// ボタンの状態に応じて表示テクスチャを切り替える
+		// ・triggered = true（カーソルが当たっている状態でボタンを押した／作動中） → ActionButtn_On
+		// ・triggered = false（通常時、またはカーソルが当たっているだけで未クリック）  → ActionButtn_off
+		const Texture2D& btnTex = cb.triggered ? stage.theme.actionButtonOn : stage.theme.actionButtonOff;
+		if (btnTex.id != 0) {
+			Rectangle src = { 0, 0, (float)btnTex.width, (float)btnTex.height };
+			DrawTexturePro(btnTex, src, cb.rect, { 0,0 }, 0, WHITE);
+		}
+		else {
+			// ★ テクスチャ未ロード時のフォールバック（画像パス未設定/読込失敗時でも安全に表示する）
+			Color col = cb.triggered ? ORANGE : (cb.isActive ? YELLOW : GOLD);
+			DrawRectangleRec(cb.rect, col);
+			DrawRectangleLinesEx(cb.rect, 2, DARKBROWN);
+		}
 	}
 
 	//移動低下床
@@ -282,11 +294,20 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.batteryHumanCount; i++) {
 		const auto& bh = stage.batteryHumans[i];
 		if (HasSpriteOverride(stage, bh.rect)) continue;
-		DrawRectangleRec(bh.rect, DARKGREEN);
-		DrawLineEx(
-			{ bh.rect.x + bh.rect.width, bh.rect.y + bh.rect.height / 2 - 5 },
-			{ bh.rect.x + bh.rect.width + 15, bh.rect.y + bh.rect.height / 2 - 5 }, 5.0f, BLACK
-		);
+		// bulletTex が有効なら Bullet.png テクスチャで描画、なければ従来の色で描画
+		if (stage.theme.bulletTex.id != 0) {
+			Rectangle src = { 0.0f, 0.0f,
+				(float)stage.theme.bulletTex.width,
+				(float)stage.theme.bulletTex.height };
+			DrawTexturePro(stage.theme.bulletTex, src, bh.rect, { 0.0f, 0.0f }, 0.0f, WHITE);
+		}
+		else {
+			DrawRectangleRec(bh.rect, DARKGREEN);
+			DrawLineEx(
+				{ bh.rect.x + bh.rect.width, bh.rect.y + bh.rect.height / 2 - 5 },
+				{ bh.rect.x + bh.rect.width + 15, bh.rect.y + bh.rect.height / 2 - 5 }, 5.0f, BLACK
+			);
+		}
 	}
 
 	//カーソル追従床
@@ -751,9 +772,9 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
 		const auto& sw = stage.tempFloorSwitches[i];
 		if (HasSpriteOverride(stage, sw.rect)) continue;
-		Color c = sw.triggered ? ORANGE : (sw.hover ? YELLOW : GOLD);
-		DrawRectangleRec(sw.rect, c);
-		DrawRectangleLinesEx(sw.rect, 2, BROWN);
+		const Texture2D& btnTex = sw.triggered ? stage.theme.actionButtonOn : stage.theme.actionButtonOff;;
+		Rectangle src = { 0, 0, (float)btnTex.width, (float)btnTex.height };
+		DrawTexturePro(btnTex, src, sw.rect, { 0,0 }, 0, WHITE);
 	}
 
 }

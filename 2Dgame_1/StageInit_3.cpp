@@ -16,8 +16,13 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
         stage.theme,
         "assets/images/stage/stage_1/itemblock.png",
         "assets/images/stage/stage_1/normalblock.png",
-        "assets/images/items/Arrow.png"
+        "assets/images/items/Arrow.png",
+        "assets/images/stage/stage_1/Bullet.png",
+        "assets/images/stage/stage_1/ActionButtn_off.png",
+        "assets/images/stage/stage_1/ActionButtn_on.png"
     );
+
+
     // =====================================================
     //  地上レイヤー  (Y: 0 ～ 720)
     //  穴: x=700~900 に地下への縦穴

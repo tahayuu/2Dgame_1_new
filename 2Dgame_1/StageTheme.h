@@ -16,6 +16,9 @@ struct StageTheme {
 	Texture2D itemBlock{};// アイテムブロックのテクスチャ
 	Texture2D nomalBlock{};//普通ブロックのテクスチャ
 	Texture2D arrowTex{};	  // 矢印のテクスチャ
+	Texture2D bulletTex{};	  // 砲台のテクスチャ
+	Texture2D actionButtonOff{}; //アクションボタンのテクスチャ（OFF）
+	Texture2D actionButtonOn{};  //アクションボタンのテクスチャ（ON）
     float tileSize = 50.0f;
     bool hasTextures = false;
     bool useLeftRight = false;   // true: 左右モード / false: 上下モード
@@ -25,10 +28,12 @@ void StageThemeLoadObjectTextures(
     StageTheme& theme,
     const char* itemBlockPath,
     const char* normalBlockPath,
-    const char* arrowPath
+    const char* arrowPath,
+    const char* bulletPath,
+	const char* ActionButtn_offPath,
+	const char* ActionButtn_onPath
 );
 
-void StageThemeLoadObjectTextures(StageTheme& theme);
 // 目的: 上面+内部の2テクスチャ構成で床テーマを読み込む。
 void StageThemeLoad(StageTheme& theme, const char* topPath, const char* bodyPath, float tileSize);
 // 目的: 左右端テクスチャを使う横方向テーマを読み込む。

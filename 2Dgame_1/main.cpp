@@ -57,7 +57,7 @@ int main() {
 
 // 実行場所がどこでも、assets があるゲームルートを探索
 // 優先順位:
-// 1) <親>/2Dgame_1/assets（開発環境）
+// 1) <親>/2Dgame_1/assets（開発環境） 
 // 2) <実行フォルダ>/assets（配布zip）
 auto FindGameRoot = []() -> fs::path {
     fs::path p = fs::path(GetApplicationDirectory());

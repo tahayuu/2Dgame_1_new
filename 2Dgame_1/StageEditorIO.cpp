@@ -543,9 +543,9 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 	stage.tempFloorCount = c[(int)EditorObjectType::TEMP_FLOOR];              // 51
 	stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
     stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
-    stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
 
-	StageThemeLoadAll(stage.theme,
+
+    StageThemeLoadAll(stage.theme,
         "assets/images/stage/stage_1/ground1.png",
         "assets/images/stage/stage_1/ground2.png",
         "assets/images/stage/stage_1/ground3.png",
@@ -556,7 +556,10 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         stage.theme,
         "assets/images/stage/stage_1/itemblock.png",
         "assets/images/stage/stage_1/normalblock.png",
-        "assets/images/items/Arrow.png"
+        "assets/images/items/Arrow.png",
+        "assets/images/stage/stage_1/Bullet.png",
+		"assets/images/stage/stage_1/ActionButtn_off.png",
+        "assets/images/stage/stage_1/ActionButtn_on.png"
     );
     enemyManager.Init();
 

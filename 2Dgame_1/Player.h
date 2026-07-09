@@ -15,7 +15,7 @@
 struct Stage;
 struct EnemyManager;
 struct ItemManager;
-struct OjisanVisual;
+class OjisanVisual;
 
 // プレイヤーに関するデータをひとまとめ
 struct PlayerState {

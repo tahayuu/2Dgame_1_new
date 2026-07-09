@@ -248,8 +248,32 @@ static bool ResolveSolidX(const Rectangle& solid, Rectangle& player, Vector2& ve
 		return true;
 	}
 
-	// 横方向の速度がない、またはX方向で解決する必要がない場合
-	return false;
+	// 斜めから入った場合の救済処理
+// ※ 端から落ちる瞬間の誤補正（横ワープ）を防ぐため、
+//    「前フレームで側面高さ帯にいた」かつ「X食い込みが十分」な場合だけ適用する
+const bool prevOverlapY =
+	(prevBottom > solidTop + eps) && (prevTop < solidBottom - eps);
+
+// 角かすり除外用の最小X食い込み量
+const float minFallbackOverlapX = 3.0f;
+const bool deepEnoughX = (overlapX >= minFallbackOverlapX);
+
+if (prevOverlapY && deepEnoughX) {
+	if (velocity.x > 0.0f) {
+		player.x = solidLeft - player.width;
+		velocity.x = 0.0f;
+		return true;
+	}
+
+	if (velocity.x < 0.0f) {
+		player.x = solidRight;
+		velocity.x = 0.0f;
+		return true;
+	}
+}
+
+// 横方向の速度がない、またはX方向で解決する必要がない場合
+return false;
 }
 
 static float GetOverlapX(const Rectangle& a, const Rectangle& b) {
@@ -372,20 +396,9 @@ static bool ResolveSolidY(const Rectangle& solid, Rectangle& player, Vector2& ve
 	}
 	// 下向き（落下中）で床に乗れる場合
 	else if (velocity.y > 0) {
-		const float solidTop = solid.y;
-		const float prevBottom = prev.y + prev.height;
-		const float nowBottom = player.y + player.height;
-
-		const bool crossedFromAbove = (prevBottom <= solidTop + 2.0f) && (nowBottom > solidTop );
-
-		if (!crossedFromAbove || nowOverlapX < minNeedOverlapX) {
-			//上から境界をまたいでいないまたはX方向の重なりが少なすぎるなら、Y方向の当たり判定はしない
-			return false;
-		}
-
-		player.y = solidTop - player.height;
-		velocity.y = 0.0f;
-		return true; 
+		player.y = solid.y - player.height;
+		velocity.y = 0;
+		return true;
 	}
 	return false;
 }
@@ -412,7 +425,6 @@ static bool ResolveSolidYPlayer(const Rectangle& solid, Rectangle& player, Vecto
 	}
 	return false;
 }
-
 
 //ｙ方向衝突解決（ジャンプ台用）
 static bool JumpResolveSolidY(const Rectangle& solid, Rectangle& player, Vector2& velocity) {

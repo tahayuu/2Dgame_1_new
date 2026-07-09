@@ -21,11 +21,17 @@ void StageThemeLoadObjectTextures(
     StageTheme& theme,
     const char* itemBlockPath,
     const char* normalBlockPath,
-    const char* arrowPath
+    const char* arrowPath,
+	const char* bulletPath,
+    const char* ActionButtn_offPath,
+	const char* ActionButtn_onPath
 ) {
     theme.itemBlock = LoadTexture(itemBlockPath);
     theme.nomalBlock = LoadTexture(normalBlockPath);
     theme.arrowTex = LoadTexture(arrowPath);
+    theme.bulletTex = LoadTexture(bulletPath);
+    theme.actionButtonOff = LoadTexture(ActionButtn_offPath);
+    theme.actionButtonOn = LoadTexture(ActionButtn_onPath);
 }
 
 void StageThemeLoadLR(StageTheme& theme, const char* leftPath, const char* rightPath, float tileSize) {
@@ -60,7 +66,10 @@ void StageThemeUnload(StageTheme& theme) {
     if (theme.itemBlock.id != 0) UnloadTexture(theme.itemBlock);
 	if (theme.nomalBlock.id != 0) UnloadTexture(theme.nomalBlock);
 	if (theme.arrowTex.id != 0) UnloadTexture(theme.arrowTex);
-    theme = StageTheme{};
+	if (theme.bulletTex.id != 0) UnloadTexture(theme.bulletTex);
+	if (theme.actionButtonOff.id != 0) UnloadTexture(theme.actionButtonOff);
+	if (theme.actionButtonOn.id != 0) UnloadTexture(theme.actionButtonOn);
+	theme = StageTheme{};
 }
 
 static void DrawTextureTiledColumn(

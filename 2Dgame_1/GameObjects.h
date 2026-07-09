@@ -81,12 +81,12 @@ struct CursorPlatform {
 //カーソルによって作動
 struct CursorBottom {
     Rectangle rect;
-    float maxDistance;
+	float maxDistance;//カーソルからどれだけ離れたら作動するか
     bool isActive;
 
     int targetRollingBall = -1;
     bool oneShot = true;
-    bool triggered = false;
+	bool triggered = false;//一度作動したら作動しない
 
     Vector2 GetCenter() const {
         return {
