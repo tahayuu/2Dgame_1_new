@@ -276,9 +276,6 @@ void StageInit_debug(Stage& stage,EnemyManager& enemyManager,ItemManager& itemMa
 	for (int i = 0; i < stage.moveExtYCount; i++) {
 		stage.moveHazardsExtYInit[i] = stage.moveHazardsExtY[i];
 	}
-	for (int i = 0; i < stage.moveExtXCount; i++) {
-		stage.moveHazardsExtXInit[i] = stage.moveHazardsExtX[i];
-	}
 	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
 		stage.jumpPlatfromsInit[i] = stage.jumpPlatfroms[i];
 	}

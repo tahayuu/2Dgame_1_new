@@ -33,12 +33,26 @@ namespace {
         { SpriteId::PipeCorner,    "PipeCorner",    "assets/images/stage/stage_3/wall1.png" },
         { SpriteId::Vent,          "Vent",          "assets/images/stage/stage_3/nedle1.png" },
         { SpriteId::Door,          "Door",          "assets/images/stage/stage_3/nedle2.png" },
+        { SpriteId::CursorPlatform, "CursorPlatform", "assets/images/stage/stage_3/CursorBlock.png" },
+        {SpriteId::Dassh,          "Dassh",    "assets/images/stage/stage_3/dassh_1.png"},
+        {SpriteId::Arrow,          "Arrow",    "assets/images/stage/stage_3/Arrow_1.png"},
+        {SpriteId::Buttom_break,          "Buttom_break",    "assets/images/stage/stage_3/Buttom_break.png"},
+        {SpriteId::Exitdoor_2,          "Exitdoor_2",    "assets/images/stage/stage_3/Exitdoor_2.png"},
+         {SpriteId::tempBlock,          "tempBlock",    "assets/images/stage/stage_3/tempBlock.png"},
+               {SpriteId::Drum,          "Drum",    "assets/images/stage/stage_3/drum_1.png"},
         /*stage_1 stage_2*/
 
         { SpriteId::Fence,         "Fence",         "assets/images/stage/stage_1/signbord1.png" },
         { SpriteId::Beam,          "Beam",          "assets/images/stage/stage_1/ground.png" },
         { SpriteId::ground1,         "ground1",         "assets/images/stage/stage_1/ground_2.png" },
         { SpriteId::ground2,          "ground2",          "assets/images/stage/stage_1/ground.png" },
+        { SpriteId::ground2,          "ground2",          "assets/images/stage/stage_1/ground.png" },
+        {SpriteId::Exitdoor_1,          "Exitdoor_1",    "assets/images/stage/stage_1/Exitdoor_1.png"},
+        {SpriteId::NextStage_1,          "NextStage_1",    "assets/images/stage/stage_1/NextStage.png"},
+        {SpriteId::NextStage_2,          "NextStage_2",    "assets/images/stage/stage_3/nextStage.png"},
+        {SpriteId::Stage_2,          "Stage_2",    "assets/images/stage/stage_1/Stage_2.png"},
+        {SpriteId::Stage_3,          "Stage_3",    "assets/images/stage/stage_3/Stage_3.png"},
+        {SpriteId::Stage_4,          "Stage_4",    "assets/images/stage/stage_4/Stage_4.png"},
     };
 
     constexpr int kSpriteTableCount = sizeof(g_spriteTable) / sizeof(g_spriteTable[0]);

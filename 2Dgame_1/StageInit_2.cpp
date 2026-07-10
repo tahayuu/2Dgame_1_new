@@ -142,7 +142,6 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.itemBlockCount = 4;
 	stage.breakableBlockCount = 2;
 	stage.clearsCount = 10;
-	stage.moveExtXCount = 1;
 	stage.moveDownHazardExtYCount = 2;
 	stage.moveHazardRightCount = 1;
 	stage.splitPlatformCount = 1;
@@ -166,9 +165,6 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	//復活用	
 	for (int i = 0; i < stage.moveExtYCount; i++) {
 		stage.moveHazardsExtYInit[i] = stage.moveHazardsExtY[i];
-	}
-	for (int i = 0; i < stage.moveExtXCount; i++) {
-		stage.moveHazardsExtXInit[i] = stage.moveHazardsExtX[i];
 	}
 	for (int i = 0; i < stage.fallingTextCount; i++) {
 		stage.fallingTextsInit[i] = stage.fallingTexts[i];

@@ -405,8 +405,8 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 
 		}
 
-		if (mrb.angle > 2.0f * PI)mrb.angle -= 2.0f * PI;
-		if (mrb.angle < 0.0f)mrb.angle += 2.0f * PI;
+		if (mrb.angle > 2.0f * PI)mrb.angle -= 2.0f * PI;//角度の正規化
+		if (mrb.angle < 0.0f)mrb.angle += 2.0f * PI;//角度の正規化
 	}
 
 	//床の上を転がる鉄球
@@ -787,7 +787,6 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.hazardCount = 0;
 			stage.moveCount = 0;
 			stage.moveExtYCount = 0;
-			stage.moveExtXCount = 0;
 			stage.fallingCount = 0;
 			stage.upRisingCount = 0;
 			stage.upDownCount = 0;

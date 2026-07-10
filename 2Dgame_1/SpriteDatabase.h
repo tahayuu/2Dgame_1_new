@@ -32,6 +32,19 @@ enum class SpriteId {
 	Beam,
 	ground1,
 	ground2,
+	CursorPlatform,
+	Dassh,
+	Arrow,
+	Buttom_break,
+	Exitdoor_2,
+	Exitdoor_1,
+	Drum,
+	tempBlock,
+	NextStage_1,
+	NextStage_2,
+	Stage_2,
+	Stage_3,
+	Stage_4,
 
 	COUNT
 };

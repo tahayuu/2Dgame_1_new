@@ -12,10 +12,10 @@ void PlayerVisualLoad(PlayerVisual& pv) {
 }
 
 void StageVisualLoad(StageVisual& sv) {
-	sv.title = LoadTexture("assets/images/stage/background/title3.png");
+	sv.title = LoadTexture("assets/images/stage/background/title_1.png");
 	sv.background = LoadTexture("assets/images/stage/background/stage1.png");
 	sv.stage2 = LoadTexture("assets/images/stage/background/stage2.png");
-	sv.selectBackground = LoadTexture("assets/images/stage/background/select_background.png");
+	sv.selectBackground = LoadTexture("assets/images/stage/background/selectStage.png");
 	sv.texdeath = LoadTexture("assets/images/stage/background/death.png");
 }
 

@@ -53,8 +53,8 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {//•	�
     /* 21 MOVE_HAZARD           */ { 2, {{"raiseH",100,false},{"moveSpd",200,false}} },
     /* 22 MOVE_HAZARD_EXT_Y     */ { 3, {{"raiseH",100,false},{"moveSpd",200,false},{"dir(1or-1)",1,false}} },
     /* 23 MOVE_DOWN_HAZ_EXT_Y   */ { 3, {{"raiseH",100,false},{"moveSpd",200,false},{"tolerance",5.0f,false}} },
-    /* 24 MOVE_HAZARD_RIGHT_X   */ { 3, {{"raiseW",100,false},{"moveSpd",200,false},{"delay",0,false}} },
-    /* 25 MOVE_HAZARD_EXT_X     */ { 3, {{"raiseW",100,false},{"moveSpd",200,false},{"delay",0,false}} },
+    /* 24 MOVE_HAZARD_X   */ { 4, {{"raiseW",100,false},{"moveSpd",200,false},{"delay",0,false},{"dir(1or-1)",1,false}} },
+    /* 25 MOVE_HAZARD_EXT_X(未使用/互換性維持のため予約) */ { 0, {} },
     /* 26 TRACKING_HAZARD       */ { 4, {{"speed",150,false},{"trkRange",300,false},{"maxDist",400,false},{"retStart",1,true}} },
     /* 27 ROTATING_BALL         */ { 3, {{"radius",15,false},{"angSpd",2,false},{"armLen",100,false}} },
     /* 28 MOVE_ROTATING_BALL    */ { 5, {{"radius",15,false},{"angSpd",2,false},{"gravity",1600,false},{"reverse",0,true},{"armLen",100,false}} },
@@ -204,8 +204,8 @@ static const char* const EN_NAMES[(int)EditorObjectType::COUNT] = {
     "breakableBlocks","elevators","gravityBlocks","buttonBlocks","itemBlocks",
     "icePlatforms","moveDownPlatforms","moveUpPlatforms","jumpPlatfroms","batteryHumans",
     "cursorPlatforms","magnets","knockBackWalls","splitPlatforms","circlePlatforms",
-    "movePlatformsX","moveHazards","moveHazardsExtY","moveDownHazardsExtY","moveHazardsRight",
-    "moveHazardsExtX","trackingHazards","rotatingBalls","moveRotatingBalls","rollingBalls",
+    "movePlatformsX","moveHazards","moveHazardsExtY","moveDownHazardsExtY","moveHazardX",
+    "unused_moveHazardsExtX","trackingHazards","rotatingBalls","moveRotatingBalls","rollingBalls",
     "fallingPlatforms","upRisingPlatforms","upDouwnPlatforms","clearBlocks","clearBlocksX",
     "switchPlatforms","fallingTexts","exitDoors","layerDoors","respawn","switchButtons",
     "commentBlocks","cursorButtons","deathBlocks","spikeBouncers","springs",
@@ -218,8 +218,8 @@ static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
     u8"breakableBlocks",u8"elevators",u8"gravityBlocks",u8"buttonBlocks",u8"itemBlocks",
     u8"icePlatforms",u8"moveDownPlatforms",u8"moveUpPlatforms",u8"jumpPlatfroms",u8"batteryHumans",
     u8"cursorPlatforms",u8"magnets",u8"knockBackWalls",u8"splitPlatforms",u8"circlePlatforms",
-    u8"movePlatformsX",u8"moveHazards",u8"moveHazardsExtY",u8"moveDownHazardsExtY",u8"moveHazardsRight",
-    u8"moveHazardsExtX",u8"trackingHazards",u8"rotatingBalls",u8"moveRotatingBalls",u8"rollingBalls",
+    u8"movePlatformsX",u8"moveHazards",u8"moveHazardsExtY",u8"moveDownHazardsExtY",u8"moveHazardX",
+    u8"unused_moveHazardsExtX",u8"trackingHazards",u8"rotatingBalls",u8"moveRotatingBalls",u8"rollingBalls",
     u8"fallingPlatforms",u8"upRisingPlatforms",u8"upDouwnPlatforms",u8"clearBlocks",u8"clearBlocksX",
     u8"switchPlatforms",u8"fallingTexts",u8"exitDoors",u8"layerDoors",u8"respawn",u8"switchButtons",
     u8"commentBlocks",u8"cursorButtons",u8"deathBlocks",u8"spikeBouncers",u8"springs",
@@ -261,8 +261,8 @@ static const Color TYPE_COLORS[(int)EditorObjectType::COUNT] = {
     MAROON,                 // 21 MoveHazard
     {160, 40, 40,255},      // 22 MoveHazardExtY
     {140, 30, 30,255},      // 23 MoveDownHazardExtY
-    {180, 50, 50,255},      // 24 MoveHazardRightX
-    {150, 40, 40,255},      // 25 MoveHazardExtX
+    {180, 50, 50,255},      // 24 MoveHazardRightX(dir対応)
+    {80, 80, 80, 100},      // 25 未使用（旧MoveHazardExtX）
     {200, 60, 60,255},      // 26 TrackingHazard
     DARKGRAY,               // 27 RotatingBall
     { 80, 80, 80,255},      // 28 MoveRotatingBall

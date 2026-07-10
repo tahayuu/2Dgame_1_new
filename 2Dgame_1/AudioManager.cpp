@@ -20,6 +20,9 @@ static float Approach(float cur, float target, float delta) {
 }
 
 bool AudioInit(AudioManager& a) {
+
+  
+
     InitAudioDevice();
 
     a.titleBgm = LoadMusicStream("assets/BGM/titleBgm.mp3");
@@ -32,8 +35,8 @@ bool AudioInit(AudioManager& a) {
     a.stageChooseSe = LoadSound("assets/SE/stageChoose.wav");
     a.stageDecideSe = LoadSound("assets/SE/stageDecide.wav");
 	a.tabclickSe = LoadSound("assets/SE/tabclick.wav");
-
-
+	a.punch = LoadSound("assets/SE/punch_1.wav");
+ 
     a.titleBgm.looping = true;
     a.stageBgm.looping = true;
 	a.stage3Bgm.looping = true;
@@ -100,6 +103,7 @@ void AudioPlaySfx(AudioManager& a, SfxId id) {
     case SfxId::StageChoose: PlaySound(a.stageChooseSe); break;
     case SfxId::StageDecide: PlaySound(a.stageDecideSe); break;
 	case SfxId::tabclick: PlaySound(a.tabclickSe); break;
+    case SfxId::Punch: PlaySound(a.punch); break;
 
     default: break;
     }
@@ -118,6 +122,7 @@ void AudioShutdown(AudioManager& a) {
     UnloadSound(a.stageChooseSe);
     UnloadSound(a.stageDecideSe);
     UnloadSound(a.tabclickSe);
+    UnloadSound(a.punch);
 
     CloseAudioDevice();
     a.initialized = false;

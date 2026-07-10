@@ -62,7 +62,6 @@ static bool IsGimmickDrawnInline(const Stage& stage, const Rectangle& rect) {
 	for (int i = 0; i < stage.moveCount; i++) if (IsSameRect(stage.moveHazardsInit[i].rect, rect)) return true;
 	for (int i = 0; i < stage.moveExtYCount; i++) if (IsSameRect(stage.moveHazardsExtYInit[i].rect, rect)) return true;
 	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) if (IsSameRect(stage.moveDownHazardsExtYInit[i].rect, rect)) return true;
-	for (int i = 0; i < stage.moveExtXCount; i++) if (IsSameRect(stage.moveHazardsExtXInit[i].rect, rect)) return true;
 	for (int i = 0; i < stage.moveHazardRightCount; i++) if (IsSameRect(stage.moveHazardsRightInit[i].rect, rect)) return true;
 	for (int i = 0; i < stage.trackingHazardCount; i++) if (IsSameRect(stage.trackingHazardsInit[i].rect, rect)) return true;
 	// エレベーター
@@ -380,11 +379,6 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) {
 		const auto& mdhY = stage.moveDownHazardsExtY[i];
 		DrawMovingSpikeWithOverride(stage, mdhY.rect, stage.moveDownHazardsExtYInit[i].rect, spikeW);
-	}
-	//移動拡張とげX
-	for (int i = 0; i < stage.moveExtXCount; i++) {
-		const auto& mhX = stage.moveHazardsExtX[i];
-		DrawMovingSpikeWithOverride(stage, mhX.rect, stage.moveHazardsExtXInit[i].rect, spikeW);
 	}
 	for (int i = 0; i < stage.moveHazardRightCount; i++) {
 		const auto& mhr = stage.moveHazardsRight[i];

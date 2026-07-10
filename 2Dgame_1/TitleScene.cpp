@@ -56,13 +56,17 @@ void TitleSceneDraw(const TitleScene& ts, int screenWidth, int screenHeight)
     }
 
     if (!ts.isSelectingStage) {
+        // PRESS SPACE：文字サイズを大きくして左側にずらす
         DrawTextEx(*ts.font, "PRESS SPACE",
-            { screenWidth / 2.0f - 100, screenHeight / 2.0f + 20 }, 36, 0, YELLOW);
+            { screenWidth / 2.0f - 500, screenHeight / 2.0f + 20 }, 64, 0, YELLOW);
     }
     else {
+        // モードせんたくの表示位置を下にずらす（連動して以下の項目もずれる）
+        const float modeSelectY = 270.0f;
+
         DrawTextEx(*ts.font,
             reinterpret_cast<const char*>(u8"モードせんたく"),
-            { 100, 50 }, 48, 0, YELLOW);
+            { 100, modeSelectY }, 48, 0, YELLOW);
 
         const char* stageLabels[] = {
             reinterpret_cast<const char*>(u8"ステージ１"),
@@ -72,12 +76,14 @@ void TitleSceneDraw(const TitleScene& ts, int screenWidth, int screenHeight)
             reinterpret_cast<const char*>(u8"ステージせんたく"),
             reinterpret_cast<const char*>(u8"エディタステージ"),
         };
+        // ステージ項目もモードせんたくのY座標に合わせてずらす
+        const float stageListStartY = modeSelectY + 110.0f;
         for (int i = 0; i < ts.stageCount; i++) {
             Color c = (i == ts.selectStage) ? YELLOW : WHITE;
-            DrawTextEx(*ts.font, stageLabels[i], { 150, 150.0f + i * 70 }, 36, 0, c);
+			DrawTextEx(*ts.font, stageLabels[i], { 200, stageListStartY + i * 40 }, 36, 0, c);// 70px 間隔で縦に並べる
         }
         DrawTextEx(*ts.font, "PRESS ENTER",
-            { 150, 150.0f + ts.stageCount * 70 + 30 }, 24, 0, LIGHTGRAY);
+            { 200, stageListStartY + ts.stageCount * 70 + 30 }, 24, 0, LIGHTGRAY);
     }
 }
 

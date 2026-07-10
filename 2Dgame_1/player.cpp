@@ -247,11 +247,15 @@ void PlayerStateUpdate(PlayerState& ps,
         if (!stage.ojisanPunchTriggered[i] &&
             CheckCollisionRecs(ps.rect, stage.ojisanPunchAreas[i]))
         {
+     
             stage.ojisanPunchTriggered[i] = true;
             ps.ojisanPunchScreenPos = GetWorldToScreen2D({ ps.rect.x, ps.rect.y }, cam);
             ps.isOjisanPunchDeath = true;
             ps.gravityReversedAtDeath = stage.gravityReversed;
             ojisan.showPunch = true;
+            
+
+            AudioPlaySfx(audio, SfxId::Punch);
             ps.velocity = { 0.0f, 0.0f };
             ps.pendingDeath = true;
             ps.lastDeathCause = DeathCause::OJISAN_PUNCH;
@@ -347,10 +351,10 @@ void PlayerStateDrawWorld(const PlayerState& ps,
 // ─────────────────────────────────────────────────────
 void PlayerStateDrawScreen(const PlayerState& ps,
     bool               isDeadScreen,
-    const Texture2D& punchEffect)
+    const Texture2D& punchEffect, AudioManager& audio, SfxId id)
 {
     if (!isDeadScreen || !ps.isOjisanPunchDeath) return;
-
+ 
     // 死亡時の画面座標にスプライトを固定表示
     Rectangle stuckPlayer = {
         ps.ojisanPunchScreenPos.x,
@@ -362,6 +366,7 @@ void PlayerStateDrawScreen(const PlayerState& ps,
 
     // パンチエフェクトを重ねる
     if (punchEffect.id != 0) {
+   
         constexpr float scale = 0.3f;
         Rectangle src = { 0.0f, 0.0f, (float)punchEffect.width, (float)punchEffect.height };
         Rectangle dst = {

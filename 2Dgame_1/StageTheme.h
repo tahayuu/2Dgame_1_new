@@ -19,6 +19,7 @@ struct StageTheme {
 	Texture2D bulletTex{};	  // 砲台のテクスチャ
 	Texture2D actionButtonOff{}; //アクションボタンのテクスチャ（OFF）
 	Texture2D actionButtonOn{};  //アクションボタンのテクスチャ（ON）
+
     float tileSize = 50.0f;
     bool hasTextures = false;
     bool useLeftRight = false;   // true: 左右モード / false: 上下モード

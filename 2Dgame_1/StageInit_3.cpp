@@ -183,8 +183,6 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
         stage.moveHazardsInit[i] = stage.moveHazards[i];
     for (int i = 0; i < stage.moveExtYCount; i++)
         stage.moveHazardsExtYInit[i] = stage.moveHazardsExtY[i];
-    for (int i = 0; i < stage.moveExtXCount; i++)
-        stage.moveHazardsExtXInit[i] = stage.moveHazardsExtX[i];
     for (int i = 0; i < stage.fallingCount; i++)
         stage.fallingPlatformsInit[i] = stage.fallingPlatforms[i];
     for (int i = 0; i < stage.upRisingCount; i++)

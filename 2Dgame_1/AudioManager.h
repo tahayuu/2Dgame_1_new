@@ -14,6 +14,7 @@ enum class SfxId {
     StageChoose,
     StageDecide,
     tabclick,
+    Punch,
 };
 
 struct AudioManager {
@@ -27,7 +28,7 @@ struct AudioManager {
 	Sound stageChooseSe{};
 	Sound stageDecideSe{};
 	Sound tabclickSe{};
-
+	Sound punch{};
 
 	float titleMaxVol = 0.30f;
 	float stageMaxVol = 0.35f;

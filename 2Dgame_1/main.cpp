@@ -109,9 +109,10 @@ ojisan.Load();
 EnemyLoadTextures();
 SpriteDatabase::Load(); // ← 追加：SpriteIdごとの切り出し済みPNG（assets/images/sprites/*.png）を読み込む
 
-Texture2D titleBg = LoadTexture("assets/images/stage/background/title4.png");
+Texture2D titleBg = LoadTexture("assets/images/stage/background/title_1.png");
 Texture2D stage1Bg = LoadTexture("assets/images/stage/background/stage1.png");
 Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
+Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.png");
 
 
 
@@ -516,7 +517,8 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 
 		//プレイ画面
 		 if (gameState == GameState::PLAYING) {
-
+             const bool isInvincible = (editorExitInvTimer > 0.0f);
+             PlayerStateUpdate(playerState, stage, enemyManager, itemManager, ojisan, camera, dt, isInvincible, audio);
 			 //ポーズメニューを開く
 			 if (IsKeyPressed(KEY_TAB)) {
 				 pausePrevState = gameState;
@@ -530,9 +532,9 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
 				editorExitInvTimer -= dt;
 				if (editorExitInvTimer < 0.0f) editorExitInvTimer = 0.0f;
 			}
-			const bool isInvincible = (editorExitInvTimer > 0.0f);
+		
 
-			PlayerStateUpdate(playerState, stage, enemyManager, itemManager, ojisan, camera, dt, isInvincible, audio);
+			
 
 			if (playerState.pendingEnterEditor) {
 				EnterStageEditor();
@@ -730,6 +732,13 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
                     { 0, 0, (float)screenWidth,    (float)screenHeight },
                     { 0, 0 }, 0.0f, WHITE);
             }
+			if ((currentStage == 0) && selectStage.id != 0) {
+				DrawTexturePro(
+					selectStage,
+					{ 0, 0, (float)selectStage.width, (float)selectStage.height },
+					{ 0, 0, (float)screenWidth,    (float)screenHeight },
+					{ 0, 0 }, 0.0f, WHITE);
+			}
 
             // カメラを
             // プレイヤーに追従させる
@@ -762,10 +771,10 @@ Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
             // HUD：死亡回数
             std::string deathText = "Deaths: " + std::to_string(deaths);
             DrawTextEx(textFont, deathText.c_str(), { 10, 10 }, 24, 0, WHITE);
-
+            
             // 死亡演出・死亡画面
             if (isDeadScreen) {
-                PlayerStateDrawScreen(playerState, isDeadScreen, ojisan.punchEffect);
+				PlayerStateDrawScreen(playerState, isDeadScreen, ojisan.punchEffect, audio, SfxId::Punch);
 
                 unsigned char alpha = (gameState == GameState::DEADING_SCREEN)
                     ? (unsigned char)(deadingTime / deadingstate * 180.0f)

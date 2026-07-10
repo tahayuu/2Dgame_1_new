@@ -154,10 +154,9 @@ struct Stage {
     //とげ
     Rectangle hazards[MAX_HAZARDS];
 
-    int hazardCount;
-    int moveCount;
+	int hazardCount;
+	int moveCount;
 	int moveExtYCount;
-	int moveExtXCount;
 
     //動くとげ
     MoveHazard moveHazards[MAX_MOVEHAZARD];
@@ -169,13 +168,10 @@ struct Stage {
 	MoveDownHazardExtentionY moveDownHazardsExtY[MAX_MOVEHAZARD];
 	MoveDownHazardExtentionY moveDownHazardsExtYInit[MAX_MOVEHAZARD];
 	int moveDownHazardExtYCount;
-	//右に出るとげ
+	//左右どちらかに出るとげ
 	MoveHazardRightX moveHazardsRight[MAX_MOVEHAZARD];
 	MoveHazardRightX moveHazardsRightInit[MAX_MOVEHAZARD];
 	int moveHazardRightCount;
-	//右に出るとげ
-	MoveHazardExtentionX moveHazardsExtX[MAX_MOVEHAZARD];
-	MoveHazardExtentionX moveHazardsExtXInit[MAX_MOVEHAZARD];
     //追尾するとげ 
 	TrackingHazard trackingHazards[MAX_HAZARDS];
 	TrackingHazard trackingHazardsInit[MAX_HAZARDS];

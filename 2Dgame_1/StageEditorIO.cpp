@@ -201,22 +201,18 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 h.tolelance = o.params[2];
                 stage.moveDownHazardsExtYInit[i] = h;
             }break;
-        case EditorObjectType::MOVE_HAZARD_RIGHT_X:
-            if (c[t] < MAX_MOVEHAZARD) {
-                int i = c[t]++; auto& h = stage.moveHazardsRight[i];
-                h.rect = o.rect; h.ismoved = false; h.triggerd = false;
-                h.raiseWidth = o.params[0]; h.startX = o.rect.x; h.moveSpeed = o.params[1];
-                h.timer = 0; h.delay = o.params[2];
-                stage.moveHazardsRightInit[i] = h;
-            }break;
-        case EditorObjectType::MOVE_HAZARD_EXT_X:
-            if (c[t] < MAX_MOVEHAZARD) {
-                int i = c[t]++; auto& h = stage.moveHazardsExtX[i];
-                h.rect = o.rect; h.ismoved = false; h.triggerd = false;
-                h.raiseWidth = o.params[0]; h.startX = o.rect.x; h.moveSpeed = o.params[1];
-                h.timer = 0; h.delay = o.params[2];
-                stage.moveHazardsExtXInit[i] = h;
-            }break;
+		case EditorObjectType::MOVE_HAZARD_RIGHT_X:
+			if (c[t] < MAX_MOVEHAZARD) {
+				int i = c[t]++; auto& h = stage.moveHazardsRight[i];
+				h.rect = o.rect; h.ismoved = false; h.triggerd = false;
+				h.raiseWidth = o.params[0]; h.startX = o.rect.x; h.moveSpeed = o.params[1];
+				h.timer = 0; h.delay = o.params[2];
+				h.dir = (o.params[3] < 0.0f) ? -1 : 1; // 負値=左向き, 正値=右向き
+				stage.moveHazardsRightInit[i] = h;
+			}break;
+		case EditorObjectType::MOVE_HAZARD_EXT_X:
+			// 旧機能。moveHazardsRight に統合されたため、読み込みはスキップ（互換性のためcaseのみ残す）
+			break;
         case EditorObjectType::TRACKING_HAZARD:
             if (c[t] < MAX_HAZARDS) {
                 int i = c[t]++; auto& h = stage.trackingHazards[i];
@@ -523,7 +519,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
     stage.splitPlatformCount = c[18]; stage.circlePlatformCount = c[19];
     stage.movePlatformCountX = c[20]; stage.moveCount = c[21];
     stage.moveExtYCount = c[22]; stage.moveDownHazardExtYCount = c[23];
-    stage.moveHazardRightCount = c[24]; stage.moveExtXCount = c[25];
+    stage.moveHazardRightCount = c[24];
     stage.trackingHazardCount = c[26]; stage.rotatingBallCount = c[27];
     stage.moveRotatingBallCount = c[28]; stage.rollingBallCount = c[29];
     stage.fallingCount = c[30];  stage.upRisingCount = c[31];
@@ -720,13 +716,11 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
     for (int i = 0; i < s.moveHazardRightCount; i++) {
         PlacedObject o = { EditorObjectType::MOVE_HAZARD_RIGHT_X,s.moveHazardsRight[i].rect };
         o.params[0] = s.moveHazardsRight[i].raiseWidth; o.params[1] = s.moveHazardsRight[i].moveSpeed;
-        o.params[2] = s.moveHazardsRight[i].delay; ed.objects.push_back(o);
+        o.params[2] = s.moveHazardsRight[i].delay;
+        o.params[3] = (float)s.moveHazardsRight[i].dir;
+        ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.moveExtXCount; i++) {
-        PlacedObject o = { EditorObjectType::MOVE_HAZARD_EXT_X,s.moveHazardsExtX[i].rect };
-        o.params[0] = s.moveHazardsExtX[i].raiseWidth; o.params[1] = s.moveHazardsExtX[i].moveSpeed;
-        o.params[2] = s.moveHazardsExtX[i].delay; ed.objects.push_back(o);
-    }
+    // moveHazardsExtX は廃止済み（moveHazardsRight に統合）。旧データは書き出さない。
     for (int i = 0; i < s.trackingHazardCount; i++) {
         PlacedObject o = { EditorObjectType::TRACKING_HAZARD,s.trackingHazards[i].rect };
         o.params[0] = s.trackingHazards[i].speed;

@@ -25,12 +25,20 @@ static bool CheckOverlapX(const Rectangle& player, const Rectangle& object) {
 	return overlapX;
 }
 
-//とげの右側近傍にいるか判定
-static bool CheckPlayerOnRightSide(const Rectangle& player, const Rectangle& hazard, float tolX) {
-	float playerLeft = player.x;
-	float hazardRight = hazard.x + hazard.width;
-	// プレイヤーの左端がトゲの右端 − tolX 以上なら「右側近傍」と判断する
-	return (playerLeft >= hazardRight - tolX);
+//とげの右側（またはdir=-1のとき左側）近傍にいるか判定
+static bool CheckPlayerOnRightSide(const Rectangle& player, const Rectangle& hazard, float tolX, int dir = 1) {
+	if (dir > 0) {
+		float playerLeft = player.x;
+		float hazardRight = hazard.x + hazard.width;
+		// プレイヤーの左端がトゲの右端 − tolX 以上なら「右側近傍」と判断する
+		return (playerLeft >= hazardRight - tolX);
+	}
+	else {
+		float playerRight = player.x + player.width;
+		float hazardLeft = hazard.x;
+		// プレイヤーの右端がトゲの左端 + tolX 以下なら「左側近傍」と判断する
+		return (playerRight <= hazardLeft + tolX);
+	}
 }
 
 //Y座標が近いか判定
@@ -51,6 +59,9 @@ static bool CheckOverlapY(const Rectangle& player, const Rectangle& hazard) {
 	return overlapY;
 }
 
+
+
+//とげの右側近傍にいるか判定
 static bool CheckOverlapNearRight(const Rectangle& player, const Rectangle& hazard) {
 	float playerLeft = player.x;
 	float playerRight = player.x + player.width;
@@ -175,47 +186,13 @@ static void DownMoveHazardExtY(Stage& stage, const Rectangle& player, float dt) 
 	}
 }
 
-
-//とげが出てくる(右)
-static void MoveHazarardNearRight(Stage& stage, const Rectangle& player, float dt) {
-	for (int i = 0; i < stage.moveExtXCount; i++) {
-		auto& mhX = stage.moveHazardsExtX[i];
-
-		// プレイヤーがトゲの右付近に来たら起動
-		if (!mhX.triggerd && CheckOverlapNearRight(player, mhX.rect)) {
-			mhX.triggerd = true;
-			mhX.timer = 0.0f;
-		}
-
-		if (mhX.triggerd) {
-	
-			// 右方向への最大移動先の右端を計算（startX は初期左上座標）
-			float targetRight = mhX.startX + mhX.raiseWidth;
-
-			// 右へ移動
-			mhX.rect.x += mhX.moveSpeed * dt;
-
-			// 現在の右端
-			float currentRight = mhX.rect.x + mhX.rect.width;
-
-			// 目標を超えたら位置を固定して起動を終了する（無限追尾防止）
-			if (currentRight >= targetRight) {
-				mhX.rect.x = targetRight - mhX.rect.width;
-				mhX.triggerd = false;
-			
-			
-			}
-		}
-	}
-}
-
-//とげが出てくる(右)Yもあってるとき
-static void MoveHazarardRight(Stage& stage, const Rectangle& player, float dt) {
+//とげが出てくる(左右どちらか、dir対応、Yもあってるとき)
+static void MoveHazarardX(Stage& stage, const Rectangle& player, float dt) {
 	for (int i = 0; i < stage.moveHazardRightCount; i++) {
 		auto& mhR = stage.moveHazardsRight[i];
 
-		// プレイヤーがトゲの右付近に来たら起動
-		if (!mhR.triggerd && CheckPlayerOnRightSide(player, mhR.rect, 24.0f)
+		// プレイヤーがdir方向側の近くに来たら起動（dir=1:右側判定, dir=-1:左側判定）
+		if (!mhR.triggerd && CheckPlayerOnRightSide(player, mhR.rect, 24.0f, mhR.dir)
 			&& CheckNearSameY(player, mhR.rect,40.0f)) {
 			mhR.triggerd = true;
 			mhR.timer = 0.0f;
@@ -225,18 +202,16 @@ static void MoveHazarardRight(Stage& stage, const Rectangle& player, float dt) {
 			mhR.timer += dt;
 			if (mhR.timer > mhR.delay) {//遅延時間後に動き出す
 
-				// 右方向への最大移動先の右端を計算（startX は初期左上座標）
-				float targetRight = mhR.startX + mhR.raiseWidth;
+				// dirが1なら右方向、-1なら左方向への最大移動先を計算（startX は初期左上座標）
+				float targetX = mhR.startX + mhR.raiseWidth * mhR.dir;
 
-				// 右へ移動
-				mhR.rect.x += mhR.moveSpeed * dt;
-
-				// 現在の右端
-				float currentRight = mhR.rect.x + mhR.rect.width;
+				// dir方向へ移動
+				mhR.rect.x += mhR.moveSpeed * dt * mhR.dir;
 
 				// 目標を超えたら位置を固定して起動を終了する（無限追尾防止）
-				if (currentRight >= targetRight) {
-					mhR.rect.x = targetRight - mhR.rect.width;
+				bool reachedTarget = (mhR.dir > 0) ? (mhR.rect.x >= targetX) : (mhR.rect.x <= targetX);
+				if (reachedTarget) {
+					mhR.rect.x = targetX;
 					mhR.triggerd = false;
 
 				}
@@ -365,13 +340,6 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 		}
 	}
 
-	//動くとげX拡張をみる
-	for (int i = 0; i < stage.moveExtXCount; i++) {
-		const auto& mhX = stage.moveHazardsExtX[i];
-		if (CheckCollisionRecs(player, mhX.rect)) {
-			return true;
-		}
-	}
 	//動くとげ右をみる(Yもあってるとき)
 	for (int i = 0; i < stage.moveHazardRightCount; i++) {
 		const auto& mhr = stage.moveHazardsRight[i];
@@ -448,10 +416,9 @@ void HazardUpdate(Stage& stage, const Rectangle& player, float dt) {
 	UpMoveHazard(stage, player, dt);//とげが出てくる
 	UpMoveHazardExtY(stage, player, dt);//とげが出てくる(y軸延長)
 	DownMoveHazardExtY(stage, player, dt);//とげが下に下がる(y軸延長)
-	MoveHazarardNearRight(stage, player, dt);//とげが右に出てくる
 	TrackingHazardMove(stage, player, dt);//追尾するとげ
 	StageSenseFallingTexts(stage, player, dt);//落下文字の感知
-	MoveHazarardRight(stage, player, dt);//とげが右に出てくる(Yもあってるとき)
+	MoveHazarardX(stage, player, dt);//とげが左右どちらかに出てくる(Yもあってるとき)
 }
 
 void HazardReset(Stage& stage) {
@@ -463,9 +430,6 @@ void HazardReset(Stage& stage) {
 	}
 	for (int i = 0; i < stage.moveExtYCount; i++) {
 		stage.moveHazardsExtY[i] = stage.moveHazardsExtYInit[i];
-	}
-	for (int i = 0; i < stage.moveExtXCount; i++) {
-		stage.moveHazardsExtX[i] = stage.moveHazardsExtXInit[i];
 	}
 	for (int i = 0; i < stage.trackingHazardCount; i++)
 	{

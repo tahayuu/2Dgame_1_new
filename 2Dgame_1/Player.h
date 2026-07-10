@@ -100,4 +100,4 @@ void PlayerStateDrawWorld(const PlayerState& ps,
 // 目的: スクリーン座標系の死亡演出（おじさんパンチ）を描画する。
 void PlayerStateDrawScreen(const PlayerState& ps,
 	bool isDeadScreen,
-	const Texture2D& punchEffect);
+	const Texture2D& punchEffect, AudioManager& a, SfxId id);
