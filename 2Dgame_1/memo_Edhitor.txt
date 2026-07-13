@@ -1,0 +1,53 @@
+ 各ファイルの役割(詳細)
+•	StageEditor.h: EditorObjectType(enum)、PlacedObject / PlacedEnemy(struct)、StageEditor(struct、エディタの状態全部)を定義。関数は宣言のみ(中身は他ファイル)。
+•	StageEditor.cpp : EditorInit(初期化)、EditorUpdate(毎フレームの入力処理)。マウスクリックでの配置・選択・削除・Undo・保存呼び出しもここ。
+•	StageEditorDraw.cpp : EditorDraw(ワールド上のオブジェクト描画)、EditorDrawUI(ツールバーやプロパティパネルなどのUI描画)。
+•	StageEditorIO.cpp : EditorExportToStage(編集データ→ゲーム実行データ)、EditorImportFromStage(逆方向)、EditorSaveCSV / EditorLoadCSV(ファイル保存 / 読込)。
+•	StageEditorInternal.h : 3つの.cppだけで使う ParamDef、TypeParamInfo などの補助構造体・関数を集約(外部には公開しない設計)。
+
+エディタ画面が開始されてから描画されるまでの流れ
+sequenceDiagram
+participant Main as main.cpp
+participant Init as EditorInit
+participant Update as EditorUpdate
+participant Draw as EditorDraw / DrawUI
+
+Main-> > Init: Vキー等で EDITOR モードへ
+Init-> > Init: ed.objects / placedEnemies を初期化
+Init-> > Init: 既存CSVがあれば EditorLoadCSV で復元
+loop 毎フレーム(ゲームループ)
+Main-> > Update: EditorUpdate(ed, dt)
+Update-> > Update: マウス / キー入力を処理し ed を更新
+Main-> > Draw: EditorDraw(ed) / EditorDrawUI(ed)
+Draw-- >> Main : 画面に反映
+end
+
+オブジェクトの配置・選択・削除の流れ(StageEditor.cpp EditorUpdate内)
+•	配置 : 左クリック → マウス座標をワールド座標に変換 → SnapToGridでグリッドに合わせる → PlacedObject newObj を作り ed.objects.push_back(newObj)(vectorの末尾に追加)。
+•	選択 : Tキーを押した位置にあるオブジェクトを探し、ed.propSelectedIdx(選択中インデックス、 - 1は未選択)にセット。選択中はドラッグで移動も可能。
+•	削除 : 右クリックまたはDeleteキー。削除前に ed.undoStack.push_back(...) で退避してから ed.objects.erase(ed.objects.begin() + i) でvectorから要素を取り除く。
+•	Undo : Ctrl + Zで undoStack から取り出し(pop_back)、objectsに戻す(簡易的な取り消し履歴)。
+vectorは「可変長の配列」で、push_back(末尾追加)・erase(途中削除)・size()(要素数取得)といった操作が使えます。
+
+. エディタ用データとゲーム実行用データの違い
+•	エディタ用データ : StageEditor.objects(vector<PlacedObject>)。type(挙動)とspriteId / rotation / flip(見た目)を分離して保持しており、編集のしやすさを重視した形式。
+•	ゲーム実行用データ : Stage構造体やEnemyManager。実際の当たり判定・移動ロジックが動く形式。
+この2つはStageEditorIO.cppのEditorExportToStage(編集→実行)とEditorImportFromStage(実行→編集)でデータ変換されます。この設計により「同じ挙動のまま見た目だけ差し替える」ことが可能になっています。
+
+保存・読込・プレイテストの流れ
+•	保存 : Ctrl + S → EditorSaveJSON(確認用)とEditorSaveCSV(標準形式、p0~p5・テキスト・見た目情報も含む)。
+•	読込 : Ctrl + L → EditorLoadCSV。古いCSV(見た目列なし)も読める後方互換あり。
+•	プレイテスト : main.cppでCキー押下時、EditorSaveCSV→EditorExportToStage→StageReset等でプレイヤー・敵・アイテムを初期化→gameState = GameState::PLAYINGに切替。
+
+重要な構造体・enum・関数一覧
+種類	名前	場所
+enum class	EditorObjectType	StageEditor.h(ギミック種別、55種)
+	struct	PlacedObject	StageEditor.h(配置1件分のデータ)
+	 struct	PlacedEnemy	StageEditor.h(敵配置データ)
+	 struct	StageEditor	StageEditor.h(エディタ全状態)
+	 struct	TypeParamInfo / ParamDef	StageEditorInternal.h(パラメータ定義)
+	 関数	EditorInit	StageEditor.cpp
+	 関数	EditorUpdate	StageEditor.cpp
+	 関数	EditorDraw / EditorDrawUI	StageEditorDraw.cpp
+	 関数	EditorExportToStage / EditorImportFromStage	StageEditorIO.cpp
+	 関数	EditorSaveCSV / EditorLoadCSV	StageEditorIO.cpp

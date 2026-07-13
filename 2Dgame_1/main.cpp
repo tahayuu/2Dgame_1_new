@@ -203,7 +203,17 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     "ゃやゅゆょよ"
     "らりるれろ"
     "わわゐゑをんー"
-        "上乙"
+        "アイウエオ"
+        "カキクケコ"
+        "サシスセソ"
+        "タチツテト"
+        "ナニヌネノ"
+        "ハヒフヘホ"
+        "マミムメモ"
+        "ヤユヨ"
+        "ラリルレロ"
+        "ワヲンー"
+        "上乙好死追笑後悔来発射準備中"
         );
 
     // 結合したテキストからコードポイントを生成
@@ -472,6 +482,7 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
             for (int i = 0; i < stage.clearsCount; i++) {
                 stage.clearBlocks[i].clearflag = false;
             }
+           
 
             // ★ 死亡ブロック(TRAP)死亡時はコメントを出さない
             if (cause == DeathCause::TRAP) {

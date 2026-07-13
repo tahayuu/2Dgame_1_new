@@ -14,7 +14,8 @@ struct StageTheme {
     Texture2D platformLeft{};    // 左端列テクスチャ
     Texture2D platformRight{};   // 右端列テクスチャ
 	Texture2D itemBlock{};// アイテムブロックのテクスチャ
-	Texture2D nomalBlock{};//普通ブロックのテクスチャ
+	Texture2D normalBlock{};//普通ブロックのテクスチャ
+	Texture2D touchBlock{};//接触ブロックのテクスチャ
 	Texture2D arrowTex{};	  // 矢印のテクスチャ
 	Texture2D bulletTex{};	  // 砲台のテクスチャ
 	Texture2D actionButtonOff{}; //アクションボタンのテクスチャ（OFF）
@@ -32,7 +33,8 @@ void StageThemeLoadObjectTextures(
     const char* arrowPath,
     const char* bulletPath,
 	const char* ActionButtn_offPath,
-	const char* ActionButtn_onPath
+	const char* ActionButtn_onPath,
+	const char* touchBlockPath
 );
 
 // 目的: 上面+内部の2テクスチャ構成で床テーマを読み込む。

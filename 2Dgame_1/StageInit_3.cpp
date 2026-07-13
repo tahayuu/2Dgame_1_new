@@ -19,7 +19,8 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
         "assets/images/items/Arrow.png",
         "assets/images/stage/stage_1/Bullet.png",
         "assets/images/stage/stage_1/ActionButtn_off.png",
-        "assets/images/stage/stage_1/ActionButtn_on.png"
+        "assets/images/stage/stage_1/ActionButtn_on.png",
+		"assets/images/stage/stage_3/Buttom_break.png"
     );
 
 

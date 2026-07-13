@@ -24,14 +24,16 @@ void StageThemeLoadObjectTextures(
     const char* arrowPath,
 	const char* bulletPath,
     const char* ActionButtn_offPath,
-	const char* ActionButtn_onPath
+	const char* ActionButtn_onPath,
+	const char* touchBlockPath
 ) {
     theme.itemBlock = LoadTexture(itemBlockPath);
-    theme.nomalBlock = LoadTexture(normalBlockPath);
+    theme.touchBlock = LoadTexture(touchBlockPath);
     theme.arrowTex = LoadTexture(arrowPath);
     theme.bulletTex = LoadTexture(bulletPath);
     theme.actionButtonOff = LoadTexture(ActionButtn_offPath);
     theme.actionButtonOn = LoadTexture(ActionButtn_onPath);
+	theme.normalBlock = LoadTexture(normalBlockPath);
 }
 
 void StageThemeLoadLR(StageTheme& theme, const char* leftPath, const char* rightPath, float tileSize) {
@@ -64,7 +66,7 @@ void StageThemeUnload(StageTheme& theme) {
     if (theme.platformLeft.id  != 0) UnloadTexture(theme.platformLeft);
     if (theme.platformRight.id != 0) UnloadTexture(theme.platformRight);
     if (theme.itemBlock.id != 0) UnloadTexture(theme.itemBlock);
-	if (theme.nomalBlock.id != 0) UnloadTexture(theme.nomalBlock);
+	if (theme.normalBlock.id != 0) UnloadTexture(theme.normalBlock);
 	if (theme.arrowTex.id != 0) UnloadTexture(theme.arrowTex);
 	if (theme.bulletTex.id != 0) UnloadTexture(theme.bulletTex);
 	if (theme.actionButtonOff.id != 0) UnloadTexture(theme.actionButtonOff);

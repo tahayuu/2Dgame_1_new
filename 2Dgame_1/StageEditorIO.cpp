@@ -30,7 +30,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 // （StageClear がゼロ初期化していない可能性があるため念のため明示的に初期化）
     stage.spriteInstanceCount = 0;
 
-    // SWITCH_BUTTON を配置順に収集 → SWITCH_PLATFORM と 1:1 でペアリング
+    // SWITCH_BUTTON を配置順に収集 → SWITCH_PLATFORM と 1:1 で ペアリング
     std::vector<Rectangle> switchBtnRects;
     int switchPlatformTotal = 0;
     for (const auto& o : ed.objects) {
@@ -60,11 +60,19 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         case EditorObjectType::TOUCH_BREAK_BLOCK:
             if (c[t] < MAX_PLATFORMS) {
                 int i = c[t]++; stage.touchBreakBlocks[i].rect = o.rect;
+                // 前回プレイ時の壊れた状態が残ったまま初期状態としてコピーされないよう、明示的にリセットする
+                stage.touchBreakBlocks[i].triggered = false;
+                stage.touchBreakBlocks[i].isBroken = false;
+                stage.touchBreakBlocks[i].timer = 0.0f;
                 stage.touchBreakBlocksInit[i] = stage.touchBreakBlocks[i];
             }break;
         case EditorObjectType::BOTTOM_BREAK_BLOCK:
             if (c[t] < MAX_HAZARDS) {
                 int i = c[t]++; stage.bottomBreakBlocks[i].rect = o.rect;
+                // 前回プレイ時の壊れた状態が残ったまま初期状態としてコピーされないよう、明示的にリセットする
+                stage.bottomBreakBlocks[i].triggered = false;
+                stage.bottomBreakBlocks[i].isBroken = false;
+                stage.bottomBreakBlocks[i].timer = 0.0f;
                 stage.bottomBreakBlocksInit[i] = stage.bottomBreakBlocks[i];
             }break;
         case EditorObjectType::BREAKABLE_BLOCK:
@@ -208,6 +216,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 				h.raiseWidth = o.params[0]; h.startX = o.rect.x; h.moveSpeed = o.params[1];
 				h.timer = 0; h.delay = o.params[2];
 				h.dir = (o.params[3] < 0.0f) ? -1 : 1; // 負値=左向き, 正値=右向き
+				h.toleranceX = o.params[4]; // 感知するX方向の許容範囲（エディタで編集可能に）
+				h.toleranceY = o.params[5]; // 感知するY方向の許容範囲（エディタで編集可能に）
 				stage.moveHazardsRightInit[i] = h;
 			}break;
 		case EditorObjectType::MOVE_HAZARD_EXT_X:
@@ -550,12 +560,13 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 
     StageThemeLoadObjectTextures(
         stage.theme,
-        "assets/images/stage/stage_1/itemblock.png",
-        "assets/images/stage/stage_1/normalblock.png",
+        "assets/images/stage/stage_1/itemblock_1.png",
+        "assets/images/stage/stage_1/normalblock_1.png",
         "assets/images/items/Arrow.png",
         "assets/images/stage/stage_1/Bullet.png",
 		"assets/images/stage/stage_1/ActionButtn_off.png",
-        "assets/images/stage/stage_1/ActionButtn_on.png"
+        "assets/images/stage/stage_1/ActionButtn_on.png",
+		"assets/images/stage/stage_3/Buttom_break.png"
     );
     enemyManager.Init();
 
@@ -895,7 +906,7 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 // 目的: エディタ配置を JSON で外部保存する。
 // 入力: ed とファイル名。
 // 出力: 保存成功なら true。
-// 注意: 現状は JSON 読込関数がないため、確認/バックアップ用途が中心。
+// 注意: 現状は JSON 読み込関数がないため、確認/バックアップ用途が中心。
 bool EditorSaveJSON(const StageEditor& ed, const char* filename) {
     std::ofstream ofs(filename);
     if (!ofs.is_open()) return false;
@@ -1063,7 +1074,7 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
             float pv;
             if (ss >> cm >> pv) obj.params[i] = pv;
         }
-        // テキスト列の読み取り（ダブルクォートで囲まれている）
+        // テキスト列の読み取り（ダブルクォーテーションで囲まれている）
         if (ss.peek() == ',' || ss.peek() == ' ') ss.get();
         std::string textField;
         std::getline(ss, textField);
@@ -1083,7 +1094,7 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
             std::string spriteName, rotStr, flipXStr, flipYStr;
             bool hasSpriteInfo = false;
 
-            // ダブルクォートの終わりの位置を探す
+            // ダブルクォーテーションの終わりの位置を探す
             size_t quoteEnd = std::string::npos;
             if (!textPart.empty() && textPart.front() == '"') {
                 quoteEnd = textPart.find_last_of('"');

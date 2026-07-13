@@ -707,7 +707,10 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			for (int i = 0; i < stage.movePlatformCountX; i++) {
 				stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 			}
-
+			for (int i = 0; i < stage.touchBreakBlockCount; i++) {
+				stage.touchBreakBlocks[i] = stage.touchBreakBlocksInit[i];
+			}
+			
 			for (int i = 0; i < stage.itemBlockCount; i++) {
 				stage.itemBlocks[i] = stage.itemBlocksInit[i];
 			}
@@ -812,6 +815,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.rotatingBallCount = 0;
 			stage.moveRotatingBallCount = 0;
 			stage.rollingBallCount = 0;
+			
 			stage.fallingTextCount = 0;
 			stage.exitDoorCount = 0;
 			stage.warpCount = 0;
@@ -829,6 +833,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.tempFloorSwitchCount = 0;
 			stage.decorArrowCount = 0;
 			stage.decoSpriteCount = 0;
+			
 		}
 // （新規追加）
 

@@ -45,6 +45,7 @@ enum class SpriteId {
 	Stage_2,
 	Stage_3,
 	Stage_4,
+	Enemy_auto,
 
 	COUNT
 };

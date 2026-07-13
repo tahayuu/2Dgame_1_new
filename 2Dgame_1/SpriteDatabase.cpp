@@ -48,6 +48,7 @@ namespace {
         { SpriteId::ground2,          "ground2",          "assets/images/stage/stage_1/ground.png" },
         { SpriteId::ground2,          "ground2",          "assets/images/stage/stage_1/ground.png" },
         {SpriteId::Exitdoor_1,          "Exitdoor_1",    "assets/images/stage/stage_1/Exitdoor_1.png"},
+         {SpriteId::Enemy_auto,          "enemy_auto",    "assets/images/stage/stage_1/enemy_auto.png"},
         {SpriteId::NextStage_1,          "NextStage_1",    "assets/images/stage/stage_1/NextStage.png"},
         {SpriteId::NextStage_2,          "NextStage_2",    "assets/images/stage/stage_3/nextStage.png"},
         {SpriteId::Stage_2,          "Stage_2",    "assets/images/stage/stage_1/Stage_2.png"},

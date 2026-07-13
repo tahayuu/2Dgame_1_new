@@ -528,9 +528,9 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		if (nb.isBroken) continue;
 		if (HasSpriteOverride(stage, nb.rect)) continue;
 
-		if (stage.theme.nomalBlock.id != 0) {
-			Rectangle src = { 0, 0, (float)stage.theme.nomalBlock.width, (float)stage.theme.nomalBlock.height };
-			DrawTexturePro(stage.theme.nomalBlock, src, nb.rect, { 0, 0 }, 0, WHITE);
+		if (stage.theme.normalBlock.id != 0) {
+			Rectangle src = { 0, 0, (float)stage.theme.normalBlock.width, (float)stage.theme.normalBlock.height };
+			DrawTexturePro(stage.theme.normalBlock, src, nb.rect, { 0, 0 }, 0, WHITE);
 		}
 		else {
 			// ★ テクスチャ未ロード時のフォールバック
@@ -543,15 +543,16 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	//透明
 	for (int i = 0; i < stage.clearsCount; i++) {
 		if (stage.clearBlocks[i].clearflag) {
-			DrawRectangleRec(stage.clearBlocks[i].rect, GRAY);
+			Rectangle src = { 0, 0, (float)stage.theme.normalBlock.width, (float)stage.theme.normalBlock.height };
+			DrawTexturePro(stage.theme.normalBlock, src, stage.clearBlocks[i].rect, { 0, 0 }, 0, WHITE);
 		}
-		//else DrawRectangleRec(stage.clearBlocks[i].rect, BLUE);
 	}
 
 	//透明
 	for (int i = 0; i < stage.clearsXCount; i++) {
 		if (stage.clearBlocksX[i].clearflag) {
-			DrawRectangleRec(stage.clearBlocksX[i].rect, GRAY);
+			Rectangle src = { 0, 0, (float)stage.theme.normalBlock.width, (float)stage.theme.normalBlock.height };
+			DrawTexturePro(stage.theme.normalBlock, src, stage.clearBlocksX[i].rect, { 0, 0 }, 0, WHITE);
 		}
 
 	}
@@ -636,8 +637,8 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 
 		// 崩壊中は色が薄くなり、ガタガタ揺れる
 		unsigned char alpha = (unsigned char)(255 * (1.0f - progress * 0.6f));
-		Color blockColor = { 180, 120, 60, alpha };
-
+		//Color blockColor = { 180, 120, 60, alpha };// 透明度を下げることで崩壊中の演出'
+		//DrawTexturePro(stage.theme.touchBlock, drawRect, stage.touchBreakBlocks[i].rect, { 0, 0 }, 0, WHITE);
 		float shakeX = 0.0f;
 		if (tb.triggered) {
 			shakeX = (float)(GetRandomValue(-2, 2)) * progress;
@@ -647,8 +648,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 			tb.rect.x + shakeX, tb.rect.y,
 			tb.rect.width, tb.rect.height
 		};
-		DrawRectangleRec(drawRect, blockColor);
-		DrawRectangleLinesEx(drawRect, 2, BROWN);
+		DrawTexturePro(stage.theme.touchBlock, drawRect, stage.touchBreakBlocks[i].rect, { 0, 0 }, 0, WHITE);
 
 		// ひび割れ線
 		if (tb.triggered) {
@@ -680,8 +680,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 			bb.rect.x + shakeX, bb.rect.y,
 			bb.rect.width, bb.rect.height
 		};
-		DrawRectangleRec(drawRect, blockColor);
-		DrawRectangleLinesEx(drawRect, 2, BROWN);
+	DrawTexturePro(stage.theme.touchBlock, drawRect, stage.bottomBreakBlocks[i].rect, { 0, 0 }, 0, WHITE);
 
 		if (bb.triggered) {
 			float cx = drawRect.x + drawRect.width / 2;
@@ -766,7 +765,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
 		const auto& sw = stage.tempFloorSwitches[i];
 		if (HasSpriteOverride(stage, sw.rect)) continue;
-		const Texture2D& btnTex = sw.triggered ? stage.theme.actionButtonOn : stage.theme.actionButtonOff;;
+		const Texture2D& btnTex = sw.triggered ? stage.theme.actionButtonOn : stage.theme.actionButtonOff;
 		Rectangle src = { 0, 0, (float)btnTex.width, (float)btnTex.height };
 		DrawTexturePro(btnTex, src, sw.rect, { 0,0 }, 0, WHITE);
 	}

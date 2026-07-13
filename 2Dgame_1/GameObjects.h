@@ -246,6 +246,8 @@ struct MoveHazardRightX {
     float timer;
     float delay;
     int dir = 1;//出現方向（1=右, -1=左）
+    float toleranceX = 24.0f;//感知するX方向の許容範囲（プレイヤーが近づいたと判定する距離）
+	float toleranceY = 24.0f;//感知するY方向の許容範囲（プレイヤーが近づいたと判定する距離）
 };
 
 //追尾するとげ

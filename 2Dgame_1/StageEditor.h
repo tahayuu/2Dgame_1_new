@@ -115,30 +115,30 @@ struct PlacedObject {
 
 // --- Texture Paint用 ---
 struct TextureTile {
-    int id = -1;
-    Rectangle sourceRect = {};
-    std::string texturePath;
-    Texture2D texture = {};
+	int id = -1;// タイルID（-1は未使用）
+	Rectangle sourceRect = {};// 画像の切り出し位置とサイズ
+	std::string texturePath;// 画像ファイルのパス
+	Texture2D texture = {};// 実際のテクスチャデータ
 };
 
 struct TexturePaintCell {
     int tileId = -1;   // -1: empty
-    Vector2 position = {};
+	Vector2 position = {};// ワールド座標での位置
 };
 
 struct TexturePaintLayer {
-    std::vector<TexturePaintCell> cells;
-    float cellSize = 50.0f;
-    int gridWidth = 256;
-    int gridHeight = 256;
-    bool visible = true;
-    bool locked = false;
-    std::string name;
+	std::vector<TexturePaintCell> cells;// 塗りつぶしセルのリスト
+	float cellSize = 50.0f;// セル1つのサイズ（ワールド座標系）
+	int gridWidth = 256;// グリッドの幅（セル数）
+	int gridHeight = 256;// グリッドの高さ（セル数）
+	bool visible = true;// レイヤーの表示ON/OFF
+	bool locked = false;// レイヤーの編集ロックON/OFF
+	std::string name;// レイヤー名
 };
 
 struct StageEditor {
-    bool active = false;
-    EditorObjectType currentType = EditorObjectType::PLATFORM;
+	bool active = false;// エディタが有効かどうか
+	EditorObjectType currentType = EditorObjectType::PLATFORM;// 現在選択中のギミックタイプ
 
 
     std::vector<PlacedObject> objects;   // 現在編集中の配置一覧（EditorExportToStage の入力元）

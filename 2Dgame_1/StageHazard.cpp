@@ -41,7 +41,6 @@ static bool CheckPlayerOnRightSide(const Rectangle& player, const Rectangle& haz
 	}
 }
 
-//Y座標が近いか判定
 static bool CheckNearSameY(const Rectangle& player, const Rectangle& hazard, float tolerance) {
 	float playerCenterY = player.y + player.height * 0.5f;
 	float hazardCenterY = hazard.y + hazard.height * 0.5f;
@@ -119,7 +118,15 @@ static bool CheckPlayerNearBelow(const Rectangle& player, const Rectangle& obj, 
 	return nearBelow && fromBelow;
 }
 
-
+static bool CheckPlayerNearX(const Rectangle& player, const Rectangle& obj, float tolerance)
+{
+	float playerLeft = player.x;
+	float playerRight = player.x + player.width;
+	float objLeft = obj.x;
+	float objRight = obj.x + obj.width;
+	bool nearX = (playerRight >= objLeft - tolerance) && (playerLeft <= objRight + tolerance);
+	return nearX;
+}
 
 //とげが出てくる(triggerd中はせりあがる)
 static void UpMoveHazard(Stage& stage, const Rectangle& player, float dt) {
@@ -192,8 +199,10 @@ static void MoveHazarardX(Stage& stage, const Rectangle& player, float dt) {
 		auto& mhR = stage.moveHazardsRight[i];
 
 		// プレイヤーがdir方向側の近くに来たら起動（dir=1:右側判定, dir=-1:左側判定）
-		if (!mhR.triggerd && CheckPlayerOnRightSide(player, mhR.rect, 24.0f, mhR.dir)
-			&& CheckNearSameY(player, mhR.rect,40.0f)) {
+		// toleranceX: X方向（dir側）の感知範囲, toleranceY: Y方向（高さのずれ）の感知範囲
+		// 両方の条件を満たしたときのみ起動するため、範囲が「X∩Y」の矩形状に絞られる
+		if (!mhR.triggerd && CheckPlayerNearX(player, mhR.rect, mhR.toleranceX)
+			&& CheckNearSameY(player, mhR.rect, mhR.toleranceY)) {
 			mhR.triggerd = true;
 			mhR.timer = 0.0f;
 		}

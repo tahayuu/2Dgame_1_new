@@ -285,6 +285,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="memo.txt" />
+    <Text Include="memo_Editor.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="create_transparent_douka.ps1" />
