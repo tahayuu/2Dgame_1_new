@@ -151,9 +151,9 @@ struct StageEditor {
     std::vector<TexturePaintLayer> texturePaintLayers; // 塗りレイヤー（表示ON/OFF単位）
     int currentTextureLayerIdx = 0;              // 編集対象のレイヤー番号
     int selectedTileId = -1;                     // 現在選択中のタイルID（-1は未選択）
-    bool showTilePalette = false;
-    Vector2 tilePaletteScroll = { 0, 0 };
-    float brushSize = 1.0f;
+	bool showTilePalette = false;// タイルパレットを表示するか
+	Vector2 tilePaletteScroll = { 0, 0 };// タイルパレットのスクロール位置
+	float brushSize = 1.0f;// 塗りブラシのサイズ（1.0=1セル, 2.0=2x2セル, 3.0=3x3セル）
     // ------------------------
 
     float gridSize = 50.0f;

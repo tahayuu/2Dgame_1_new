@@ -267,9 +267,7 @@ void StageInit_debug(Stage& stage,EnemyManager& enemyManager,ItemManager& itemMa
 
 	for (int i = 0; i < stage.elevatorCount; i++)
 		stage.elevatorsInit[i] = stage.elevators[i];
-	//アイテム配置
-	itemManager.Spawn(ItemType::jumpPotion, { 600.0f, 600.0f },{0.300f},false);
-	itemManager.Spawn(ItemType::speedPotion, { 650.0f, 600.0f },{0,300},false);
+
 
 	// 初期化保存（リセット用）
 	   //復活用	

@@ -12,7 +12,7 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
         "assets/images/stage/stage_3/ground4.png",
         50.0f);
 
-    StageThemeLoadObjectTextures(
+    /*StageThemeLoadObjectTextures(
         stage.theme,
         "assets/images/stage/stage_1/itemblock.png",
         "assets/images/stage/stage_1/normalblock.png",
@@ -21,7 +21,8 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
         "assets/images/stage/stage_1/ActionButtn_off.png",
         "assets/images/stage/stage_1/ActionButtn_on.png",
 		"assets/images/stage/stage_3/Buttom_break.png"
-    );
+        
+    );*/
 
 
     // =====================================================

@@ -29,6 +29,7 @@ bool AudioInit(AudioManager& a) {
     a.stageBgm = LoadMusicStream("assets/BGM/stage1.mp3");
 	a.stage3Bgm = LoadMusicStream("assets/BGM/stage3.mp3");
 	a.chooseStageBgm = LoadMusicStream("assets/BGM/chooseStage.mp3");
+    a.stage4Bgm = LoadMusicStream("assets/BGM/stage4.mp3");
 
     a.jumpSe = LoadSound("assets/SE/jump.wav");
     a.damageSe = LoadSound("assets/SE/damage.wav");
@@ -41,6 +42,7 @@ bool AudioInit(AudioManager& a) {
     a.stageBgm.looping = true;
 	a.stage3Bgm.looping = true;
 	a.chooseStageBgm.looping = true;
+    a.stage4Bgm.looping = true;
 
     a.titleVol = a.titleMaxVol;
     a.stageVol = 0.0f;
@@ -49,12 +51,13 @@ bool AudioInit(AudioManager& a) {
     SetMusicVolume(a.stageBgm, a.stageVol);
     SetMusicVolume(a.stage3Bgm, a.stageVol);
     SetMusicVolume(a.chooseStageBgm, a.stageVol);
+    SetMusicVolume(a.stage4Bgm, a.stageVol);
 
     PlayMusicStream(a.titleBgm);
     a.initialized = true;
     return true;
 }
-void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool playStage3Bgm, bool playChooseStageBgm, bool inEditor, bool inUITab, float dt) {
+void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool playStage3Bgm,bool playStage4Bgm, bool playChooseStageBgm, bool inEditor, bool inUITab, float dt) {
 	if (!a.initialized) return;
 
 	// エディタ中またはUI タブ中は音量を下げる
@@ -63,11 +66,13 @@ void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool pla
 	const float targetTitle = playTitleBgm ? (a.titleMaxVol * volumeScale) : 0.0f;
 	const float targetStage = playStageBgm ? (a.stageMaxVol * volumeScale) : 0.0f;
 	const float targetStage3 = playStage3Bgm ? (a.stage3MaxVol * volumeScale) : 0.0f;
+	const float targetStage4 = playStage4Bgm ? (a.stage4MaxVol * volumeScale) : 0.0f;
 	const float targetChooseStage = playChooseStageBgm ? (a.chooseStageMaxVol * volumeScale) : 0.0f;
 
     if ((targetTitle > 0.0f || a.titleVol > 0.001f) && !IsMusicStreamPlaying(a.titleBgm)) PlayMusicStream(a.titleBgm);
     if ((targetStage > 0.0f || a.stageVol > 0.001f) && !IsMusicStreamPlaying(a.stageBgm)) PlayMusicStream(a.stageBgm);
     if ((targetStage3 > 0.0f || a.stage3Vol > 0.001f) && !IsMusicStreamPlaying(a.stage3Bgm)) PlayMusicStream(a.stage3Bgm);
+    if ((targetStage4 > 0.0f || a.stage4Vol > 0.001f) && !IsMusicStreamPlaying(a.stage4Bgm)) PlayMusicStream(a.stage4Bgm);
     if ((targetChooseStage > 0.0f || a.chooseStageVol > 0.001f) && !IsMusicStreamPlaying(a.chooseStageBgm)) PlayMusicStream(a.chooseStageBgm);
 
     const float step = a.fadeSpeed * dt;
@@ -75,21 +80,26 @@ void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool pla
     a.stageVol = Approach(a.stageVol, targetStage, step);
     a.stage3Vol = Approach(a.stage3Vol, targetStage3, step);
     a.chooseStageVol = Approach(a.chooseStageVol, targetChooseStage, step);
+    a.stage4Vol = Approach(a.stage4Vol, targetStage4, step);
 
     SetMusicVolume(a.titleBgm, a.titleVol);
     SetMusicVolume(a.stageBgm, a.stageVol);
     SetMusicVolume(a.stage3Bgm, a.stage3Vol);
 	SetMusicVolume(a.chooseStageBgm, a.chooseStageVol);
+    SetMusicVolume(a.stage4Bgm, a.stage4Vol);
 
     UpdateMusicStream(a.titleBgm);
     UpdateMusicStream(a.stageBgm);
 	UpdateMusicStream(a.stage3Bgm);
 	UpdateMusicStream(a.chooseStageBgm);
+	UpdateMusicStream(a.stage4Bgm);
 
     if (a.titleVol <= 0.001f && targetTitle <= 0.0f && IsMusicStreamPlaying(a.titleBgm)) StopMusicStream(a.titleBgm);
     if (a.stageVol <= 0.001f && targetStage <= 0.0f && IsMusicStreamPlaying(a.stageBgm)) StopMusicStream(a.stageBgm);
     if (a.stage3Vol <= 0.001f && targetStage3 <= 0.0f && IsMusicStreamPlaying(a.stage3Bgm))
         StopMusicStream(a.stage3Bgm);
+	if (a.stage4Vol <= 0.001f && targetStage4 <= 0.0f && IsMusicStreamPlaying(a.stage4Bgm))
+		StopMusicStream(a.stage4Bgm);
     if (a.chooseStageVol <= 0.001f && targetChooseStage <= 0.0f && IsMusicStreamPlaying(a.chooseStageBgm))
         StopMusicStream(a.chooseStageBgm);
 }
@@ -116,6 +126,7 @@ void AudioShutdown(AudioManager& a) {
     UnloadMusicStream(a.stageBgm);
     UnloadMusicStream(a.stage3Bgm);
     UnloadMusicStream(a.chooseStageBgm);
+	UnloadMusicStream(a.stage4Bgm);
 
     UnloadSound(a.jumpSe);
     UnloadSound(a.damageSe);

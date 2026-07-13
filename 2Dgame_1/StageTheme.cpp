@@ -25,7 +25,9 @@ void StageThemeLoadObjectTextures(
 	const char* bulletPath,
     const char* ActionButtn_offPath,
 	const char* ActionButtn_onPath,
-	const char* touchBlockPath
+	const char* touchBlockPath,
+	const char* magnetPath,
+	const char* magnetEffectPath
 ) {
     theme.itemBlock = LoadTexture(itemBlockPath);
     theme.touchBlock = LoadTexture(touchBlockPath);
@@ -34,6 +36,8 @@ void StageThemeLoadObjectTextures(
     theme.actionButtonOff = LoadTexture(ActionButtn_offPath);
     theme.actionButtonOn = LoadTexture(ActionButtn_onPath);
 	theme.normalBlock = LoadTexture(normalBlockPath);
+	theme.magnetTex = LoadTexture(magnetPath);
+	theme.magnetEffectTex = LoadTexture(magnetEffectPath);
 }
 
 void StageThemeLoadLR(StageTheme& theme, const char* leftPath, const char* rightPath, float tileSize) {
@@ -71,6 +75,8 @@ void StageThemeUnload(StageTheme& theme) {
 	if (theme.bulletTex.id != 0) UnloadTexture(theme.bulletTex);
 	if (theme.actionButtonOff.id != 0) UnloadTexture(theme.actionButtonOff);
 	if (theme.actionButtonOn.id != 0) UnloadTexture(theme.actionButtonOn);
+	if (theme.magnetTex.id != 0) UnloadTexture(theme.magnetTex);
+	if (theme.magnetEffectTex.id != 0) UnloadTexture(theme.magnetEffectTex);
 	theme = StageTheme{};
 }
 

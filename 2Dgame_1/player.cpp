@@ -266,7 +266,7 @@ void PlayerStateUpdate(PlayerState& ps,
     // ── ステージ機構の更新 ──────────────────────────
     MoveUpdateWithPlayrer(stage, ps.rect, ps.velocity, dt);
     ElevatorUpdate(stage, ps.rect, ps.velocity, dt);
-    UpdateMagnet(stage, ps.rect, ps.velocity, dt);
+    UpdateMagnet(stage, ps.rect, ps.velocity, dt, cam);
 
     // ── クレーン：位置をフックに固定 ────────────────
     if (ps.isCraneGrabbed) {

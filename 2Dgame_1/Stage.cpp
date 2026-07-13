@@ -4,7 +4,7 @@
 #include "StageInit_1.h"
 #include "StageInit_2.h"
 #include "StageInit_3.h"
-#include "StageInit_deback.h"
+#include "StageInit_4.h"
 #include "GameObjects.h"
 #include "EnemyManager.h"
 #include "ItemManager.h"
@@ -505,11 +505,15 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 		float startX = sp.rect.x;
 		if(sp.switchedOn){
 			sp.rect.x+=sp.speed.x * dt;
-			if (sp.rect.x >= sp.startX + sp.MaX) {
-				sp.rect.x = sp.startX + sp.MaX;
+			sp.rect.y += sp.speed.y * dt;
+			if (sp.rect.x >= sp.startX + sp.MaX) {//上限に達したら止める
+				sp.rect.x = sp.startX + sp.MaX;//上限に達したら止める
 				//sp.switchedOn = false;
 			}
-
+			if (sp.rect.y <= sp.startY + sp.MaxY) {//上限に達したら止める
+				sp.rect.y = sp.startY + sp.MaxY;//上限に達したら止める
+				//sp.switchedOn = false;
+			}
 		}
 	}
 
@@ -608,8 +612,8 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 	}
 }
 
-		void UpdateMagnet(Stage& stage, Rectangle& player, Vector2& velocity, float dt) {
-			Vector2 mousePos = GetMousePosition();
+		void UpdateMagnet(Stage& stage, Rectangle& player, Vector2& velocity, float dt,Camera2D camera) {
+			Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
 			bool mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
 			
 			for (int i = 0; i < stage.magnetCount; i++) {
@@ -618,12 +622,16 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 
 
 				bool mouseOnMagnet = CheckCollisionPointRec(mousePos, mg.rect);
-
+				/*if (mouseDown) {
+					mg.triggerd = true;
+				}*/
 				if (mouseOnMagnet && mouseDown) {
 					mg.isActive = true;
+					mg.triggerd = true;
 				}
 				else if (!mouseDown) {
 					mg.isActive = false;
+					mg.triggerd = false;
 				}
 
 				if (mg.isActive) {
@@ -781,7 +789,10 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.currentLayer = 0;
 			stage.layerDoorCount = 0;
 			stage.elevatorCount = 0;
-			stage.playerInElevator = false;
+			// カメラ設定をリセット
+			// ステージ3などで twoLayered = true 等に変更されたままだと
+			// 次のステージへ引き継がれてしまうため、ここでデフォルトへ戻す
+			stage.cameraConfig = CameraConfig();
 			stage.gravityBlockCount = 0;
 			stage.gravityReversed = false;
 			stage.gravityCooldown = 0.0f;

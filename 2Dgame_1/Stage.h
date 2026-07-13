@@ -36,7 +36,7 @@ void StageClear(Stage& stage);
 void DrawSpikes(Rectangle h, float spikeW);
 // カーソル追従床更新
 // 目的: 磁石ギミック（引き寄せ）の更新。
-void UpdateMagnet(Stage& stage, Rectangle& player, Vector2& velocity,float dt);
+void UpdateMagnet(Stage& stage, Rectangle& player, Vector2& velocity,float dt, Camera2D camera);
 // 描画
 // 目的: ステージ描画関数（宣言のみ）。
 void StageDraw(const Stage& stage, float spikeW);

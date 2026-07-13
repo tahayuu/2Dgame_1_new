@@ -321,11 +321,11 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.magnetCount; i++) {
 		const auto& mg = stage.magnets[i];
 		if (HasSpriteOverride(stage, mg.rect)) continue;
-		DrawRectangleRec(mg.rect, DARKPURPLE);
-		DrawLineEx(
-			{ mg.rect.x + 5, mg.rect.y + mg.rect.height / 2 },
-			{ mg.rect.x + mg.rect.width - 5,mg.rect.y + mg.rect.height / 2 }, 5.0f, RED
-		);
+		const Texture2D& magTex = mg.triggerd ? stage.theme.magnetEffectTex : stage.theme.magnetTex;
+		if(magTex.id != 0) {
+			Rectangle src = { 0, 0, (float)magTex.width, (float)magTex.height };
+			DrawTexturePro(magTex, src, mg.rect, { 0, 0 }, 0, WHITE);
+		}
 	}
 	//往復上昇床
 	for (int i = 0; i < stage.upDownCount; i++) {
@@ -522,6 +522,8 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 			DrawRectangleRec(sw.rect, LIGHTGRAY);
 		}
 	}
+
+
 	//壊せるブロック
 	for (int i = 0; i < stage.breakableBlockCount; i++) {
 		const auto& nb = stage.breakableBlocks[i];

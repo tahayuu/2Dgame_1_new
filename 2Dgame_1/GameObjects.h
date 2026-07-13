@@ -41,7 +41,9 @@ struct SwitchPlatform {
     Rectangle rect;
 	Rectangle SwitchRect;//スイッチの当たり判定
 	Vector2 speed;//移動速度
-	float MaX;//最大移動距離200
+	float MaxY;//最大移動距離200t
+	float startY;//初期位置
+	float MaX;//最大移動距離200t
 	float startX;//初期位置
     bool switchedOn;
     
@@ -104,6 +106,7 @@ struct Magnet {
     float maxDistance;
     bool isActive;
     bool isDragging = false;
+	bool triggerd = false;
 
     Vector2 GetCenter() const {
         return {

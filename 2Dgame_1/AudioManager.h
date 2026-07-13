@@ -22,6 +22,7 @@ struct AudioManager {
 	Music stageBgm{};
 	Music stage3Bgm{};
 	Music chooseStageBgm{};
+	Music stage4Bgm{};
 
 	Sound jumpSe{};
 	Sound damageSe{};
@@ -34,6 +35,7 @@ struct AudioManager {
 	float stageMaxVol = 0.35f;
 	float stage3MaxVol = 0.35f;
 	float chooseStageMaxVol = 0.35f;
+	float stage4MaxVol = 0.35f;
 	float editorBgmVol = 0.12f;  // エディタ/UI時の低い音量
 	float fadeSpeed = 1.2f;
 
@@ -41,6 +43,7 @@ struct AudioManager {
     float stageVol = 0.0f;
     float stage3Vol = 0.0f;
     float chooseStageVol = 0.0f;
+    float stage4Vol = 0.0f;
 
     bool initialized = false;
 };
@@ -48,7 +51,7 @@ struct AudioManager {
 // 目的: オーディオデバイスとBGM/SEを初期化する。
 bool AudioInit(AudioManager& a);
 // 目的: 各BGMの目標音量へフェードさせながら再生状態を更新する。
-void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool playStage3Bgm,
+void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool playStage3Bgm, bool playStage4Bgm,
     bool playChooseStageBgm, bool inEditor, bool inUITab, float dt);
 // 目的: 指定SEを再生する。
 void AudioPlaySfx(AudioManager& a, SfxId id);

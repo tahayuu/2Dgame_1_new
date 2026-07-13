@@ -215,9 +215,9 @@
     <ClInclude Include="StageInit_3.h" />
     <ClInclude Include="StageInit_1.h" />
     <ClInclude Include="StageInit_2.h" />
-    <ClInclude Include="StageInit_4.h" />
+    <ClInclude Include="StageInit_2222.h" />
     <ClInclude Include="StageInit_choseStage.h" />
-    <ClInclude Include="StageInit_deback.h" />
+    <ClInclude Include="StageInit_4.h" />
     <ClInclude Include="StageTheme.h" />
     <ClInclude Include="StageTypes.h" />
     <ClInclude Include="TitleScene.h" />

@@ -20,6 +20,8 @@ struct StageTheme {
 	Texture2D bulletTex{};	  // 砲台のテクスチャ
 	Texture2D actionButtonOff{}; //アクションボタンのテクスチャ（OFF）
 	Texture2D actionButtonOn{};  //アクションボタンのテクスチャ（ON）
+	Texture2D magnetTex{};	  // 磁石のテクスチャ
+	Texture2D magnetEffectTex{}; // 磁石のエフェクトテクスチャ
 
     float tileSize = 50.0f;
     bool hasTextures = false;
@@ -34,7 +36,9 @@ void StageThemeLoadObjectTextures(
     const char* bulletPath,
 	const char* ActionButtn_offPath,
 	const char* ActionButtn_onPath,
-	const char* touchBlockPath
+	const char* touchBlockPath,
+	const char* magnetPath,
+	const char* magnetEffectPath
 );
 
 // 目的: 上面+内部の2テクスチャ構成で床テーマを読み込む。

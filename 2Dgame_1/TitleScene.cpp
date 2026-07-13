@@ -70,9 +70,9 @@ void TitleSceneDraw(const TitleScene& ts, int screenWidth, int screenHeight)
 
         const char* stageLabels[] = {
             reinterpret_cast<const char*>(u8"ステージ１"),
-            reinterpret_cast<const char*>(u8"デバッグモード"),
             reinterpret_cast<const char*>(u8"ステージ２"),
             reinterpret_cast<const char*>(u8"ステージ3"),
+            reinterpret_cast<const char*>(u8"ステージ4"),
             reinterpret_cast<const char*>(u8"ステージせんたく"),
             reinterpret_cast<const char*>(u8"エディタステージ"),
         };

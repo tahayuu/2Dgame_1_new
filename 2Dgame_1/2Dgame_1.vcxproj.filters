@@ -203,7 +203,7 @@
     <ClInclude Include="StageInit_choseStage.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
-    <ClInclude Include="StageInit_deback.h">
+    <ClInclude Include="StageInit_4.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
     <ClInclude Include="Enemy.h">
@@ -254,7 +254,7 @@
     <ClInclude Include="OjisanDialog.h">
       <Filter>ヘッダー ファイル\Ojisan</Filter>
     </ClInclude>
-    <ClInclude Include="StageInit_4.h">
+    <ClInclude Include="StageInit_2222.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
     <ClInclude Include="CameraController.h">
