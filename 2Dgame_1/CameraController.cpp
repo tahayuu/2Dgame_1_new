@@ -30,10 +30,16 @@ void UpdateCamera(
 
     float playerCenterY = player.y + player.height / 2.0f;
     float targetCameraY;
-
     if (config.twoLayered && stageHeight > (float)screenHeight) {
         if (playerCenterY <= shaftEnterY) {
-            targetCameraY = groundFixedY;
+            // ステージ3などでは、地上ゾーンでもプレイヤーのY座標が
+            // 完全にマイナス（0未満）になった場合のみカメラを上方向へ追従させる
+            if (config.extendUpperFollow&& playerCenterY < 0.0f) {
+                targetCameraY = playerCenterY;
+            }
+            else {
+                targetCameraY = groundFixedY;
+            }
         }
         else if (playerCenterY >= shaftExitY) {
             targetCameraY = undergroundFixedY;
@@ -45,6 +51,7 @@ void UpdateCamera(
     else {
         targetCameraY = groundFixedY;
     }
+
 
     // Smooth lerp
     float speed = config.lerpSpeed > 0.0f ? config.lerpSpeed : 10.0f;

@@ -172,6 +172,9 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
     // プレイヤー中心Y がこの値を超えたら地下固定（地下セクション上端付近）
     stage.cameraConfig.shaftExitY  = 1480.0f;
     stage.cameraConfig.lerpSpeed   = 8.0f;
+    // ステージ3だけ、地上ゾーンでY=0より上（マイナス方向）へジャンプした際も
+    // カメラが追従するようにする
+    stage.cameraConfig.extendUpperFollow = true;
 
     // =====================================================
     //  復活用コピー

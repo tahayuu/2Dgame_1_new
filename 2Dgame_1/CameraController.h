@@ -14,6 +14,7 @@ struct CameraConfig {
     float shaftEnterY = 0.0f;  // シャフト開始Y (0=stageHeightから自動計算)
     float shaftExitY = 0.0f;  // シャフト終了Y (0=stageHeightから自動計算)
     float lerpSpeed = 10.0f; // ゾーン切替時の補間速度
+	bool  extendUpperFollow = false;// true=上方向にプレイヤーが出ても追従する、false=上方向は固定
 };
 
 // 目的: カメラtargetを更新し、横方向クランプと縦方向ゾーン補間を適用する。

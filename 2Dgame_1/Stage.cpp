@@ -789,9 +789,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.currentLayer = 0;
 			stage.layerDoorCount = 0;
 			stage.elevatorCount = 0;
-			// カメラ設定をリセット
-			// ステージ3などで twoLayered = true 等に変更されたままだと
-			// 次のステージへ引き継がれてしまうため、ここでデフォルトへ戻す
+
 			stage.cameraConfig = CameraConfig();
 			stage.gravityBlockCount = 0;
 			stage.gravityReversed = false;

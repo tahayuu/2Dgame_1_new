@@ -23,7 +23,12 @@
 // ・見た目(spriteId/rotation/flip)は stage.spriteInstances へ別途書き出す。
 // ================================================================
 void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemyManager) {
+    // cameraConfig はエディタの配置データ(ed.objects)には含まれない情報のため、
+    // StageInit_* が事前に設定した値（例: ステージ3のtwoLayeredなど）が
+    // 直後のStageClearで消えてしまわないよう、ここで退避・復元する
+    CameraConfig savedCameraConfig = stage.cameraConfig;
     StageClear(stage);
+    stage.cameraConfig = savedCameraConfig;
     int c[(int)EditorObjectType::COUNT] = {};
 
     // 見た目専用データ(SpriteId)の書き出し先をリセット
@@ -908,7 +913,7 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 // 目的: エディタ配置を JSON で外部保存する。
 // 入力: ed とファイル名。
 // 出力: 保存成功なら true。
-// 注意: 現状は JSON 読み込関数がないため、確認/バックアップ用途が中心。
+// 注意: 現状は JSON 読み込み関数がないため、確認/バックアップ用途が中心。
 bool EditorSaveJSON(const StageEditor& ed, const char* filename) {
     std::ofstream ofs(filename);
     if (!ofs.is_open()) return false;
