@@ -279,11 +279,14 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 		mpyxy.prevX2 = mpyxy.rect.x;
 		mpyxy.prevY1 = mpyxy.rect.y;
 		mpyxy.prevY3 = mpyxy.rect.y;
-		if (mpyxy.onplayer && !mpyxy.isMovingY1 && !mpyxy.isMovingX2 && !mpyxy.isMovingY3 && !mpyxy.triggerd) {//プレイヤーが乗っている場合
+		if (mpyxy.onplayer && !mpyxy.triggerd) {
 			mpyxy.timer += dt;
-			mpyxy.triggerd = true;//一度踏まれたら、踏まれていない状態に戻らないようにする
+
 			if (mpyxy.timer > mpyxy.delay) {
+				mpyxy.triggerd = true;
 				mpyxy.isMovingY1 = true;
+				mpyxy.isMovingX2 = false;
+				mpyxy.isMovingY3 = false;
 				mpyxy.isMoving = true;
 			}
 		}
@@ -299,10 +302,11 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 				mpyxy.isMovingY1 = false;
 				mpyxy.isMovingX2 = true;
 				mpyxy.isMovingY3 = false;
+				mpyxy.isMoving = false;
 			}
 		}
 		// 次のX移動
-		else if (mpyxy.isMovingX2 && mpyxy.onplayer) {
+		else if (mpyxy.isMovingX2 && mpyxy.onplayer && mpyxy.triggerd) {
 			mpyxy.rect.x += mpyxy.moveSpeedY1 * dt;
 
 			float targetX = mpyxy.initialX + mpyxy.moveDistanceX2;
@@ -313,10 +317,11 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 				mpyxy.isMovingY1 = false;
 				mpyxy.isMovingX2 = false;
 				mpyxy.isMovingY3 = true;
+				mpyxy.isMoving = false;
 			}
 		}
 		// 最後のY移動
-		else if (mpyxy.isMovingY3 && mpyxy.onplayer) {
+		else if (mpyxy.isMovingY3 && mpyxy.onplayer && mpyxy.triggerd) {
 			mpyxy.rect.y -= mpyxy.moveSpeedY1 * dt;
 
 			float targetY = mpyxy.initialY - mpyxy.moveDistanceY3;

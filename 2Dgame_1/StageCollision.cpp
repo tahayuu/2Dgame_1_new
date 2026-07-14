@@ -1412,7 +1412,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 			stage.gravityReversed
 		);
 
-		const float tolerance = 6.0f;
+		const float tolerance = 6.0f;// プレイヤーが床の上面に立っているとみなす許容誤差(乗り続けている判定)
 
 		// プレイヤーの足元
 		float playerBottom = player.y + player.height;
@@ -1438,7 +1438,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 
 			// 下降中でもプレイヤーを床の上面へ固定する
 			player.y = mpyxy.rect.y - player.height;
-
+			\
 			// 重力による微小な落下速度を消す
 			velocity.y = 0.0f;
 		}

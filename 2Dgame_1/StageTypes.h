@@ -330,5 +330,14 @@ struct Stage {
 	static constexpr int MAX_DECO_SPRITES = 128;
 	DecoSprite decoSprites[MAX_DECO_SPRITES];
 	int decoSpriteCount = 0;
+
+	static constexpr int MAX_EVENT_CHANGERS = 16;
+	EventChanger eventChangers[MAX_EVENT_CHANGERS];
+	int eventChangerCount = 0;
+
+	// 0：SPACE/W/UP
+	// 1：Nのみ
+	int currentJumpMode = 0;
+
 };
 	

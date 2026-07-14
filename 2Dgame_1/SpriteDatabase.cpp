@@ -44,8 +44,10 @@ namespace {
          {SpriteId::tempBlock,          "tempBlock",    "assets/images/stage/stage_3/tempBlock.png"},
                {SpriteId::Drum_1,          "Drum_1",    "assets/images/stage/stage_3/drum_1.png"},
                    {SpriteId::Drum_2,          "Drum_2",    "assets/images/stage/stage_3/drum_2.png"},
-        /*stage_1 stage_2*/
 
+
+
+        /*stage_1 stage_2*/
         { SpriteId::Fence,         "Fence",         "assets/images/stage/stage_1/signbord1.png" },
         { SpriteId::Beam,          "Beam",          "assets/images/stage/stage_1/ground.png" },
         { SpriteId::ground1,         "ground1",         "assets/images/stage/stage_1/ground_2.png" },
@@ -54,14 +56,19 @@ namespace {
         {SpriteId::Exitdoor_1,          "Exitdoor_1",    "assets/images/stage/stage_1/Exitdoor_1.png"},
          {SpriteId::Enemy_auto,          "enemy_auto",    "assets/images/stage/stage_1/enemy_auto.png"},
         {SpriteId::NextStage_1,          "NextStage_1",    "assets/images/stage/stage_1/NextStage.png"},
+
+		//ステージ３
         {SpriteId::NextStage_2,          "NextStage_2",    "assets/images/stage/stage_3/nextStage.png"},
          {SpriteId::NextStage_fake,          "NextStage_fake",    "assets/images/stage/stage_3/necstStage.png"},
         {SpriteId::Stage_2,          "Stage_2",    "assets/images/stage/stage_1/Stage_2.png"},
         {SpriteId::Stage_3,          "Stage_3",    "assets/images/stage/stage_3/Stage_3.png"},
+        //ステージ４
         {SpriteId::Stage_4,          "Stage_4",    "assets/images/stage/stage_4/Stage_4.png"},
         {SpriteId::DIE_block,          "DIE_block",    "assets/images/stage/stage_4/DIE_block.png"},
         {SpriteId::Fake_clear,          "Fake_clear",    "assets/images/stage/stage_4/Fake_clear.png"},
          {SpriteId::IceBlock,          "IceBlock",    "assets/images/stage/stage_4/iceBlock.png"},
+         {SpriteId::Jump_Space,          "Jump_Space",    "assets/images/stage/stage_4/jump_Space.png"},
+         {SpriteId::Jump_N,          "Jump_N",    "assets/images/stage/stage_4/jump_N.png"},
 
 		 //おじさん
          {SpriteId::Ojisan_car,          "Ojisan_car",    "assets/images/ojisan/ojisan_car.png"},

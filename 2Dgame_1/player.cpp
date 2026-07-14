@@ -12,7 +12,28 @@
 #include "OjisanVisual.h"
 #include "ChengeStage.h"
 #include "AudioManager.h"
+#include"StageEventChanger.h"
 #include <cmath>
+
+
+// ─────────────────────────────────────────────────────
+//  入力判定
+// ─────────────────────────────────────────────────────
+static bool IsJumpKeyPressed(int jumpMode) {
+    switch (jumpMode) {
+    case 1:
+        // Nキーのみ
+        return IsKeyPressed(KEY_N);
+
+    case 0:
+    default:
+        // 通常操作
+        return
+            IsKeyPressed(KEY_SPACE) ||
+            IsKeyPressed(KEY_W) ||
+            IsKeyPressed(KEY_UP);
+    }
+}
 
 // ─────────────────────────────────────────────────────
 //  初期化・後処理
@@ -164,14 +185,15 @@ void PlayerStateUpdate(PlayerState& ps,
     }
 
     // ── ジャンプ ────────────────────────────────────
+	UpdateEventChangers(stage, ps.rect);// EventChangerのエリア判定を更新
     float gravDir = stage.gravityReversed ? -1.0f : 1.0f;
     if (ps.onGround) {
         if (stage.playerInElevator) {
-            if (IsKeyPressed(KEY_SPACE))
+			if (IsJumpKeyPressed(stage.currentJumpMode))// エレベーター内でジャンプ入力があった場合
                 ps.velocity.y = -jumpSpeed * gravDir;
         }
         else {
-            if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+			if (IsJumpKeyPressed(stage.currentJumpMode)) {// ジャンプ入力があった場合
                 ps.velocity.y = -jumpSpeed * gravDir;
                 ps.onGround = false;
                 AudioPlaySfx(audio, SfxId::Jump);

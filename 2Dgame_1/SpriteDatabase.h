@@ -53,6 +53,8 @@ enum class SpriteId {
 	Nedle3,
 	IceBlock,
 	Fake_clear,
+	Jump_Space,
+	Jump_N,
 
 	//おじさん
 	Ojisan_car,

@@ -5,6 +5,7 @@
 #include "AudioManager.h"
 #include "Item.h"
 
+
 // ================================================================
 // Player.h の役割
 // ---------------------------------------------------------------
@@ -44,7 +45,9 @@ struct PlayerState {
 
     float baseMoveSpeed = 300.0f;
     float baseJumpSpeed = 830.0f;
-    float gravity = 1600.0f;
+    // EventChangerのエリア判定
+ 
+	float gravity = 1600.0f;// 重力加速度
 
     float iceAccel = 400.0f;
     float iceFriction = 0.02f;

@@ -179,6 +179,7 @@
     <ClCompile Include="StageEditor.cpp" />
     <ClCompile Include="StageEditorDraw.cpp" />
     <ClCompile Include="StageEditorIO.cpp" />
+    <ClCompile Include="StageEventChanger.cpp.cpp" />
     <ClCompile Include="StageHazard.cpp" />
     <ClCompile Include="StageInit_3.cpp" />
     <ClCompile Include="StageInit_1.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="StageDraw.h" />
     <ClInclude Include="StageEditor.h" />
     <ClInclude Include="StageEditorInternal.h" />
+    <ClInclude Include="StageEventChanger.h" />
     <ClInclude Include="StageHazard.h" />
     <ClInclude Include="StageInit_3.h" />
     <ClInclude Include="StageInit_1.h" />

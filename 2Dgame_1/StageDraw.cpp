@@ -76,6 +76,8 @@ static bool IsGimmickDrawnInline(const Stage& stage, const Rectangle& rect) {
 	for (int i = 0; i < stage.moveUpPlatformCount; i++) if (IsSameRect(stage.moveUpplatformsInit[i].rect, rect)) return true;
 	// 移動低下床
 	for (int i = 0; i < stage.moveDownPlatformCount; i++) if (IsSameRect(stage.moveDownplatformsInit[i].rect, rect)) return true;
+	// Y → X → Y 移動床
+	for (int i = 0; i < stage.movePlatformCountYXY; i++) {if (IsSameRect(stage.movePlatformsYXYInit[i].rect, rect)) {return true;}}
 	// カーソル追従床
 	for (int i = 0; i < stage.cursorPlatformCount; i++) if (IsSameRect(stage.cursorplatformsInit[i].rect, rect)) return true;
 	// 吹っ飛ばし壁
@@ -88,6 +90,7 @@ static bool IsGimmickDrawnInline(const Stage& stage, const Rectangle& rect) {
 	for (int i = 0; i < stage.splitPlatformCount; i++) if (IsSameRect(stage.splitplatformsInit[i].base, rect)) return true;
 	// クレーン
 	for (int i = 0; i < stage.craneCount; i++) if (IsSameRect(stage.cranesInit[i].bodyRect, rect)) return true;
+	
 	// 円軌道床（centerベースで判定）
 	for (int i = 0; i < stage.circlePlatformCount; i++) {
 		float cx = rect.x + rect.width / 2.0f, cy = rect.y + rect.height / 2.0f;

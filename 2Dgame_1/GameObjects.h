@@ -613,11 +613,38 @@ struct DecorArrow {
 struct DecoSprite {
 	Rectangle rect;
 	SpriteId spriteId = SpriteId::None;  // 描画に使う画像パーツ
+    int eventId = 0;
 	float rotation = 0.0f;
 	bool flipX = false;
 	bool flipY = false;
 };
 
+enum class EventActionType {
+	None = 0,//何もしない
+	ChengeSprite,//スプライトを変える
+	ChacgeJumpKey,//ジャンプキーを変える
+	ChangeSpriteAndJumpKey,//スプライトとジャンプキーを変える
+};
+
+struct EventChanger {
+    Rectangle rect;
+	int targetEventId = 0;//対象のイベントID
+	
+	SpriteId changedSpriteId = SpriteId::None;//変更後のスプライトID
+
+	int jumpMode = 1;//ジャンプモードを変える（0=通常, 1=二段ジャンプ, 2=ジャンプ不可）
+
+	bool restoreOnExit = true;//退出時に元の状態に戻すか
+	bool oneShot = false;//一度だけ作動するか
+	bool triggered = false;//一度作動したか
+	bool playerWasInside = false;//プレイヤーが中にいるか
+
+	SpriteId originalSpriteId = SpriteId::None;//元のスプライトID
+	int originalJumpMode = 0;//元のジャンプモード
+	bool originalStateSaved = false;//元の状態を保存したか
+
+
+};
 
 // トゲ描画関数（宣言）
 void DrawSpikes(Rectangle h, float spikeW);

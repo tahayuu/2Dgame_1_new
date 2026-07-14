@@ -189,6 +189,9 @@
     <ClCompile Include="SpriteDatabase.cpp">
       <Filter>ソース ファイル\Texture</Filter>
     </ClCompile>
+    <ClCompile Include="StageEventChanger.cpp.cpp">
+      <Filter>ソース ファイル\Other</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StageInit_1.h">
@@ -283,6 +286,9 @@
     </ClInclude>
     <ClInclude Include="SpriteDatabase.h">
       <Filter>ヘッダー ファイル\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="StageEventChanger.h">
+      <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

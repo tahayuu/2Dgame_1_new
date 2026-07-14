@@ -34,7 +34,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
     // 見た目専用データ(SpriteId)の書き出し先をリセット
 // （StageClear がゼロ初期化していない可能性があるため念のため明示的に初期化）
     stage.spriteInstanceCount = 0;
-
+	stage.eventChangerCount = 0;// eventChangerCount もリセット
+    stage.currentJumpMode = 0;
     // SWITCH_BUTTON を配置順に収集 → SWITCH_PLATFORM と 1:1 で ペアリング
     std::vector<Rectangle> switchBtnRects;
     int switchPlatformTotal = 0;
@@ -503,15 +504,28 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 stage.decorArrows[i].angleDeg = o.params[0];
             }
             break;
+            
         case EditorObjectType::DECOR_SPRITE:
             if (stage.decoSpriteCount < Stage::MAX_DECO_SPRITES) {
                 auto& ds = stage.decoSprites[stage.decoSpriteCount++];
                 ds.rect = o.rect;
                 ds.spriteId = o.spriteId;  // テクスチャはエディタの spriteId を使う
                 ds.rotation = o.rotation;
+                // params[0]をeventIdとして使う
+				ds.eventId = static_cast<int>(o.params[0]);// 0=無効, 1=イベント1, 2=イベント2, ...
                 ds.flipX = o.flipX;
                 ds.flipY = o.flipY;
             
+            }
+            break;
+        case EditorObjectType::EVENT_CHANGER:
+            if (stage.eventChangerCount < Stage::MAX_EVENT_CHANGERS) {
+                auto& ec =stage.eventChangers[stage.eventChangerCount++];
+                ec.rect = o.rect; ec.targetEventId = static_cast<int>(o.params[0]);
+                ec.changedSpriteId = static_cast<SpriteId>(static_cast<int>(o.params[1]) ); ec.jumpMode =static_cast<int>(o.params[2]);
+                ec.restoreOnExit = o.params[3] != 0.0f;ec.oneShot = o.params[4] != 0.0f; ec.triggered = false; 
+                ec.playerWasInside = false;ec.originalSpriteId = SpriteId::None; ec.originalJumpMode = 0; 
+                ec.originalStateSaved = false;
             }
             break;
 
@@ -519,14 +533,14 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         }
 
         // ================================================================
-        // 見た目(Sprite)情報の反映
-        // ----------------------------------------------------------------
-        // ここは上の switch(o.type) とは完全に独立した処理。
-        // 「当たり判定・ギミック(o.type)がどれであっても」、
-        // spriteId が設定されていれば見た目専用データとして書き出す。
-        // stage.spriteInstances は描画専用で、衝突判定には一切使われない。
+// 配置オブジェクトがスプライトの場合、Stage の spriteInstances 配列に追加する
+//         ただし、DECOR_SPRITE は除外する（DECOR_SPRITE は別の配列に格納されるため）
+
         // ================================================================
-        if (o.spriteId != SpriteId::None && stage.spriteInstanceCount < Stage::MAX_SPRITE_INSTANCES) {
+        if  (o.type != EditorObjectType::DECOR_SPRITE &&
+            o.spriteId != SpriteId::None &&
+            stage.spriteInstanceCount <
+            Stage::MAX_SPRITE_INSTANCES) {
             auto& si = stage.spriteInstances[stage.spriteInstanceCount++];
             si.rect = o.rect;
             si.spriteId = o.spriteId;
@@ -904,12 +918,28 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         PlacedObject o;
         o.type = EditorObjectType::DECOR_SPRITE;
         o.rect = s.decoSprites[i].rect;
+        InitDefaultParams(o);
+		o.params[0] = static_cast<float>(s.decoSprites[i].eventId); // eventId を params[0] に保存
         o.spriteId = s.decoSprites[i].spriteId;
         o.rotation = s.decoSprites[i].rotation;
         o.flipX = s.decoSprites[i].flipX;
         o.flipY = s.decoSprites[i].flipY;
-        InitDefaultParams(o);
+     
         ed.objects.push_back(o);
+    }
+
+    for (int i = 0; i < s.eventChangerCount; i++) {
+        const auto& ec = s.eventChangers[i];
+		PlacedObject o;
+		o.type = EditorObjectType::EVENT_CHANGER;
+		o.rect = ec.rect;
+		InitDefaultParams(o);
+		o.params[0] = (float)ec.targetEventId;
+		o.params[1] = (float)ec.changedSpriteId;
+		o.params[2] = (float)ec.jumpMode;
+		o.params[3] = ec.restoreOnExit ? 1.0f : 0.0f;
+		o.params[4] = ec.oneShot ? 1.0f : 0.0f;
+		ed.objects.push_back(o);
     }
     // ================================================================
  // 見た目(Sprite)情報の復元

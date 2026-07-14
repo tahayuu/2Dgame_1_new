@@ -496,7 +496,28 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
             ctx.cause = cause;
             ctx.stageName = "stage" + std::to_string(currentStage);
             ctx.totalDeaths = deaths;
+            // ========================================
+            // トゲ死亡時のおじいさんのセリフ
+            // セリフを表示したい場合は /* と */ を削除する
+            // ========================================
+            if (cause == DeathCause::SPIKE ||
+                cause == DeathCause::SPIKE_RISING) {
 
+                /*
+                std::string spikeLine = GetOjiSanLine(ctx);
+
+                ojisan.SetFont(ojisanFont);
+                ojisan.TriggerMessage(
+                    spikeLine,
+                    3.0f,
+                    &ojisanFont
+                );
+                */
+
+                return;
+            }
+
+            //ここから下はトゲ以外の死亡セリフ
             std::string line = GetOjiSanLine(ctx);
 
             if (!enemyManager.touchedEnemyDialogKey.empty() &&
