@@ -68,10 +68,10 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {//â€¢	æ–
     /* 36 FALLING_TEXT          */ { 4, {{"fallDelay",0.2f,false},{"gravity",1600,false},{"tolerance",300,false},{"fontSize",48,false}} },
     /* 37 EXIT_DOOR             */ { 1, {{"targetStage",1,false}} },
     /* 38 LAYER_DOOR            */ { 0, {} },
-    /* 39 RESPAWN               */ { 0, {} }, 
+    /* 39 RESPAWN               */ { 0, {} },
     /* 40 SWITCH_BUTTON         */ { 0, {} },
     /* 41 COMMENT_BLOCK         */ { 1, {{"duration",3.0f,false}} },
-    /* 42 CURSOR_BOTTOM         */ { 3, {{"targetBall",-1,false},{"oneShot",1,true},{"maxDist",0,false}} }, 
+    /* 42 CURSOR_BOTTOM         */ { 3, {{"targetBall",-1,false},{"oneShot",1,true},{"maxDist",0,false}} },
     /* 43 DEATH_BLOCK           */ { 0, {} },
     /* 44 SPIKE_BOUNCER         */ { 2, {{"bounceVelX",0,false},{"bounceVelY",-600,false}} },
     /* 45 SPRING                */ { 2, {{"bounceVelX",0,false},{"bounceVelY",-800,false}} },
@@ -83,8 +83,11 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {//â€¢	æ–
     /* 51 TEMP_FLOOR            */ { 1, {{"showSec",2.0f,false}} },
     /* 52 TEMP_FLOOR_SWITCH     */ { 2, {{"targetFloor",-1,false},{"oneShot",1,true}} },
     /* 53 DECOR_ARROW           */ { 1, {{"angleDeg",0.0f,false}} },
-    /* 54 DECOR_SPRITE          */ { 0, {} },  
+    /* 54 DECOR_SPRITE          */ { 0, {} },
+    /* 55 MOVEPLATFORMYXY        */ { 5, {{"moveSpeedY1",200,false},{"moveDistanceY1",200,false},{"moveDistanceX2",200,false},{"moveDistanceY3",200,false},{"delay",0,false}} },
 };
+
+
 
 
 static const EnemyTypeParamInfo ENEMY_TYPE_PARAMS[] = {
@@ -235,7 +238,7 @@ static const char* const EN_NAMES[(int)EditorObjectType::COUNT] = {
     "switchPlatforms","fallingTexts","exitDoors","layerDoors","respawn","switchButtons",
     "commentBlocks","cursorButtons","deathBlocks","spikeBouncers","springs",
 	"craneLaunchPads","cranes","ojisanPunchAreas","warpHoles","enemies","tempFloors","tempFloorSwitches","decorArrows",
-    "decorSprites"
+    "decorSprites","movePlatformYXY"
 };
 
 static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
@@ -249,7 +252,7 @@ static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
     u8"switchPlatforms",u8"fallingTexts",u8"exitDoors",u8"layerDoors",u8"respawn",u8"switchButtons",
     u8"commentBlocks",u8"cursorButtons",u8"deathBlocks",u8"spikeBouncers",u8"springs",
 	u8"craneLaunchPads",u8"cranes",u8"ojisanPunchAreas",u8"warpHoles",u8"enemies",u8"tempFloors",u8"tempFloorSwitches"
-	,u8"decorArrows",u8"decorSprites"
+	,u8"decorArrows",u8"decorSprites",u8"movePlatformYXY"
 };
 
 const char* GetNameJP(int i) {
@@ -316,7 +319,8 @@ static const Color TYPE_COLORS[(int)EditorObjectType::COUNT] = {
     {120,220,255,255},   // 51 TEMP_FLOOR
    {255,180, 60,255},   // 52 TEMP_FLOOR_SWITCH
    {100, 255, 180, 255},   // 53 DECOR_ARROW
-      {255, 255, 100, 200},   // 54 DECO_SPRITE
+	{255, 255, 100, 200 },   // 54 MOVEPLATFORMYXY{}
+      {255, 255, 100, 200},   // 55 DECO_SPRITE
 };
 
 Color GetColor(int i) {

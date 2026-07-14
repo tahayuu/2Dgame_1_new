@@ -147,10 +147,16 @@ struct Stage {
 	CirclePlatform circleplatformsInit[MAX_PLATFORMS];	
 	int circlePlatformCount;
 
+	MovePlatformYXY movePlatformsYXY[MAX_MOVEPLATFORM];
+	MovePlatformYXY movePlatformsYXYInit[MAX_MOVEPLATFORM];
+	int movePlatformCountYXY;
+
 	//乗ると動く床
 	MovePlatformX movePlatformsX[MAX_MOVEPLATFORM];
 	MovePlatformX moveplatformsXInit[MAX_MOVEPLATFORM];
 	int movePlatformCountX;
+
+	
     //とげ
     Rectangle hazards[MAX_HAZARDS];
 

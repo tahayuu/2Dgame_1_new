@@ -32,10 +32,11 @@ void UpdateCamera(
     float targetCameraY;
     if (config.twoLayered && stageHeight > (float)screenHeight) {
         if (playerCenterY <= shaftEnterY) {
-            // ステージ3などでは、地上ゾーンでもプレイヤーのY座標が
-            // 完全にマイナス（0未満）になった場合のみカメラを上方向へ追従させる
+            // ステージ3などでは、プレイヤーのY座標が完全にマイナス（0未満）に
+            // なった場合、プレイヤーに追従するのではなく、
+            // ワールド座標Y=0が画面の一番下に来る位置でカメラを固定する
             if (config.extendUpperFollow&& playerCenterY < 0.0f) {
-                targetCameraY = playerCenterY;
+                targetCameraY = -(float)screenHeight / 2.1f;
             }
             else {
                 targetCameraY = groundFixedY;

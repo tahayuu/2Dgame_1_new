@@ -39,6 +39,8 @@ namespace {
         {SpriteId::Arrow,          "Arrow",    "assets/images/stage/stage_3/Arrow_1.png"},
         {SpriteId::Buttom_break,          "Buttom_break",    "assets/images/stage/stage_3/Buttom_break.png"},
         {SpriteId::Exitdoor_2,          "Exitdoor_2",    "assets/images/stage/stage_3/Exitdoor_2.png"},
+         {SpriteId::Exitdoor2_fake,          "Exitdoor2_fake",    "assets/images/stage/stage_3/Exitdoor_fake.png"},
+
          {SpriteId::tempBlock,          "tempBlock",    "assets/images/stage/stage_3/tempBlock.png"},
                {SpriteId::Drum_1,          "Drum_1",    "assets/images/stage/stage_3/drum_1.png"},
                    {SpriteId::Drum_2,          "Drum_2",    "assets/images/stage/stage_3/drum_2.png"},
@@ -53,6 +55,7 @@ namespace {
          {SpriteId::Enemy_auto,          "enemy_auto",    "assets/images/stage/stage_1/enemy_auto.png"},
         {SpriteId::NextStage_1,          "NextStage_1",    "assets/images/stage/stage_1/NextStage.png"},
         {SpriteId::NextStage_2,          "NextStage_2",    "assets/images/stage/stage_3/nextStage.png"},
+         {SpriteId::NextStage_fake,          "NextStage_fake",    "assets/images/stage/stage_3/necstStage.png"},
         {SpriteId::Stage_2,          "Stage_2",    "assets/images/stage/stage_1/Stage_2.png"},
         {SpriteId::Stage_3,          "Stage_3",    "assets/images/stage/stage_3/Stage_3.png"},
         {SpriteId::Stage_4,          "Stage_4",    "assets/images/stage/stage_4/Stage_4.png"},
@@ -60,12 +63,15 @@ namespace {
         {SpriteId::Fake_clear,          "Fake_clear",    "assets/images/stage/stage_4/Fake_clear.png"},
          {SpriteId::IceBlock,          "IceBlock",    "assets/images/stage/stage_4/iceBlock.png"},
 
-
-        {SpriteId::Ojisan_car,          "Ojisan_car",    "assets/images/ojisan/ojisan_car.png"},
+		 //おじさん
+         {SpriteId::Ojisan_car,          "Ojisan_car",    "assets/images/ojisan/ojisan_car.png"},
          {SpriteId::Ojisan_real1,          "Ojisan_real1",    "assets/images/ojisan/ojisan_real1.png"},
          {SpriteId::Ojisan_real2,          "Ojisan_real2",    "assets/images/ojisan/ojisan_real2.png"},
          {SpriteId::Ojisan_real3,          "Ojisan_real3",    "assets/images/ojisan/ojisan_real3.png"},
-             {SpriteId::Ojisan_kick,          "Ojisan_kick",    "assets/images/ojisan/ojisan_kick.png"},
+         {SpriteId::Ojisan_kick,          "Ojisan_kick",    "assets/images/ojisan/ojisan_kick.png"},
+         {SpriteId::Ojisan_waruguti1,          "Ojisan_waruguti1",    "assets/images/ojisan/ojisan_waruguti1.png"},
+         {SpriteId::Ojisan_waruguti2,          "Ojisan_waruguti2",    "assets/images/ojisan/ojisan_waruguti2.png"},
+         {SpriteId::Ojisan_waruguti3,          "Ojisan_waruguti3",    "assets/images/ojisan/ojisan_waruguti3.png"},
 
           
     };

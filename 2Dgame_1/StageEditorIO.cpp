@@ -189,8 +189,20 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 // p0=moveSpeed, p1=moveDistance, p2=delay
                 m.rect = o.rect; m.moveSpeed = o.params[0]; m.moveDistance = o.params[1];
                 m.timer = 0; m.delay = o.params[2]; m.triggerd = false; m.ismoved = false; m.onplayer = false;
+                m.initialX = o.rect.x;  // 初期X座標を記録
                 stage.moveplatformsXInit[i] = m;
             }break;
+		case EditorObjectType::MOVEPLATFORMYXY:
+			if (c[t] < MAX_MOVEPLATFORM) {
+				int i = c[t]++; auto& m = stage.movePlatformsYXY[i];
+				// p0=moveSpeedY1, p1=moveDistanceY1, p2=delay, p3=moveSpeedY2, p4=moveDistanceY2, p5=delayY2
+				m.moveSpeedY1 = o.params[0]; m.moveDistanceY1 = o.params[1]; m.moveDistanceX2 = o.params[2];
+				m.moveDistanceY3 = o.params[3]; m.timer = 0; m.delay = o.params[4]; m.onplayer = false;
+				m.rect = o.rect;  m.prevY1 = o.rect.y; m.prevX2 = o.rect.x; m.prevY3 = o.rect.y;
+				m.triggerd = false; m.isMoving = false; m.initialX = o.rect.x; m.initialY = o.rect.y;
+				stage.movePlatformsYXYInit[i] = m;
+			}break;
+
         case EditorObjectType::MOVE_HAZARD:
             if (c[t] < MAX_MOVEHAZARD) {
                 int i = c[t]++; auto& h = stage.moveHazards[i];
@@ -499,7 +511,9 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 ds.rotation = o.rotation;
                 ds.flipX = o.flipX;
                 ds.flipY = o.flipY;
+            
             }
+            break;
 
         default: break;
         }
@@ -521,6 +535,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
             si.flipY = o.flipY;
         }
     }
+	// 配列カウントを Stage 構造体に反映
     stage.platformCount = c[0];  stage.backPlatformCount = c[1];
     stage.hazardCount = c[2];    stage.touchBreakBlockCount = c[3];
     stage.bottomBreakBlockCount = c[4]; stage.breakableBlockCount = c[5];
@@ -554,6 +569,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 	stage.tempFloorCount = c[(int)EditorObjectType::TEMP_FLOOR];              // 51
 	stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
     stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
+    stage.movePlatformCountYXY = c[(int)EditorObjectType::MOVEPLATFORMYXY];
 
 
     StageThemeLoadAll(stage.theme,
@@ -636,11 +652,13 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         IMPORT_RAW_P(DEATH_BLOCK, s.deathBlocks, s.deathBlockCount)
         IMPORT_RAW_P(OJISAN_PUNCH_AREA, s.ojisanPunchAreas, s.ojisanPunchAreaCount)
 
-        for (int i = 0; i < s.spikeBouncerCount; i++) {
-            PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, s.spikeBouncers[i].rect };
-            o.params[0] = s.spikeBouncers[i].bounceVelosity.x;
-            o.params[1] = s.spikeBouncers[i].bounceVelosity.y;
-            ed.objects.push_back(o);
+
+   // 以下、パラメータ付きのオブジェクトは個別に処理
+    for (int i = 0; i < s.spikeBouncerCount; i++) {
+        PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, s.spikeBouncers[i].rect };
+        o.params[0] = s.spikeBouncers[i].bounceVelosity.x;
+        o.params[1] = s.spikeBouncers[i].bounceVelosity.y;
+        ed.objects.push_back(o);
         }
     for (int i = 0; i < s.icePlatformCount; i++) {
         PlacedObject o = { EditorObjectType::ICE_PLATFORM,s.icePlatforms[i].rect };
@@ -714,6 +732,16 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
     for (int i = 0; i < s.moveCount; i++) {
         PlacedObject o = { EditorObjectType::MOVE_HAZARD,s.moveHazards[i].rect };
         o.params[0] = s.moveHazards[i].raiseHeight; o.params[1] = s.moveHazards[i].moveSpeed;
+        ed.objects.push_back(o);
+    }
+    for (int i = 0; i < s.movePlatformCountYXY; i++) {
+        auto& m = s.movePlatformsYXY[i];
+        PlacedObject o = { EditorObjectType::MOVEPLATFORMYXY, m.rect };
+        o.params[0] = m.moveSpeedY1;
+        o.params[1] = m.moveDistanceY1;
+        o.params[2] = m.moveDistanceX2;
+        o.params[3] = m.moveDistanceY3;
+        o.params[4] = m.delay;
         ed.objects.push_back(o);
     }
     // ★ MOVE_HAZARD_EXT_Y: dir を params[2] に保存

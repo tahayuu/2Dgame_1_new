@@ -395,7 +395,19 @@ static bool ResolveSolidY(const Rectangle& solid, Rectangle& player, Vector2& ve
 		return false;
 	}
 	// 下向き（落下中）で床に乗れる場合
-	else if (velocity.y > 0) {
+	else if (velocity.y >= 0) {
+		const float prevBottom = prev.y + prev.height;
+		const float solidTop = solid.y;
+		const float tolerance = 4.0f;
+
+		// 前フレームで床の上側にいた場合だけ着地
+		const bool cameFromAbove =
+			prevBottom <= solidTop + tolerance;
+
+		if (!cameFromAbove) {
+			return false;
+		}
+
 		player.y = solid.y - player.height;
 		velocity.y = 0;
 		return true;
@@ -639,8 +651,37 @@ static bool CheckPlayerNearBelow(const Rectangle& player, const Rectangle& obj, 
 static void MoveWithPlayer(const Stage& stage, Rectangle& player, Vector2& velocity, float dt) {
 	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		const auto& mpx = stage.movePlatformsX[i];
-		if (mpx.onplayer) {  // フラグが立っていれば
-			player.x += mpx.moveSpeed * dt;
+		// 遅延完了後で、かつプレイヤーが乗っている場合のみ移動
+		if (mpx.ismoved && mpx.onplayer) {
+			// 床の移動量をプレイヤーに適用（床と同じだけ移動させる）
+			float moveAmount = mpx.rect.x - mpx.prevX;//床の移動量
+			player.x += moveAmount;//プレイヤーを床と同じだけ移動させる
+		}
+	}
+}
+
+static void MoveWithPlayerYXY(const Stage& stage, Rectangle& player, Vector2& velocity, float dt) {
+	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
+		const auto& mpyxy = stage.movePlatformsYXY[i];
+		if (!mpyxy.onplayer) {
+			continue;//プレイヤーが乗っていない場合はスキップ
+		}
+
+		// 遅延完了後で、かつプレイヤーが乗っている場合のみ移動
+		if (mpyxy.isMovingY1 ) {
+			// 床の移動量をプレイヤーに適用（床と同じだけ移動させる）
+			float moveAmountY = mpyxy.rect.y - mpyxy.prevY1;//床の移動量
+			player.y += moveAmountY;//プレイヤーを床と同じだけ移動させる
+		}
+		if (mpyxy.isMovingX2 ) {
+			// 床の移動量をプレイヤーに適用（床と同じだけ移動させる）
+			float moveX = mpyxy.rect.x - mpyxy.prevX2;//床の移動量
+			player.x += moveX;//プレイヤーを床と同じだけ移動させる
+		}
+		if (mpyxy.isMovingY3) {
+			// 床の移動量をプレイヤーに適用（床と同じだけ移動させる）
+			float moveAmountY = mpyxy.rect.y - mpyxy.prevY3;//床の移動量
+			player.y += moveAmountY;//プレイヤーを床と同じだけ移動させる
 		}
 	}
 }
@@ -1352,13 +1393,58 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		bool landed = ResolveSolidYPlayer(stage.movePlatformsX[i].rect, player, velocity, prev, stage.gravityReversed);
 		auto& mpx = stage.movePlatformsX[i];
 		if (landed) {
-		 onGround = true;
-		 mpx.onplayer = true;
-		}
-	 if (landed && !mpx.triggerd) {
-		 mpx.triggerd = true;
-		 mpx.timer = 0.0f;
+			onGround = true;// Y方向の着地判定
+		 mpx.onplayer = true;// プレイヤーが移動床に乗っているフラグ
+		}else if(!landed){
+			mpx.onplayer = false;
+	
 	 }
+	}
+	// 移動床YXY
+	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
+		auto& mpyxy = stage.movePlatformsYXY[i];
+
+		bool landed = ResolveSolidYPlayer(
+			mpyxy.rect,
+			player,
+			velocity,
+			prev,
+			stage.gravityReversed
+		);
+
+		const float tolerance = 6.0f;
+
+		// プレイヤーの足元
+		float playerBottom = player.y + player.height;
+
+		// 移動床の上面
+		float platformTop = mpyxy.rect.y;
+
+		// X方向でプレイヤーと床が重なっているか
+		bool overlapX =
+			player.x + player.width > mpyxy.rect.x &&
+			player.x < mpyxy.rect.x + mpyxy.rect.width;
+
+		// プレイヤーが床の上面付近にいるか
+		bool standingOnTop =
+			!stage.gravityReversed &&
+			overlapX &&
+			fabsf(playerBottom - platformTop) <= tolerance &&
+			velocity.y >= 0.0f;
+
+		if (landed || standingOnTop) {
+			onGround = true;
+			mpyxy.onplayer = true;
+
+			// 下降中でもプレイヤーを床の上面へ固定する
+			player.y = mpyxy.rect.y - player.height;
+
+			// 重力による微小な落下速度を消す
+			velocity.y = 0.0f;
+		}
+		else {
+			mpyxy.onplayer = false;
+		}
 	}
 
 	//わかれる床
@@ -1681,6 +1767,7 @@ void MoveUpdateWithPlayrer(Stage& stage, Rectangle& player, Vector2& velocity, f
 	MoveWithPlayer(stage, player, velocity, dt);
 	MoveWithUpDownPlatform(stage, player, velocity, dt);
 	MoveWithCirclePlatform(stage, player, velocity, dt);
+	MoveWithPlayerYXY(stage, player, velocity, dt);
 }
 
 // 目的: エレベーター本体の移動と、搭乗中プレイヤーの同期移動を処理する。

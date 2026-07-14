@@ -255,14 +255,81 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 	//動く床X
 	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		auto& mpx = stage.movePlatformsX[i];
-		if (mpx.triggerd && !mpx.ismoved) {
+		if (mpx.onplayer && !mpx.ismoved) {//プレイヤーが乗っている場合
 			mpx.timer += dt;
 			if (mpx.timer > mpx.delay) {
 				mpx.ismoved = true;
 			}
 		}
-		if (mpx.ismoved) {
+		// 前フレームのX座標を保存（移動量計算用）
+		mpx.prevX = mpx.rect.x;
+
+		if (mpx.ismoved ) {
 			mpx.rect.x += mpx.moveSpeed * dt;
+			// 初期X座標 + 移動距離に達したら止める（相対移動として判定）
+			if (mpx.rect.x >= mpx.initialX + mpx.moveDistance) {
+				mpx.rect.x = mpx.initialX + mpx.moveDistance;
+			}
+		}
+	}
+
+	//動く床YXY
+	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
+		auto& mpyxy = stage.movePlatformsYXY[i];
+		mpyxy.prevX2 = mpyxy.rect.x;
+		mpyxy.prevY1 = mpyxy.rect.y;
+		mpyxy.prevY3 = mpyxy.rect.y;
+		if (mpyxy.onplayer && !mpyxy.isMovingY1 && !mpyxy.isMovingX2 && !mpyxy.isMovingY3 && !mpyxy.triggerd) {//プレイヤーが乗っている場合
+			mpyxy.timer += dt;
+			mpyxy.triggerd = true;//一度踏まれたら、踏まれていない状態に戻らないようにする
+			if (mpyxy.timer > mpyxy.delay) {
+				mpyxy.isMovingY1 = true;
+				mpyxy.isMoving = true;
+			}
+		}
+		// 最初のY移動
+		if (mpyxy.isMovingY1 && mpyxy.triggerd && mpyxy.isMoving && mpyxy.onplayer) {
+			mpyxy.rect.y += mpyxy.moveSpeedY1 * dt;
+
+			float targetY = mpyxy.initialY + mpyxy.moveDistanceY1;
+
+			if (mpyxy.rect.y >= targetY) {
+				mpyxy.rect.y = targetY;
+
+				mpyxy.isMovingY1 = false;
+				mpyxy.isMovingX2 = true;
+				mpyxy.isMovingY3 = false;
+			}
+		}
+		// 次のX移動
+		else if (mpyxy.isMovingX2 && mpyxy.onplayer) {
+			mpyxy.rect.x += mpyxy.moveSpeedY1 * dt;
+
+			float targetX = mpyxy.initialX + mpyxy.moveDistanceX2;
+
+			if (mpyxy.rect.x >= targetX) {
+				mpyxy.rect.x = targetX;
+
+				mpyxy.isMovingY1 = false;
+				mpyxy.isMovingX2 = false;
+				mpyxy.isMovingY3 = true;
+			}
+		}
+		// 最後のY移動
+		else if (mpyxy.isMovingY3 && mpyxy.onplayer) {
+			mpyxy.rect.y -= mpyxy.moveSpeedY1 * dt;
+
+			float targetY = mpyxy.initialY - mpyxy.moveDistanceY3;
+
+			if (mpyxy.rect.y <= targetY) {
+				mpyxy.rect.y = targetY;
+
+				mpyxy.timer = 0.0f;
+				mpyxy.isMovingY1 = false;
+				mpyxy.isMovingX2 = false;
+				mpyxy.isMovingY3 = false;
+				mpyxy.isMoving = false;
+			}
 		}
 	}
 
@@ -691,7 +758,9 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			for (int i = 0; i < stage.gravityBlockCount; i++) {
 				stage.gravityBlocks[i] = stage.gravityBlocksInit[i];
 			}
-
+			for (int i = 0; i < stage.movePlatformCountYXY; i++) {
+				stage.movePlatformsYXY[i] = stage.movePlatformsYXYInit[i];
+			}
 			for (int i = 0; i < stage.rotatingBallCount; i++) {
 				stage.rotatingBalls[i] = stage.rotatingBallsInit[i];
 			}
@@ -701,7 +770,9 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			for (int i = 0; i < stage.rollingBallCount; i++) {
 				stage.rollingBalls[i] = stage.rollingBallsInit[i];
 			}
-
+			for (int i = 0; i < stage.movePlatformCountX; i++) {
+				stage.movePlatformsX[i] = stage.moveplatformsXInit[i];
+			}
 			for (int i = 0; i < stage.splitPlatformCount; i++) {
 				auto& sp = stage.splitPlatforms[i];
 				sp.base = sp.baseInit;
@@ -824,7 +895,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.rotatingBallCount = 0;
 			stage.moveRotatingBallCount = 0;
 			stage.rollingBallCount = 0;
-			
+			stage.movePlatformCountYXY = 0;
 			stage.fallingTextCount = 0;
 			stage.exitDoorCount = 0;
 			stage.warpCount = 0;

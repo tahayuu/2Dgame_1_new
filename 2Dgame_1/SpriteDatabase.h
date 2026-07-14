@@ -38,11 +38,13 @@ enum class SpriteId {
 	Buttom_break,
 	Exitdoor_2,
 	Exitdoor_1,
+	Exitdoor2_fake,
 	Drum_1,
 	Drum_2,
 	tempBlock,
 	NextStage_1,
 	NextStage_2,
+	NextStage_fake,
 	Stage_2,
 	Stage_3,
 	Stage_4,
@@ -51,11 +53,16 @@ enum class SpriteId {
 	Nedle3,
 	IceBlock,
 	Fake_clear,
+
+	//おじさん
 	Ojisan_car,
 	Ojisan_real1,
 	Ojisan_real2,
 	Ojisan_real3,
 	Ojisan_kick,
+	Ojisan_waruguti1,
+	Ojisan_waruguti2,
+	Ojisan_waruguti3,
 	COUNT
 };
 

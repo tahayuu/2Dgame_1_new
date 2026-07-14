@@ -73,7 +73,8 @@ enum class EditorObjectType {
 	TEMP_FLOOR_SWITCH,      // 52
     DECOR_ARROW,            // 53
 	DECOR_SPRITE,           // 54
-	COUNT,                  // 55
+	MOVEPLATFORMYXY,        // 55
+	COUNT,                  // 56
 };
 
 // params[p0..p5] の最大スロット数。

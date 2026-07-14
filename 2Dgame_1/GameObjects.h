@@ -205,6 +205,29 @@ struct MovePlatformX {
 	bool ismoved;//動いているか
 	bool onplayer;//プレイヤーが乗っているか
     Rectangle rect;
+    float initialX;  // 初期X座標（相対移動の基準点）
+    float prevX;     // 前フレームのX座標（移動量計算用）
+};
+
+struct MovePlatformYXY {//縦に動いた後に横に動き盾に動く床
+	float moveSpeedY1;
+	float moveDistanceY1;
+	float moveDistanceX2;
+	float moveDistanceY3;
+	float timer;
+	float delay;
+	bool onplayer;//プレイヤーが乗っているか
+    float initialX;  // 初期X座標
+    float initialY;  // 初期Y座標
+	Rectangle rect;
+	float prevY1;     // 前フレームのY座標（移動量計算用）
+    float prevX2;
+	float prevY3;
+	bool isMovingY1 = false; // 最初はY方向に動く
+	bool isMovingX2 = false; // 次にX方向に動く
+	bool isMovingY3 = false; // 最後にY方向に動く
+	bool triggerd = false; // 一度踏まれたか
+	bool isMoving = false; // 現在移動中か
 };
 
 //動くとげ

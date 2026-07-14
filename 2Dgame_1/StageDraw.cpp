@@ -274,6 +274,18 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 			);
 		}
 	}
+	//移動床YXY
+	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
+		const auto& mdyx = stage.movePlatformsYXY[i];
+		if (!TryDrawMovingGimmickSprite(stage, stage.movePlatformsYXYInit[i].rect, mdyx.rect)) {
+			DrawRectangleRec(mdyx.rect, ORANGE);
+			DrawLineEx(
+				{ mdyx.rect.x + 5, mdyx.rect.y + 3 },
+				{ mdyx.rect.x + mdyx.rect.width - 5,mdyx.rect.y + 3 }, 5.0f, BLACK
+			);
+		}
+	}
+
 	//ジャンプ台
 	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
 		const auto& jp = stage.jumpPlatfroms[i];
