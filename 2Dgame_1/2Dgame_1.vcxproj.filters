@@ -192,6 +192,12 @@
     <ClCompile Include="StageEventChanger.cpp.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
+    <ClCompile Include="StageSnapPuzzle.h">
+      <Filter>ヘッダー ファイル\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="StageSnapPuzzle.cpp">
+      <Filter>ソース ファイル\Other</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StageInit_1.h">

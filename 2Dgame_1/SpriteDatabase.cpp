@@ -24,6 +24,7 @@ namespace {
         /*stage_3*/
         // id                      name             path（切り出し済みPNG）
         { SpriteId::None,          "None",          "" }, // 見た目なし
+        {SpriteId::Douka,          "Douka",    "assets/images/stage/stage_1/douka.png"},
         { SpriteId::MetalFloor01,  "MetalFloor01",  "assets/images/stage/stage_3/wall_2.png" },
         { SpriteId::MetalFloor02,  "MetalFloor02",  "assets/images/stage/stage_3/wall_1.png" },
         { SpriteId::MetalWall01,   "MetalWall01",   "assets/images/stage/stage_3/ground_1.png" },
@@ -56,7 +57,7 @@ namespace {
         {SpriteId::Exitdoor_1,          "Exitdoor_1",    "assets/images/stage/stage_1/Exitdoor_1.png"},
          {SpriteId::Enemy_auto,          "enemy_auto",    "assets/images/stage/stage_1/enemy_auto.png"},
         {SpriteId::NextStage_1,          "NextStage_1",    "assets/images/stage/stage_1/NextStage.png"},
-
+        {SpriteId::Bullet,          "Bullet",    "assets/images/stage/stage_1/Bullet.png"},
 		//ステージ３
         {SpriteId::NextStage_2,          "NextStage_2",    "assets/images/stage/stage_3/nextStage.png"},
          {SpriteId::NextStage_fake,          "NextStage_fake",    "assets/images/stage/stage_3/necstStage.png"},
@@ -69,7 +70,13 @@ namespace {
          {SpriteId::IceBlock,          "IceBlock",    "assets/images/stage/stage_4/iceBlock.png"},
          {SpriteId::Jump_Space,          "Jump_Space",    "assets/images/stage/stage_4/jump_Space.png"},
          {SpriteId::Jump_N,          "Jump_N",    "assets/images/stage/stage_4/jump_N.png"},
-
+         {SpriteId::PuzzleBridge,          "PuzzleBridge",    "assets/images/stage/stage_4/puzzleBridge.png"},
+         {SpriteId::PuzzleEdg,          "PuzzleEdg",    "assets/images/stage/stage_4/puzzleEdg.png"},
+         {SpriteId::bored_brigename,          "bored_brigename",    "assets/images/stage/stage_4/bored_brigename.png"},
+         {SpriteId::bored_wataru,          "bored_wataru",    "assets/images/stage/stage_4/bored_wataru.png"},
+          {SpriteId::brige_road,          "brige_road",    "assets/images/stage/stage_4/brige_road.png"},
+         {SpriteId::brige_saku,          "brige_saku",    "assets/images/stage/stage_4/brige_saku.png"},
+         {SpriteId::brige_saku2,          "brige_saku2",    "assets/images/stage/stage_4/brige_saku2.png"},
 		 //おじさん
          {SpriteId::Ojisan_car,          "Ojisan_car",    "assets/images/ojisan/ojisan_car.png"},
          {SpriteId::Ojisan_real1,          "Ojisan_real1",    "assets/images/ojisan/ojisan_real1.png"},
@@ -78,9 +85,11 @@ namespace {
          {SpriteId::Ojisan_kick,          "Ojisan_kick",    "assets/images/ojisan/ojisan_kick.png"},
          {SpriteId::Ojisan_waruguti1,          "Ojisan_waruguti1",    "assets/images/ojisan/ojisan_waruguti1.png"},
          {SpriteId::Ojisan_waruguti2,          "Ojisan_waruguti2",    "assets/images/ojisan/ojisan_waruguti2.png"},
-         {SpriteId::Ojisan_waruguti3,          "Ojisan_waruguti3",    "assets/images/ojisan/ojisan_waruguti3.png"},
-
-          
+         {SpriteId::Ojisan_waruguti3,          "Ojisan_waruguti3",    "assets/images/ojisan/ojisan_waruguti3.png"},             
+        {SpriteId::Ojisan_idle,          "Ojisan_idle",    "assets/images/ojisan/ojisan_idle2.png"},
+        {SpriteId::Ojisan_notWalk,          "Ojisan_notWalk",    "assets/images/ojisan/ojisan_notWalk.png"},
+        {SpriteId::canWalk,          "canWalk",    "assets/images/stage/stage_4/canWalk.png"},
+       {SpriteId::notWalk,          "notWalk",    "assets/images/stage/stage_4/notWalk.png"}, 
     };
 
     constexpr int kSpriteTableCount = sizeof(g_spriteTable) / sizeof(g_spriteTable[0]);

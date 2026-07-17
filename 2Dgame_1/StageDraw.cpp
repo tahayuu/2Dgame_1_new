@@ -1,6 +1,7 @@
 ﻿#include "StageDraw.h"
 #include "Stage.h"
 #include "SpriteDatabase.h"
+#include "StageSnapPuzzle.h"
 #include <cmath>
 
 // ================================================================
@@ -444,6 +445,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.decoSpriteCount; i++) {
 		const auto& ds = stage.decoSprites[i];
 		if (ds.spriteId == SpriteId::None) continue;  // テクスチャ未設定はスキップ
+		if (ds.drawFront) continue;// 前面描画は後でまとめて描画するのでここではスキップ
 		SpriteDatabase::DrawSprite(ds.spriteId, ds.rect, ds.rotation, ds.flipX, ds.flipY, WHITE);
 	}
 
@@ -458,7 +460,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		// 静的ギミック上書き or 床上書きなどを描画
 		SpriteDatabase::DrawSprite(si.spriteId, si.rect, si.rotation, si.flipX, si.flipY, WHITE);
 	}
-
+	DrawSnapPuzzles(stage);
 	// 回転する鉄球
 	for (int i = 0; i < stage.rotatingBallCount; i++) {
 		const auto& rb = stage.rotatingBalls[i];
@@ -788,6 +790,18 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	}
 
 }
+// ===== 手前レイヤーのデコレーションスプライト（drawFront = true のもの）を描画 =====
+void StageDrawFrontDecoSprites(const Stage& stage) {
+	for (int i = 0; i < stage.decoSpriteCount; i++) {
+		const auto& ds = stage.decoSprites[i];
+
+		if (ds.spriteId == SpriteId::None) continue;
+		if (!ds.drawFront) continue;
+
+		SpriteDatabase::DrawSprite(ds.spriteId, ds.rect, ds.rotation, ds.flipX, ds.flipY, WHITE);
+	}
+}
+
 	// ==========UI: 右上にプレイヤーがもつアイテムの表示===========
 	void DrawItemUI(const Stage & stage) {
 		const float uiX = (float)GetScreenWidth() - 80.0f;

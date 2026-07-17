@@ -617,6 +617,7 @@ struct DecoSprite {
 	float rotation = 0.0f;
 	bool flipX = false;
 	bool flipY = false;
+    bool drawFront = false;
 };
 
 enum class EventActionType {
@@ -644,6 +645,69 @@ struct EventChanger {
 	bool originalStateSaved = false;//元の状態を保存したか
 
 
+};
+
+enum class DragPieceState {
+	FREE,//自由状態
+	DRAGGING,//ドラッグ中
+	SNAPPING,//スナップ中
+	SNAPPED,//スナップ完了
+	RETURNING,//元の位置に戻る
+};
+// ドラッグ可能なパズルピース
+struct DragPiece {
+    Rectangle rect = {};
+	Rectangle initialRect = {};// 初期位置を保持するための矩形
+
+    SpriteId spriteId = SpriteId::None;
+    float rotation = 0.0f;
+    bool flipX = false;
+    bool flipY = false;
+
+	int groupId = 0;// 同じグループのピースは同時にスナップ可能
+	int pieceId = 0;// ピースのID（スナップ判定用）
+
+    int currentSlotId = -1;// 現在のスロットID
+    int dragOriginSlotId = -1;// ドラッグ開始時のスロットID
+
+    DragPieceState state = DragPieceState::FREE;
+
+	Vector2 dragOffset = {};// ドラッグ開始時のマウス位置とピース位置の差
+    Vector2 moveStart = {};// 移動開始位置
+    Vector2 moveTarget = {};// 移動目標位置
+
+    float moveTimer = 0.0f;
+	float moveDuration = 0.15f;// 移動にかかる時間（秒）d
+	float effectTimer = 0.0f;// エフェクト用タイマー
+
+	bool returnOnMiss = true;// スナップ失敗時に元の位置に戻るか
+	bool allowSwap = true;// スナップ失敗時に他のピースと入れ替え可能か
+	bool lockOnSolve = true;// 正解スロットにスナップしたらロックするか
+	bool locked = false;// ロック状態（正解スロットにスナップ済みか）
+};
+
+// スナップ可能なスロット
+struct SnapSlot {
+	Rectangle rect = {};// スロットの矩形
+
+	SpriteId spriteId = SpriteId::None;// スロットに表示するスプライトID
+	float rotation = 0.0f;// スロットの回転角度（度数法）
+	bool flipX = false;// スロットの水平反転
+	bool flipY = false;// スロットの垂直反転 
+
+	int groupId = 0;// 同じグループのスロットは同時にスナップ可能
+	int slotId = 0;// スロットのID（スナップ判定用）
+
+	int requiredPieceId = 0;// このスロットにスナップするために必要なピースID
+	int occupiedPieceId = -1;// 現在スロットに占有されているピースID（-1=空き）
+
+	float snapRadius = 60.0f;// スナップ判定半径
+
+	bool showGuide = true;// ガイド表示するか
+	bool lockOnCorrect = false;// 正解スロットにスナップしたらロックするか
+	bool highlighted = false;// ハイライト表示中か
+
+	float effectTimer = 0.0f;// エフェクト用タイマー
 };
 
 // トゲ描画関数（宣言）

@@ -187,6 +187,8 @@
     <ClCompile Include="StageInit_4.cpp" />
     <ClCompile Include="StageInit_choseStage.cpp" />
     <ClCompile Include="StageInit_deback.cpp" />
+    <ClCompile Include="StageSnapPuzzle.cpp" />
+    <ClCompile Include="StageSnapPuzzle.h" />
     <ClCompile Include="StageTheme.cpp" />
     <ClCompile Include="TitleScene.cpp" />
   </ItemGroup>

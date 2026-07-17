@@ -301,14 +301,21 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     const float editorExitInvDuration = 2.0f; // 無敵秒数
     float editorKeyBlockTimer = 0.0f;       // エディタ切替直後のキー入力無視時間
     const float editorKeyBlockDuration = 0.3f; // キー無視秒数
-
     auto ResetPlayerToDefault = [&](float invincibleSec = -1.0f) {
-        player = { 100.0f, 500.0f, (float)PLAYER_W, (float)PLAYER_H };
+        Vector2 startPos = { 100.0f, 300.0f }; // デフォルト
+        if (currentStage == 4) {
+            startPos = { 50, 300  };
+		}
+		else if (currentStage == 3) {
+			startPos = { 100, 500 };
+		}
+        player = { startPos.x, startPos.y, (float)PLAYER_W, (float)PLAYER_H };
         velocity = { 0.0f, 0.0f };
+        respawn = startPos;
         if (invincibleSec >= 0.0f) {
             editorExitInvTimer = invincibleSec;
         }
-    };
+        };
 
     auto LoadSelectedStage = [&]() {
         StageClear(stage);
@@ -427,7 +434,12 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
                 if (stage.hasRespawnPoint) {
                     player = { stage.respawnPoint.x, stage.respawnPoint.y, (float)PLAYER_W, (float)PLAYER_H };
                     respawn = stage.respawnPoint;
-                } else {
+				}
+				else if (currentStage == 4) {
+					ResetPlayerToDefault();
+					respawn = { 50.0f, 100.0f };
+				}// 4面はスタート位置を変更
+                else {
                     ResetPlayerToDefault();
                     respawn = { 100.0f, 500.0f };
                 }
@@ -806,6 +818,7 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
 			itemManager.DrawAll();
 			const bool isDeadScreen = (gameState == GameState::DEADING_SCREEN || gameState == GameState::DEAD_SCREEN);
 			PlayerStateDrawWorld(playerState, editorExitInvTimer, isDeadScreen);
+			StageDrawFrontDecoSprites(stage);// 前景デコスプライトを描画
 			EndMode2D();
 
             // ← ここでUIを描く（スクリーン固定）

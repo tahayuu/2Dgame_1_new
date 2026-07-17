@@ -19,7 +19,7 @@ void DrawSpikes(Rectangle h, float spikeW);
 // 目的: ステージ全体をワールド座標で描画する。
 // 注意: sprite上書き描画と通常描画の順序を崩すと二重描画になりやすい。
 void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int heldSpringIndex);
-
+void StageDrawFrontDecoSprites(const Stage& stage);// 前景装飾スプライト描画
 // アイテムUI描画（スクリーン座標）
 // 目的: アイテムUIをスクリーン座標で描画する。
 void DrawItemUI(const Stage& stage);

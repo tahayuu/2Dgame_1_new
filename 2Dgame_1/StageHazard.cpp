@@ -1,4 +1,5 @@
 ﻿#include "StageHazard.h"
+#include "StageSnapPuzzle.h"
 #include "Stage.h"
 #include <cmath>
 
@@ -322,7 +323,9 @@ bool StageHitRisingSpike(const Stage& stage, const Rectangle& player) {
 // 出力: どれか1つでも接触していれば true。
 bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage& 本物を使うけど、変更は禁止
 	for (int i = 0; i < stage.hazardCount; i++) {
-		if (CheckCollisionRecs(player, stage.hazards[i])) {
+		if (IsHazardDisabledBySnapPuzzle(stage, i)) continue;//スナップパズルで無効化されているとげは判定しない
+
+		if (CheckCollisionRecs(player, stage.hazards[i])) {//接触判定
 			return true;
 		}
 	}

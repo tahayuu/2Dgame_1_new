@@ -1,6 +1,7 @@
 #include "StageEditorInternal.h"
 #include "DialogManager.h" 
 #include "EnemyManager.h"
+#include"StageSnapPuzzle.h"
 #include <fstream>
 #include <sstream>
 
@@ -62,7 +63,13 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         case EditorObjectType::BACK_PLATFORM:
             if (c[t] < MAX_PLATFORMS) stage.backPlatforms[c[t]++] = o.rect; break;
         case EditorObjectType::HAZARD:
-            if (c[t] < MAX_HAZARDS) stage.hazards[c[t]++] = o.rect; break;
+            if (c[t] < MAX_HAZARDS) {
+                int i = c[t]++;
+                stage.hazards[i] = o.rect;
+                stage.hazardDisableSnapGroupIds[i] = static_cast<int>(o.params[0]);
+            }
+            break;
+
         case EditorObjectType::TOUCH_BREAK_BLOCK:
             if (c[t] < MAX_PLATFORMS) {
                 int i = c[t]++; stage.touchBreakBlocks[i].rect = o.rect;
@@ -513,6 +520,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 ds.rotation = o.rotation;
                 // params[0]をeventIdとして使う
 				ds.eventId = static_cast<int>(o.params[0]);// 0=無効, 1=イベント1, 2=イベント2, ...
+				ds.drawFront = o.params[1] != 0.0f;// params[1]をdrawFrontとして使う
                 ds.flipX = o.flipX;
                 ds.flipY = o.flipY;
             
@@ -528,7 +536,60 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 ec.originalStateSaved = false;
             }
             break;
+            
+        case EditorObjectType::DRAG_PIECE:
+            if (c[t] < Stage::MAX_DRAG_PIECES) {
+                int i = c[t]++;
+                DragPiece& piece = stage.dragPieces[i];
 
+                piece.rect = o.rect;
+                piece.initialRect = o.rect;
+
+                piece.spriteId = o.spriteId;
+                piece.rotation = o.rotation;
+                piece.flipX = o.flipX;
+                piece.flipY = o.flipY;
+
+                piece.groupId = static_cast<int>(o.params[0]);
+                piece.pieceId = static_cast<int>(o.params[1]);
+                piece.currentSlotId = static_cast<int>(o.params[2]);
+
+                piece.returnOnMiss = o.params[3] != 0.0f;
+                piece.allowSwap = o.params[4] != 0.0f;
+                piece.lockOnSolve = o.params[5] != 0.0f;
+
+                piece.dragOriginSlotId = -1;
+                piece.state = DragPieceState::FREE;
+                piece.locked = false;
+                piece.effectTimer = 0.0f;
+            }
+            break;
+
+        case EditorObjectType::SNAP_SLOT:
+            if (c[t] < Stage::MAX_SNAP_SLOTS) {
+                int i = c[t]++;
+                SnapSlot& slot = stage.snapSlots[i];
+
+                slot.rect = o.rect;
+
+                slot.spriteId = o.spriteId;
+                slot.rotation = o.rotation;
+                slot.flipX = o.flipX;
+                slot.flipY = o.flipY;
+
+                slot.groupId = static_cast<int>(o.params[0]);
+                slot.slotId = static_cast<int>(o.params[1]);
+                slot.requiredPieceId = static_cast<int>(o.params[2]);
+                slot.snapRadius = o.params[3];
+
+                slot.showGuide = o.params[4] != 0.0f;
+                slot.lockOnCorrect = o.params[5] != 0.0f;
+
+                slot.occupiedPieceId = -1;
+                slot.highlighted = false;
+                slot.effectTimer = 0.0f;
+            }
+            break;
         default: break;
         }
 
@@ -537,10 +598,11 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 //         ただし、DECOR_SPRITE は除外する（DECOR_SPRITE は別の配列に格納されるため）
 
         // ================================================================
-        if  (o.type != EditorObjectType::DECOR_SPRITE &&
+        if (o.type != EditorObjectType::DECOR_SPRITE &&
+            o.type != EditorObjectType::DRAG_PIECE &&
+            o.type != EditorObjectType::SNAP_SLOT &&
             o.spriteId != SpriteId::None &&
-            stage.spriteInstanceCount <
-            Stage::MAX_SPRITE_INSTANCES) {
+            stage.spriteInstanceCount < Stage::MAX_SPRITE_INSTANCES) {
             auto& si = stage.spriteInstances[stage.spriteInstanceCount++];
             si.rect = o.rect;
             si.spriteId = o.spriteId;
@@ -584,7 +646,10 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 	stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
     stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
     stage.movePlatformCountYXY = c[(int)EditorObjectType::MOVEPLATFORMYXY];
+    stage.dragPieceCount = c[(int)EditorObjectType::DRAG_PIECE];
+    stage.snapSlotCount = c[(int)EditorObjectType::SNAP_SLOT];
 
+	InitializeSnapPuzzles(stage);// SnapPuzzle の初期化
 
     StageThemeLoadAll(stage.theme,
         "assets/images/stage/stage_1/ground1.png",
@@ -652,7 +717,13 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 
     IMPORT_RAW_P(PLATFORM, s.platforms, s.platformCount)
         IMPORT_RAW_P(BACK_PLATFORM, s.backPlatforms, s.backPlatformCount)
-        IMPORT_RAW_P(HAZARD, s.hazards, s.hazardCount)
+		// HAZARD はパラメータ付きなので個別処理
+        for (int i = 0; i < s.hazardCount; i++) {
+            PlacedObject o = { EditorObjectType::HAZARD, s.hazards[i] };
+            InitDefaultParams(o);
+            o.params[0] = static_cast<float>(s.hazardDisableSnapGroupIds[i]);
+            ed.objects.push_back(o);
+        }
         IMPORT_RECT_P(TOUCH_BREAK_BLOCK, s.touchBreakBlocks, s.touchBreakBlockCount)
         IMPORT_RECT_P(BOTTOM_BREAK_BLOCK, s.bottomBreakBlocks, s.bottomBreakBlockCount)
         IMPORT_RECT_P(BREAKABLE_BLOCK, s.breakableBlocks, s.breakableBlockCount)
@@ -919,6 +990,7 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.type = EditorObjectType::DECOR_SPRITE;
         o.rect = s.decoSprites[i].rect;
         InitDefaultParams(o);
+		o.params[1] = s.decoSprites[i].drawFront ? 1.0f : 0.0f;// drawFront を params[1] に保存
 		o.params[0] = static_cast<float>(s.decoSprites[i].eventId); // eventId を params[0] に保存
         o.spriteId = s.decoSprites[i].spriteId;
         o.rotation = s.decoSprites[i].rotation;
@@ -940,6 +1012,52 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 		o.params[3] = ec.restoreOnExit ? 1.0f : 0.0f;
 		o.params[4] = ec.oneShot ? 1.0f : 0.0f;
 		ed.objects.push_back(o);
+    }
+
+    for (int i = 0; i < s.dragPieceCount; i++) {
+        const DragPiece& piece = s.dragPiecesInit[i];
+
+        PlacedObject o;
+        o.type = EditorObjectType::DRAG_PIECE;
+        o.rect = piece.initialRect;
+        InitDefaultParams(o);
+
+        o.params[0] = static_cast<float>(piece.groupId);
+        o.params[1] = static_cast<float>(piece.pieceId);
+        o.params[2] = static_cast<float>(piece.currentSlotId);
+        o.params[3] = piece.returnOnMiss ? 1.0f : 0.0f;
+        o.params[4] = piece.allowSwap ? 1.0f : 0.0f;
+        o.params[5] = piece.lockOnSolve ? 1.0f : 0.0f;
+
+        o.spriteId = piece.spriteId;
+        o.rotation = piece.rotation;
+        o.flipX = piece.flipX;
+        o.flipY = piece.flipY;
+
+        ed.objects.push_back(o);
+    }
+
+    for (int i = 0; i < s.snapSlotCount; i++) {
+        const SnapSlot& slot = s.snapSlotsInit[i];
+
+        PlacedObject o;
+        o.type = EditorObjectType::SNAP_SLOT;
+        o.rect = slot.rect;
+        InitDefaultParams(o);
+
+        o.params[0] = static_cast<float>(slot.groupId);
+        o.params[1] = static_cast<float>(slot.slotId);
+        o.params[2] = static_cast<float>(slot.requiredPieceId);
+        o.params[3] = slot.snapRadius;
+        o.params[4] = slot.showGuide ? 1.0f : 0.0f;
+        o.params[5] = slot.lockOnCorrect ? 1.0f : 0.0f;
+
+        o.spriteId = slot.spriteId;
+        o.rotation = slot.rotation;
+        o.flipX = slot.flipX;
+        o.flipY = slot.flipY;
+
+        ed.objects.push_back(o);
     }
     // ================================================================
  // 見た目(Sprite)情報の復元

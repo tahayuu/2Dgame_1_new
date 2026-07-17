@@ -19,6 +19,7 @@
 // ================================================================
 enum class SpriteId {
 	None = 0,
+	Douka,
 	MetalFloor01,
 	MetalFloor02,
 	MetalWall01,
@@ -45,6 +46,7 @@ enum class SpriteId {
 	NextStage_1,
 	NextStage_2,
 	NextStage_fake,
+	Bullet,
 	Stage_2,
 	Stage_3,
 	Stage_4,
@@ -65,6 +67,23 @@ enum class SpriteId {
 	Ojisan_waruguti1,
 	Ojisan_waruguti2,
 	Ojisan_waruguti3,
+	Ojisan_idle,
+	Ojisan_notWalk,
+	canWalk,
+	notWalk,
+
+	//パズル
+	PuzzleBridge,
+	PuzzleEdg,
+	bored_brigename,
+	bored_wataru,
+	brige_road,
+	brige_saku,
+	brige_saku2,
+
+
+
+
 	COUNT
 };
 

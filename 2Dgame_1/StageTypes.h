@@ -159,7 +159,7 @@ struct Stage {
 	
     //とげ
     Rectangle hazards[MAX_HAZARDS];
-
+	int hazardDisableSnapGroupIds[MAX_HAZARDS] = {};//無効化するスナップグループID
 	int hazardCount;
 	int moveCount;
 	int moveExtYCount;
@@ -307,7 +307,19 @@ struct Stage {
 	DecorArrow decorArrows[MAX_DECOR_ARROWS];
 	int decorArrowCount = 0;
 
+	static constexpr int MAX_DRAG_PIECES = 32;
+	static constexpr int MAX_SNAP_SLOTS = 32;
 
+	DragPiece dragPieces[MAX_DRAG_PIECES];
+	DragPiece dragPiecesInit[MAX_DRAG_PIECES];
+	int dragPieceCount = 0;
+
+	SnapSlot snapSlots[MAX_SNAP_SLOTS];// スナップスロットの配列
+	SnapSlot snapSlotsInit[MAX_SNAP_SLOTS];// スナップスロットの初期化用配列
+	int snapSlotCount = 0;
+
+	int draggingSnapPieceIndex = -1;
+	bool snapMouseCaptured = false;
 	// ================================================================
 // 見た目専用スプライト情報（当たり判定・ギミック処理には一切使わない）
 // ----------------------------------------------------------------

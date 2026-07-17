@@ -6,6 +6,7 @@
 #include "StageInit_3.h"
 #include "StageInit_4.h"
 #include "GameObjects.h"
+#include "StageSnapPuzzle.h"
 #include "EnemyManager.h"
 #include "ItemManager.h"
 #include <cmath>
@@ -153,13 +154,13 @@ void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
 }
 
 //一時床ギミックの更新
-static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera) {
+static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera,bool allowMouseInput) {
 	Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
-	bool clicked = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+	bool clicked = allowMouseInput && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);//マウスクリックが有効な場合のみ、クリック判定を行う
 
 	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
 		auto& sw = stage.tempFloorSwitches[i];
-		sw.hover = CheckCollisionPointRec(mouseWorld, sw.rect);
+		sw.hover = allowMouseInput && CheckCollisionPointRec(mouseWorld, sw.rect);
 
 
 		if (sw.triggered && sw.oneShot) continue;
@@ -203,8 +204,9 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera) {
 // 出力: 各ギミックの位置・状態フラグが更新される。
 // 注意: プレイヤー挙動に影響が大きいため、更新順変更時は要検証。
 void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camera) {
+	bool snapMouseConsumed = UpdateSnapPuzzles(stage, camera,dt);
 	//一時床ギミックの更新
-	UpdateTempFloorGimmick(stage, dt, camera);
+	UpdateTempFloorGimmick(stage, dt, camera, !snapMouseConsumed);
 
 	//触れると壊れるブロック
 	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
@@ -240,12 +242,12 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			fp.rect.y += fp.fallSpeed * dt; //変化量 = 速度 × 時間
 		}
 	}
-
-	//カーソル追従床
-	UpdateCursorPlatform(stage, dt, camera);
-
-	//カーソルクリックギミック
-	UpdateCursorBottom(stage, dt, camera);
+	if (!snapMouseConsumed) {
+		//カーソル追従床
+		UpdateCursorPlatform(stage, dt, camera);
+     	//カーソルクリックギミック
+		UpdateCursorBottom(stage, dt, camera);
+	}
 
 
 	//重力反転クールダウン
@@ -849,6 +851,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
 				stage.tempFloorSwitches[i] = stage.tempFloorSwitchesInit[i];
 			}
+			ResetSnapPuzzles(stage);
 		}
 	
 		
@@ -918,7 +921,14 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.tempFloorSwitchCount = 0;
 			stage.decorArrowCount = 0;
 			stage.decoSpriteCount = 0;
-			
+			stage.dragPieceCount = 0;
+			stage.snapSlotCount = 0;
+			stage.draggingSnapPieceIndex = -1;
+			stage.snapMouseCaptured = false;
+
+			for (int i = 0; i < MAX_HAZARDS; i++) {
+				stage.hazardDisableSnapGroupIds[i] = 0;
+			}
 		}
 // （新規追加）
 
