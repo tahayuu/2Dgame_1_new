@@ -189,14 +189,17 @@
     <ClCompile Include="SpriteDatabase.cpp">
       <Filter>ソース ファイル\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="StageEventChanger.cpp.cpp">
+    <ClCompile Include="StageEventChanger.cpp">
+      <Filter>ソース ファイル\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="StageSnapPuzzle.cpp">
+      <Filter>ソース ファイル\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="StageGimmickSignal.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
     <ClCompile Include="StageSnapPuzzle.h">
       <Filter>ヘッダー ファイル\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="StageSnapPuzzle.cpp">
-      <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -294,6 +297,9 @@
       <Filter>ヘッダー ファイル\Texture</Filter>
     </ClInclude>
     <ClInclude Include="StageEventChanger.h">
+      <Filter>ヘッダー ファイル\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="StageGimmickSignal.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
   </ItemGroup>

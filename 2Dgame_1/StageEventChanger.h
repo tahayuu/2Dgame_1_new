@@ -7,3 +7,5 @@ void UpdateEventChangers(
     Stage& stage,
     const Rectangle& playerRect
 );
+
+void ResetEventChangers(Stage& stage);

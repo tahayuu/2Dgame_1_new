@@ -633,13 +633,16 @@ struct EventChanger {
 	
 	SpriteId changedSpriteId = SpriteId::None;//変更後のスプライトID
 
-	int jumpMode = 1;//ジャンプモードを変える（0=通常, 1=二段ジャンプ, 2=ジャンプ不可）
+	int jumpMode = -1;//ジャンプモードを変える（0=通常, 1=二段ジャンプ, 2=ジャンプ不可）
+    int inputSignalId = 0;//入力信号ID
 
+    // 0なら従来どおりプレイヤー接触で発動
+    // 1以上なら指定された信号で発動
 	bool restoreOnExit = true;//退出時に元の状態に戻すか
 	bool oneShot = false;//一度だけ作動するか
 	bool triggered = false;//一度作動したか
 	bool playerWasInside = false;//プレイヤーが中にいるか
-
+	bool signalWasActive = false;//信号がアクティブか
 	SpriteId originalSpriteId = SpriteId::None;//元のスプライトID
 	int originalJumpMode = 0;//元のジャンプモード
 	bool originalStateSaved = false;//元の状態を保存したか
@@ -708,6 +711,19 @@ struct SnapSlot {
 	bool highlighted = false;// ハイライト表示中か
 
 	float effectTimer = 0.0f;// エフェクト用タイマー
+};
+
+struct DistanceTriggerPiece {
+    DragPiece drag;
+	int outputSignalId = 0;
+	float detachDistance = 80.0f;//離れた距離
+    float reattachDistance = 30.0f;//未発動状態から発動状態になる距離
+    /*80ピクセル以上離れると発動
+      30ピクセル以内へ戻ると解除
+      同じ距離にすると、境界付近で次のように細かく切り替わる可能性があります。
+      ON → OFF → ON → OFF
+      そのため、発動距離と解除距離を分ける*/
+    bool detached = false;//現在初期位置から外れているか
 };
 
 // トゲ描画関数（宣言）

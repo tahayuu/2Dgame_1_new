@@ -81,6 +81,9 @@ enum class SpriteId {
 	brige_saku,
 	brige_saku2,
 
+	enemy_muteki,
+	enemy_teki,
+	mu,
 
 
 

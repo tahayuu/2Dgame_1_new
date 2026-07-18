@@ -160,6 +160,12 @@ struct Stage {
     //とげ
     Rectangle hazards[MAX_HAZARDS];
 	int hazardDisableSnapGroupIds[MAX_HAZARDS] = {};//無効化するスナップグループID
+	int hazardDisableSignalIds[MAX_HAZARDS] = {};//無効化するシグナルID
+	/*disableSnapGroupId
+    → スナップパズル完成で無効化
+
+    disableSignalId
+    → 距離トリガーなどの信号で無効化*/
 	int hazardCount;
 	int moveCount;
 	int moveExtYCount;
@@ -314,6 +320,17 @@ struct Stage {
 	DragPiece dragPiecesInit[MAX_DRAG_PIECES];
 	int dragPieceCount = 0;
 
+	static constexpr int MAX_DISTANCE_TRIGGER_PIECES = 32;
+
+	DistanceTriggerPiece distanceTriggerPieces[MAX_DISTANCE_TRIGGER_PIECES];
+	DistanceTriggerPiece distanceTriggerPiecesInit[MAX_DISTANCE_TRIGGER_PIECES];
+
+	int distanceTriggerPieceCount = 0;// 離れた距離で発動するピースの数
+	int draggingDistanceTriggerPieceIndex = -1;// 離れた距離で発動するピースのドラッグ中インデックス
+	bool distanceTriggerMouseCaptured = false;// 離れた距離で発動するピースのマウスキャプチャ中か
+	static constexpr int MAX_GIMMICK_SIGNALS = 254;// ギミック信号の最大数
+	bool gimmickSignals[MAX_GIMMICK_SIGNALS] = {};
+
 	SnapSlot snapSlots[MAX_SNAP_SLOTS];// スナップスロットの配列
 	SnapSlot snapSlotsInit[MAX_SNAP_SLOTS];// スナップスロットの初期化用配列
 	int snapSlotCount = 0;
@@ -341,6 +358,7 @@ struct Stage {
 	int spriteInstanceCount = 0;
 	static constexpr int MAX_DECO_SPRITES = 128;
 	DecoSprite decoSprites[MAX_DECO_SPRITES];
+	DecoSprite decoSpritesInit[MAX_DECO_SPRITES];
 	int decoSpriteCount = 0;
 
 	static constexpr int MAX_EVENT_CHANGERS = 16;
@@ -350,6 +368,8 @@ struct Stage {
 	// 0：SPACE/W/UP
 	// 1：Nのみ
 	int currentJumpMode = 0;
+
+
 
 };
 	

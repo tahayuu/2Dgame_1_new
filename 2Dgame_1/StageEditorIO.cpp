@@ -2,6 +2,7 @@
 #include "DialogManager.h" 
 #include "EnemyManager.h"
 #include"StageSnapPuzzle.h"
+#include "StageGimmickSignal.h"
 #include <fstream>
 #include <sstream>
 
@@ -23,7 +24,7 @@
 // ・params[p0..p5] の意味は type ごとに異なる（StageEditor.cpp の TYPE_PARAMS と対応）。
 // ・見た目(spriteId/rotation/flip)は stage.spriteInstances へ別途書き出す。
 // ================================================================
-void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemyManager) {
+void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enemyManager) {
     // cameraConfig はエディタの配置データ(ed.objects)には含まれない情報のため、
     // StageInit_* が事前に設定した値（例: ステージ3のtwoLayeredなど）が
     // 直後のStageClearで消えてしまわないよう、ここで退避・復元する
@@ -35,7 +36,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
     // 見た目専用データ(SpriteId)の書き出し先をリセット
 // （StageClear がゼロ初期化していない可能性があるため念のため明示的に初期化）
     stage.spriteInstanceCount = 0;
-	stage.eventChangerCount = 0;// eventChangerCount もリセット
+    stage.eventChangerCount = 0;// eventChangerCount もリセット
     stage.currentJumpMode = 0;
     // SWITCH_BUTTON を配置順に収集 → SWITCH_PLATFORM と 1:1 で ペアリング
     std::vector<Rectangle> switchBtnRects;
@@ -64,9 +65,17 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
             if (c[t] < MAX_PLATFORMS) stage.backPlatforms[c[t]++] = o.rect; break;
         case EditorObjectType::HAZARD:
             if (c[t] < MAX_HAZARDS) {
-                int i = c[t]++;
+                const int i = c[t]++;
+
                 stage.hazards[i] = o.rect;
-                stage.hazardDisableSnapGroupIds[i] = static_cast<int>(o.params[0]);
+
+                // スナップパズル完成時に無効化するグループID
+                stage.hazardDisableSnapGroupIds[i] =
+                    static_cast<int>(o.params[0]);
+
+                // 距離トリガーなどの信号で無効化する信号ID
+                stage.hazardDisableSignalIds[i] =
+                    static_cast<int>(o.params[1]);
             }
             break;
 
@@ -200,16 +209,16 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 m.initialX = o.rect.x;  // 初期X座標を記録
                 stage.moveplatformsXInit[i] = m;
             }break;
-		case EditorObjectType::MOVEPLATFORMYXY:
-			if (c[t] < MAX_MOVEPLATFORM) {
-				int i = c[t]++; auto& m = stage.movePlatformsYXY[i];
-				// p0=moveSpeedY1, p1=moveDistanceY1, p2=delay, p3=moveSpeedY2, p4=moveDistanceY2, p5=delayY2
-				m.moveSpeedY1 = o.params[0]; m.moveDistanceY1 = o.params[1]; m.moveDistanceX2 = o.params[2];
-				m.moveDistanceY3 = o.params[3]; m.timer = 0; m.delay = o.params[4]; m.onplayer = false;
-				m.rect = o.rect;  m.prevY1 = o.rect.y; m.prevX2 = o.rect.x; m.prevY3 = o.rect.y;
-				m.triggerd = false; m.isMoving = false; m.initialX = o.rect.x; m.initialY = o.rect.y;
-				stage.movePlatformsYXYInit[i] = m;
-			}break;
+        case EditorObjectType::MOVEPLATFORMYXY:
+            if (c[t] < MAX_MOVEPLATFORM) {
+                int i = c[t]++; auto& m = stage.movePlatformsYXY[i];
+                // p0=moveSpeedY1, p1=moveDistanceY1, p2=delay, p3=moveSpeedY2, p4=moveDistanceY2, p5=delayY2
+                m.moveSpeedY1 = o.params[0]; m.moveDistanceY1 = o.params[1]; m.moveDistanceX2 = o.params[2];
+                m.moveDistanceY3 = o.params[3]; m.timer = 0; m.delay = o.params[4]; m.onplayer = false;
+                m.rect = o.rect;  m.prevY1 = o.rect.y; m.prevX2 = o.rect.x; m.prevY3 = o.rect.y;
+                m.triggerd = false; m.isMoving = false; m.initialX = o.rect.x; m.initialY = o.rect.y;
+                stage.movePlatformsYXYInit[i] = m;
+            }break;
 
         case EditorObjectType::MOVE_HAZARD:
             if (c[t] < MAX_MOVEHAZARD) {
@@ -234,20 +243,20 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 h.tolelance = o.params[2];
                 stage.moveDownHazardsExtYInit[i] = h;
             }break;
-		case EditorObjectType::MOVE_HAZARD_RIGHT_X:
-			if (c[t] < MAX_MOVEHAZARD) {
-				int i = c[t]++; auto& h = stage.moveHazardsRight[i];
-				h.rect = o.rect; h.ismoved = false; h.triggerd = false;
-				h.raiseWidth = o.params[0]; h.startX = o.rect.x; h.moveSpeed = o.params[1];
-				h.timer = 0; h.delay = o.params[2];
-				h.dir = (o.params[3] < 0.0f) ? -1 : 1; // 負値=左向き, 正値=右向き
-				h.toleranceX = o.params[4]; // 感知するX方向の許容範囲（エディタで編集可能に）
-				h.toleranceY = o.params[5]; // 感知するY方向の許容範囲（エディタで編集可能に）
-				stage.moveHazardsRightInit[i] = h;
-			}break;
-		case EditorObjectType::MOVE_HAZARD_EXT_X:
-			// 旧機能。moveHazardsRight に統合されたため、読み込みはスキップ（互換性のためcaseのみ残す）
-			break;
+        case EditorObjectType::MOVE_HAZARD_RIGHT_X:
+            if (c[t] < MAX_MOVEHAZARD) {
+                int i = c[t]++; auto& h = stage.moveHazardsRight[i];
+                h.rect = o.rect; h.ismoved = false; h.triggerd = false;
+                h.raiseWidth = o.params[0]; h.startX = o.rect.x; h.moveSpeed = o.params[1];
+                h.timer = 0; h.delay = o.params[2];
+                h.dir = (o.params[3] < 0.0f) ? -1 : 1; // 負値=左向き, 正値=右向き
+                h.toleranceX = o.params[4]; // 感知するX方向の許容範囲（エディタで編集可能に）
+                h.toleranceY = o.params[5]; // 感知するY方向の許容範囲（エディタで編集可能に）
+                stage.moveHazardsRightInit[i] = h;
+            }break;
+        case EditorObjectType::MOVE_HAZARD_EXT_X:
+            // 旧機能。moveHazardsRight に統合されたため、読み込みはスキップ（互換性のためcaseのみ残す）
+            break;
         case EditorObjectType::TRACKING_HAZARD:
             if (c[t] < MAX_HAZARDS) {
                 int i = c[t]++; auto& h = stage.trackingHazards[i];
@@ -306,7 +315,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 if (f.detectMode < 0 || f.detectMode > 2) f.detectMode = 0;
                 stage.fallingPlatformsInit[i] = f;
             }break;
-        
+
 
         case EditorObjectType::UPRISING_PLATFORM:
             if (c[t] < MAX_UPRISING) {
@@ -397,7 +406,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                     const std::string key = o.text.substr(1);
                     auto& dm = DialogManager::Instance();
                     cb.message = dm.Has(key) ? dm.Get(key, "") : o.text;
-                } else {
+                }
+                else {
                     cb.message = o.text;
                 }
                 // p0=duration（表示秒数）
@@ -480,7 +490,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 cr.state = CraneState::IDLE;
                 stage.cranesInit[i] = cr;
             }break;
-            
+
         case EditorObjectType::TEMP_FLOOR:
             if (c[t] < Stage::MAX_TEMP_FLOORS) {
                 int i = c[t]++;
@@ -511,32 +521,49 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 stage.decorArrows[i].angleDeg = o.params[0];
             }
             break;
-            
+
         case EditorObjectType::DECOR_SPRITE:
             if (stage.decoSpriteCount < Stage::MAX_DECO_SPRITES) {
-                auto& ds = stage.decoSprites[stage.decoSpriteCount++];
+                const int i = stage.decoSpriteCount++;
+                DecoSprite& ds = stage.decoSprites[i];
+
+                // 前回のステージデータが残らないよう初期化してから設定する
+                ds = {};
                 ds.rect = o.rect;
-                ds.spriteId = o.spriteId;  // テクスチャはエディタの spriteId を使う
+                ds.spriteId = o.spriteId;
                 ds.rotation = o.rotation;
-                // params[0]をeventIdとして使う
-				ds.eventId = static_cast<int>(o.params[0]);// 0=無効, 1=イベント1, 2=イベント2, ...
-				ds.drawFront = o.params[1] != 0.0f;// params[1]をdrawFrontとして使う
+                ds.eventId = static_cast<int>(o.params[0]);
+                ds.drawFront = o.params[1] != 0.0f;
                 ds.flipX = o.flipX;
                 ds.flipY = o.flipY;
-            
+
+                // StageReset() 内の ResetEventChangers() はこの初期配列から復元する。
+                // ここへ保存しないと、全DECOR_SPRITEが SpriteId::None に戻って消える。
+                stage.decoSpritesInit[i] = ds;
             }
             break;
         case EditorObjectType::EVENT_CHANGER:
             if (stage.eventChangerCount < Stage::MAX_EVENT_CHANGERS) {
-                auto& ec =stage.eventChangers[stage.eventChangerCount++];
-                ec.rect = o.rect; ec.targetEventId = static_cast<int>(o.params[0]);
-                ec.changedSpriteId = static_cast<SpriteId>(static_cast<int>(o.params[1]) ); ec.jumpMode =static_cast<int>(o.params[2]);
-                ec.restoreOnExit = o.params[3] != 0.0f;ec.oneShot = o.params[4] != 0.0f; ec.triggered = false; 
-                ec.playerWasInside = false;ec.originalSpriteId = SpriteId::None; ec.originalJumpMode = 0; 
+                EventChanger& ec = stage.eventChangers[stage.eventChangerCount++];
+
+                ec = {};
+                ec.rect = o.rect;
+                ec.targetEventId = static_cast<int>(o.params[0]);
+                ec.changedSpriteId = static_cast<SpriteId>(static_cast<int>(o.params[1]));
+                ec.jumpMode = static_cast<int>(o.params[2]);
+                ec.restoreOnExit = o.params[3] != 0.0f;
+                ec.oneShot = o.params[4] != 0.0f;
+                ec.inputSignalId = static_cast<int>(o.params[5]);
+
+                ec.triggered = false;
+                ec.playerWasInside = false;
+                ec.signalWasActive = false;
+                ec.originalSpriteId = SpriteId::None;
+                ec.originalJumpMode = 0;
                 ec.originalStateSaved = false;
             }
             break;
-            
+
         case EditorObjectType::DRAG_PIECE:
             if (c[t] < Stage::MAX_DRAG_PIECES) {
                 int i = c[t]++;
@@ -590,6 +617,48 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
                 slot.effectTimer = 0.0f;
             }
             break;
+        case EditorObjectType::DISTANCE_TRIGGER_PIECE:
+            if (c[t] <
+                Stage::MAX_DISTANCE_TRIGGER_PIECES) {
+                const int i = c[t]++;
+                DistanceTriggerPiece& trigger =
+                    stage.distanceTriggerPieces[i];
+
+                // 前回の状態が残らないよう全体を初期化
+                trigger = {};
+                DragPiece& piece = trigger.drag;
+                // DragPieceとして共通利用する情報
+                piece.rect = o.rect;
+                piece.initialRect = o.rect;
+                piece.spriteId = o.spriteId;
+                piece.rotation = o.rotation;
+                piece.flipX = o.flipX;
+                piece.flipY = o.flipY;
+
+                // 距離トリガーはスロットを使わない
+                piece.groupId = 0;
+                piece.pieceId = 0;
+                piece.currentSlotId = -1;
+                piece.dragOriginSlotId = -1;
+
+                piece.state = DragPieceState::FREE;
+                piece.locked = false;
+
+                piece.moveTimer = 0.0f;
+                piece.moveDuration = 0.15f;
+                piece.effectTimer = 0.0f;
+
+                // エディタのreturnOnReleaseを
+                // DragPieceのreturnOnMissへ保存する
+                piece.returnOnMiss =
+                    o.params[3] != 0.0f;
+
+                // 距離トリガー専用パラメータ
+                trigger.outputSignalId =
+                    static_cast<int>(o.params[0]); trigger.detachDistance = o.params[1];
+                trigger.reattachDistance = o.params[2]; trigger.detached = false;
+            }
+            break;
         default: break;
         }
 
@@ -601,6 +670,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         if (o.type != EditorObjectType::DECOR_SPRITE &&
             o.type != EditorObjectType::DRAG_PIECE &&
             o.type != EditorObjectType::SNAP_SLOT &&
+            o.type != EditorObjectType::DISTANCE_TRIGGER_PIECE &&
             o.spriteId != SpriteId::None &&
             stage.spriteInstanceCount < Stage::MAX_SPRITE_INSTANCES) {
             auto& si = stage.spriteInstances[stage.spriteInstanceCount++];
@@ -611,14 +681,14 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
             si.flipY = o.flipY;
         }
     }
-	// 配列カウントを Stage 構造体に反映
+    // 配列カウントを Stage 構造体に反映
     stage.platformCount = c[0];  stage.backPlatformCount = c[1];
     stage.hazardCount = c[2];    stage.touchBreakBlockCount = c[3];
     stage.bottomBreakBlockCount = c[4]; stage.breakableBlockCount = c[5];
     stage.elevatorCount = c[6];  stage.gravityBlockCount = c[7];
     stage.buttonBlockCount = c[8]; stage.itemBlockCount = c[9];
     stage.icePlatformCount = c[10]; stage.moveDownPlatformCount = c[11]
-    ;
+        ;
     stage.moveUpPlatformCount = c[12]; stage.jumpPlatfromCount = c[13];
     stage.batteryHumanCount = c[14]; stage.cursorPlatformCount = c[15];
     stage.magnetCount = c[16];   stage.knockBackWallCount = c[17];
@@ -631,25 +701,28 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
     stage.fallingCount = c[30];  stage.upRisingCount = c[31];
     stage.upDownCount = c[32];   stage.clearsCount = c[33];
     stage.clearsXCount = c[34];  stage.switchPlatformCount = c[35];
-	stage.fallingTextCount = c[36]; stage.exitDoorCount = c[37];
-	stage.layerDoorCount = c[38];
-	stage.commentBlockCount = c[41];
-	stage.cursorBottomCount = c[42];
-	stage.deathBlockCount = c[43];
-	stage.spikeBouncerCount = c[44];
-	stage.springCount = c[45];
-	stage.craneLaunchPadCount = c[46];
-	stage.craneCount = c[47];
-	stage.ojisanPunchAreaCount = c[48];
-	stage.warpCount = c[49];
-	stage.tempFloorCount = c[(int)EditorObjectType::TEMP_FLOOR];              // 51
-	stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
+    stage.fallingTextCount = c[36]; stage.exitDoorCount = c[37];
+    stage.layerDoorCount = c[38];
+    stage.commentBlockCount = c[41];
+    stage.cursorBottomCount = c[42];
+    stage.deathBlockCount = c[43];
+    stage.spikeBouncerCount = c[44];
+    stage.springCount = c[45];
+    stage.craneLaunchPadCount = c[46];
+    stage.craneCount = c[47];
+    stage.ojisanPunchAreaCount = c[48];
+    stage.warpCount = c[49];
+    stage.tempFloorCount = c[(int)EditorObjectType::TEMP_FLOOR];              // 51
+    stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
     stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
     stage.movePlatformCountYXY = c[(int)EditorObjectType::MOVEPLATFORMYXY];
     stage.dragPieceCount = c[(int)EditorObjectType::DRAG_PIECE];
     stage.snapSlotCount = c[(int)EditorObjectType::SNAP_SLOT];
+    stage.distanceTriggerPieceCount = c[(int)EditorObjectType::DISTANCE_TRIGGER_PIECE];
 
-	InitializeSnapPuzzles(stage);// SnapPuzzle の初期化
+    InitializeSnapPuzzles(stage);// SnapPuzzle の初期化
+    InitializeDistanceTriggerPieces(stage);
+    ClearGimmickSignals(stage);
 
     StageThemeLoadAll(stage.theme,
         "assets/images/stage/stage_1/ground1.png",
@@ -664,19 +737,19 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
         "assets/images/stage/stage_1/normalblock_1.png",
         "assets/images/items/Arrow.png",
         "assets/images/stage/stage_1/Bullet.png",
-		"assets/images/stage/stage_1/ActionButtn_off.png",
+        "assets/images/stage/stage_1/ActionButtn_off.png",
         "assets/images/stage/stage_1/ActionButtn_on.png",
-		"assets/images/stage/stage_3/Buttom_break.png",
-		"assets/images/stage/stage_4/Magnet.png",
-		"assets/images/stage/stage_4/Magnet_Effect.png"
+        "assets/images/stage/stage_3/Buttom_break.png",
+        "assets/images/stage/stage_4/Magnet.png",
+        "assets/images/stage/stage_4/Magnet_Effect.png"
     );
     enemyManager.Init();
 
-	for (const auto& pe : ed.placedEnemies) {// placedEnemies を Stage に反映
+    for (const auto& pe : ed.placedEnemies) {// placedEnemies を Stage に反映
         enemyManager.Spawn(pe.type, pe.pos);
-		auto& e = enemyManager.enemies.back();// 新しい敵を追加配列の後ろに追加
+        auto& e = enemyManager.enemies.back();// 新しい敵を追加配列の後ろに追加
 
-		const auto& info = EdGetEnemyTypeInfo(pe.type);// 敵のタイプ情報を取得
+        const auto& info = EdGetEnemyTypeInfo(pe.type);// 敵のタイプ情報を取得
 
         if (info.count > 0)e.speed = pe.params[0];
 
@@ -689,7 +762,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage,EnemyManager& enemy
 
         // params[2] = hp（WALKERはindex2）
         if (info.count > 2) e.hp = pe.params[2];
-    
+
     }
     enemyManager.saveEnemiesInit();
 }
@@ -717,14 +790,15 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 
     IMPORT_RAW_P(PLATFORM, s.platforms, s.platformCount)
         IMPORT_RAW_P(BACK_PLATFORM, s.backPlatforms, s.backPlatformCount)
-		// HAZARD はパラメータ付きなので個別処理
+        // HAZARD はパラメータ付きなので個別処理
         for (int i = 0; i < s.hazardCount; i++) {
             PlacedObject o = { EditorObjectType::HAZARD, s.hazards[i] };
             InitDefaultParams(o);
             o.params[0] = static_cast<float>(s.hazardDisableSnapGroupIds[i]);
+            o.params[1] = static_cast<float>(s.hazardDisableSignalIds[i]);
             ed.objects.push_back(o);
         }
-        IMPORT_RECT_P(TOUCH_BREAK_BLOCK, s.touchBreakBlocks, s.touchBreakBlockCount)
+    IMPORT_RECT_P(TOUCH_BREAK_BLOCK, s.touchBreakBlocks, s.touchBreakBlockCount)
         IMPORT_RECT_P(BOTTOM_BREAK_BLOCK, s.bottomBreakBlocks, s.bottomBreakBlockCount)
         IMPORT_RECT_P(BREAKABLE_BLOCK, s.breakableBlocks, s.breakableBlockCount)
         IMPORT_RECT_P(ELEVATOR, s.elevators, s.elevatorCount)
@@ -738,12 +812,12 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         IMPORT_RAW_P(OJISAN_PUNCH_AREA, s.ojisanPunchAreas, s.ojisanPunchAreaCount)
 
 
-   // 以下、パラメータ付きのオブジェクトは個別に処理
-    for (int i = 0; i < s.spikeBouncerCount; i++) {
-        PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, s.spikeBouncers[i].rect };
-        o.params[0] = s.spikeBouncers[i].bounceVelosity.x;
-        o.params[1] = s.spikeBouncers[i].bounceVelosity.y;
-        ed.objects.push_back(o);
+        // 以下、パラメータ付きのオブジェクトは個別に処理
+        for (int i = 0; i < s.spikeBouncerCount; i++) {
+            PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, s.spikeBouncers[i].rect };
+            o.params[0] = s.spikeBouncers[i].bounceVelosity.x;
+            o.params[1] = s.spikeBouncers[i].bounceVelosity.y;
+            ed.objects.push_back(o);
         }
     for (int i = 0; i < s.icePlatformCount; i++) {
         PlacedObject o = { EditorObjectType::ICE_PLATFORM,s.icePlatforms[i].rect };
@@ -946,15 +1020,15 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         InitDefaultParams(o); ed.objects.push_back(o);
     }
     // ELEVATOR (手動インポート: speed/rangeUp/rangeDown を復元)
-    for(int i=0;i<s.elevatorCount;i++){
-        PlacedObject o={EditorObjectType::ELEVATOR, s.elevators[i].rect};
+    for (int i = 0; i < s.elevatorCount; i++) {
+        PlacedObject o = { EditorObjectType::ELEVATOR, s.elevators[i].rect };
         o.params[0] = s.elevators[i].speed;
         o.params[1] = s.elevators[i].rect.y - s.elevators[i].upperY;  // rangeUp
         o.params[2] = s.elevators[i].lowerY - s.elevators[i].rect.y;  // rangeDown
         ed.objects.push_back(o);
     }
 
-    for (int i = 0; i < s.springCount; i++) {  
+    for (int i = 0; i < s.springCount; i++) {
         PlacedObject o = { EditorObjectType::SPRING, s.springs[i].rect };
         o.params[0] = s.springs[i].bounceVelocity.x;
         o.params[1] = s.springs[i].bounceVelocity.y;
@@ -968,7 +1042,7 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         InitDefaultParams(o);
         ed.objects.push_back(o);
     }
-	// TEMP_FLOOR と TEMP_FLOアーSWITCH を復元
+    // TEMP_FLOOR と TEMP_FLOアーSWITCH を復元
     for (int i = 0; i < s.tempFloorCount; i++) {
         PlacedObject o = { EditorObjectType::TEMP_FLOOR, s.tempFloors[i].rect };
         o.params[0] = s.tempFloors[i].showSec;
@@ -990,28 +1064,29 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.type = EditorObjectType::DECOR_SPRITE;
         o.rect = s.decoSprites[i].rect;
         InitDefaultParams(o);
-		o.params[1] = s.decoSprites[i].drawFront ? 1.0f : 0.0f;// drawFront を params[1] に保存
-		o.params[0] = static_cast<float>(s.decoSprites[i].eventId); // eventId を params[0] に保存
+        o.params[1] = s.decoSprites[i].drawFront ? 1.0f : 0.0f;// drawFront を params[1] に保存
+        o.params[0] = static_cast<float>(s.decoSprites[i].eventId); // eventId を params[0] に保存
         o.spriteId = s.decoSprites[i].spriteId;
         o.rotation = s.decoSprites[i].rotation;
         o.flipX = s.decoSprites[i].flipX;
         o.flipY = s.decoSprites[i].flipY;
-     
+
         ed.objects.push_back(o);
     }
 
     for (int i = 0; i < s.eventChangerCount; i++) {
         const auto& ec = s.eventChangers[i];
-		PlacedObject o;
-		o.type = EditorObjectType::EVENT_CHANGER;
-		o.rect = ec.rect;
-		InitDefaultParams(o);
-		o.params[0] = (float)ec.targetEventId;
-		o.params[1] = (float)ec.changedSpriteId;
-		o.params[2] = (float)ec.jumpMode;
-		o.params[3] = ec.restoreOnExit ? 1.0f : 0.0f;
-		o.params[4] = ec.oneShot ? 1.0f : 0.0f;
-		ed.objects.push_back(o);
+        PlacedObject o;
+        o.type = EditorObjectType::EVENT_CHANGER;
+        o.rect = ec.rect;
+        InitDefaultParams(o);
+        o.params[0] = (float)ec.targetEventId;
+        o.params[1] = (float)ec.changedSpriteId;
+        o.params[2] = (float)ec.jumpMode;
+        o.params[3] = ec.restoreOnExit ? 1.0f : 0.0f;
+        o.params[4] = ec.oneShot ? 1.0f : 0.0f;
+        o.params[5] = static_cast<float>(ec.inputSignalId);
+        ed.objects.push_back(o);
     }
 
     for (int i = 0; i < s.dragPieceCount; i++) {
@@ -1037,6 +1112,7 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         ed.objects.push_back(o);
     }
 
+
     for (int i = 0; i < s.snapSlotCount; i++) {
         const SnapSlot& slot = s.snapSlotsInit[i];
 
@@ -1059,6 +1135,27 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 
         ed.objects.push_back(o);
     }
+
+    for (int i = 0; i < s.distanceTriggerPieceCount; i++) {
+        const DistanceTriggerPiece& trigger =
+            s.distanceTriggerPiecesInit[i];
+        const DragPiece& piece = trigger.drag;
+        PlacedObject o;
+
+        o.type = EditorObjectType::DISTANCE_TRIGGER_PIECE;
+
+        // プレイ中に動かされた位置ではなく
+        // 初期配置位置をエディタへ戻す
+        o.rect = piece.initialRect;
+        InitDefaultParams(o);
+
+        o.params[0] = static_cast<float>(trigger.outputSignalId);
+        o.params[1] = trigger.detachDistance; o.params[2] = trigger.reattachDistance;
+        o.params[3] = piece.returnOnMiss ? 1.0f : 0.0f;
+        o.spriteId = piece.spriteId; o.rotation = piece.rotation; o.flipX = piece.flipX; o.flipY = piece.flipY;
+        ed.objects.push_back(o);
+    }
+
     // ================================================================
  // 見た目(Sprite)情報の復元
  // ----------------------------------------------------------------
@@ -1187,7 +1284,7 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
     std::ifstream ifs(filename);
     if (!ifs.is_open()) return false;
     ed.objects.clear();
-	ed.placedEnemies.clear();// 敵データもクリア
+    ed.placedEnemies.clear();// 敵データもクリア
     ed.propSelectedIdx = -1;
     ed.propEditingParam = -1;
     ed.propEditingText = false;
@@ -1195,19 +1292,19 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
     std::string line;
     std::getline(ifs, line); // ヘッダースキップ
 
-	bool inEnemySection = false; // 敵データセクションに入ったかどうかのフラグ
+    bool inEnemySection = false; // 敵データセクションに入ったかどうかのフラグ
     while (std::getline(ifs, line)) {
         if (line.empty()) continue;
         //[ENEMIES]セクションに到達したら敵データの読み込みに切り替える
         if (line == "[ENEMIES]") {
             inEnemySection = true;
-			std::getline(ifs, line);// 敵データのヘッダースキップ
+            std::getline(ifs, line);// 敵データのヘッダースキップ
             continue;
         }
         if (inEnemySection) {
             std::istringstream ss(line);
-			int typeId; float posX, posY;// 敵の種類番号と配置位置を読み取る
-			char cm;// カンマ区切りの読み取り用
+            int typeId; float posX, posY;// 敵の種類番号と配置位置を読み取る
+            char cm;// カンマ区切りの読み取り用
             ss >> typeId >> cm >> posX >> cm >> posY;
 
             PlacedEnemy e;
@@ -1216,7 +1313,7 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
             InitDefaultEnemyParams(e);
             for (int i = 0; i < MAX_OBJ_PARAMS; i++) {
                 float pv;
-                if (ss >> cm >> pv) 
+                if (ss >> cm >> pv)
                     /*カンマと数値をちゃんと読み取れたら true
                       読み取りれなかったら false*/
                     e.params[i] = pv;

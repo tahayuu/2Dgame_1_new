@@ -6,6 +6,8 @@
 #include "StageInit_3.h"
 #include "StageInit_4.h"
 #include "GameObjects.h"
+#include "StageEventChanger.h"
+#include "StageGimmickSignal.h"
 #include "StageSnapPuzzle.h"
 #include "EnemyManager.h"
 #include "ItemManager.h"
@@ -204,9 +206,26 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera,bool 
 // 出力: 各ギミックの位置・状態フラグが更新される。
 // 注意: プレイヤー挙動に影響が大きいため、更新順変更時は要検証。
 void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camera) {
-	bool snapMouseConsumed = UpdateSnapPuzzles(stage, camera,dt);
+
+	const bool snapMouseConsumed =
+		UpdateSnapPuzzles(stage, camera, dt);
+
+	const bool distanceMouseConsumed =
+		UpdateDistanceTriggerPieces(
+			stage,
+			camera,
+			dt,
+			!snapMouseConsumed
+		);
+
+	RebuildGimmickSignals(stage);
+
+	const bool mouseConsumed =
+		snapMouseConsumed ||
+		distanceMouseConsumed;
 	//一時床ギミックの更新
-	UpdateTempFloorGimmick(stage, dt, camera, !snapMouseConsumed);
+	UpdateTempFloorGimmick(stage, dt, camera, !mouseConsumed);
+
 
 	//触れると壊れるブロック
 	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
@@ -242,7 +261,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			fp.rect.y += fp.fallSpeed * dt; //変化量 = 速度 × 時間
 		}
 	}
-	if (!snapMouseConsumed) {
+	if (!mouseConsumed) {
 		//カーソル追従床
 		UpdateCursorPlatform(stage, dt, camera);
      	//カーソルクリックギミック
@@ -852,6 +871,10 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 				stage.tempFloorSwitches[i] = stage.tempFloorSwitchesInit[i];
 			}
 			ResetSnapPuzzles(stage);
+			ResetDistanceTriggerPieces(stage);
+
+			ClearGimmickSignals(stage);
+			ResetEventChangers(stage);
 		}
 	
 		
@@ -925,10 +948,16 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.snapSlotCount = 0;
 			stage.draggingSnapPieceIndex = -1;
 			stage.snapMouseCaptured = false;
-
-			for (int i = 0; i < MAX_HAZARDS; i++) {
-				stage.hazardDisableSnapGroupIds[i] = 0;
+			stage.distanceTriggerPieceCount = 0;
+			stage.draggingDistanceTriggerPieceIndex =-1;stage.distanceTriggerMouseCaptured =false;
+            stage.eventChangerCount = 0;			
+			stage.currentJumpMode = 0;
+			stage.spriteInstanceCount = 0;
+			for (int i = 0;i < MAX_HAZARDS;i++) {
+            stage.hazardDisableSnapGroupIds[i] =0;
+            stage.hazardDisableSignalIds[i] =0;
 			}
+			ClearGimmickSignals(stage);//ギミック信号の初期化
 		}
 // （新規追加）
 

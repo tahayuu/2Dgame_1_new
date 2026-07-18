@@ -179,7 +179,8 @@
     <ClCompile Include="StageEditor.cpp" />
     <ClCompile Include="StageEditorDraw.cpp" />
     <ClCompile Include="StageEditorIO.cpp" />
-    <ClCompile Include="StageEventChanger.cpp.cpp" />
+    <ClCompile Include="StageEventChanger.cpp" />
+    <ClCompile Include="StageGimmickSignal.cpp" />
     <ClCompile Include="StageHazard.cpp" />
     <ClCompile Include="StageInit_3.cpp" />
     <ClCompile Include="StageInit_1.cpp" />
@@ -188,7 +189,7 @@
     <ClCompile Include="StageInit_choseStage.cpp" />
     <ClCompile Include="StageInit_deback.cpp" />
     <ClCompile Include="StageSnapPuzzle.cpp" />
-    <ClCompile Include="StageSnapPuzzle.h" />
+	<ClInclude Include="StageSnapPuzzle.h" />
     <ClCompile Include="StageTheme.cpp" />
     <ClCompile Include="TitleScene.cpp" />
   </ItemGroup>
@@ -215,6 +216,7 @@
     <ClInclude Include="StageEditor.h" />
     <ClInclude Include="StageEditorInternal.h" />
     <ClInclude Include="StageEventChanger.h" />
+    <ClInclude Include="StageGimmickSignal.h" />
     <ClInclude Include="StageHazard.h" />
     <ClInclude Include="StageInit_3.h" />
     <ClInclude Include="StageInit_1.h" />

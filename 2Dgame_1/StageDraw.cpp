@@ -2,6 +2,7 @@
 #include "Stage.h"
 #include "SpriteDatabase.h"
 #include "StageSnapPuzzle.h"
+#include "StageGimmickSignal.h"
 #include <cmath>
 
 // ================================================================
@@ -461,6 +462,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		SpriteDatabase::DrawSprite(si.spriteId, si.rect, si.rotation, si.flipX, si.flipY, WHITE);
 	}
 	DrawSnapPuzzles(stage);
+	DrawDistanceTriggerPieces(stage);
 	// 回転する鉄球
 	for (int i = 0; i < stage.rotatingBallCount; i++) {
 		const auto& rb = stage.rotatingBalls[i];

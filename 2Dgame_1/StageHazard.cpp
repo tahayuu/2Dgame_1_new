@@ -1,6 +1,7 @@
 ﻿#include "StageHazard.h"
 #include "StageSnapPuzzle.h"
 #include "Stage.h"
+#include "StageGimmickSignal.h"
 #include <cmath>
 
 // ================================================================
@@ -318,12 +319,38 @@ bool StageHitRisingSpike(const Stage& stage, const Rectangle& player) {
 	return false;
 }
 
+//とげが無効化されているか判定する
+static bool IsStaticHazardDisabled(
+	const Stage& stage,int hazardIndex) {
+	if (hazardIndex < 0 ||
+		hazardIndex >= stage.hazardCount) {
+        return false;
+	}
+
+	// 従来のスナップパズルによる無効化
+	if (IsHazardDisabledBySnapPuzzle(
+		stage,
+		hazardIndex)) {return true;}
+
+	// 距離トリガーなどの信号による無効化
+	const int signalId =
+		stage.hazardDisableSignalIds[
+			hazardIndex
+		];
+
+	return IsGimmickSignalActive(
+		stage,
+		signalId
+	);
+}
+
 // 目的: ステージ内の全危険オブジェクト接触を一括判定する。
 // 入力: stage と player矩形。
 // 出力: どれか1つでも接触していれば true。
 bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage& 本物を使うけど、変更は禁止
 	for (int i = 0; i < stage.hazardCount; i++) {
-		if (IsHazardDisabledBySnapPuzzle(stage, i)) continue;//スナップパズルで無効化されているとげは判定しない
+
+		if (IsStaticHazardDisabled(stage,i)) {continue;}
 
 		if (CheckCollisionRecs(player, stage.hazards[i])) {//接触判定
 			return true;

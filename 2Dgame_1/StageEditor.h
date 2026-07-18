@@ -77,7 +77,8 @@ enum class EditorObjectType {
 	EVENT_CHANGER,          // 56
     DRAG_PIECE,             // 57
     SNAP_SLOT,              // 58
-	COUNT,                  // 59
+	DISTANCE_TRIGGER_PIECE,      // 59
+	COUNT,                  // 60
 };
 
 // params[p0..p5] の最大スロット数。

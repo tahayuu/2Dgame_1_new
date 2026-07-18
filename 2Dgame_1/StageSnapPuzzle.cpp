@@ -7,13 +7,121 @@ static Vector2 GetRectCenter(const Rectangle& rect) {
     return { rect.x + rect.width * 0.5f, rect.y + rect.height * 0.5f };
 }
 
+// ピースの移動を開始する（スナップ中や元の位置に戻る場合に使用）
+static void StartPieceMove(DragPiece& piece, Vector2 target, DragPieceState state) {
+    piece.moveStart = { piece.rect.x, piece.rect.y };
+    piece.moveTarget = target;
+    piece.moveTimer = 0.0f;
+    piece.moveDuration = 0.15f;
+    piece.state = state;
+}
+// ピースの移動アニメーションを更新する
+static void UpdateDragPieceAnimation(DragPiece& piece, float dt) {
+    if (piece.effectTimer > 0.0f) {
+        piece.effectTimer -= dt;
+    }
+
+    if (piece.state != DragPieceState::SNAPPING &&
+        piece.state != DragPieceState::RETURNING) {
+        return;
+    }
+
+    piece.moveTimer += dt;
+
+    float t = piece.moveDuration > 0.0f
+        ? piece.moveTimer / piece.moveDuration
+        : 1.0f;
+
+    if (t > 1.0f) {
+        t = 1.0f;
+    }
+
+    const float eased = 1.0f - powf(1.0f - t, 3.0f);
+
+    piece.rect.x =
+        piece.moveStart.x +
+        (piece.moveTarget.x - piece.moveStart.x) * eased;
+
+    piece.rect.y =
+        piece.moveStart.y +
+        (piece.moveTarget.y - piece.moveStart.y) * eased;
+
+    if (t < 1.0f) {
+        return;
+    }
+
+    piece.rect.x = piece.moveTarget.x;
+    piece.rect.y = piece.moveTarget.y;
+
+    if (piece.state == DragPieceState::SNAPPING) {
+        piece.state = DragPieceState::SNAPPED;
+        piece.effectTimer = 0.18f;
+    }
+    else {
+        piece.state = piece.currentSlotId >= 0
+            ? DragPieceState::SNAPPED
+            : DragPieceState::FREE;
+    }
+}
+
+static float GetDistanceFromInitialRect(const DragPiece& piece) {
+    const Vector2 currentCenter = GetRectCenter(piece.rect);
+    const Vector2 initialCenter = GetRectCenter(piece.initialRect);
+
+    const float dx = currentCenter.x - initialCenter.x;
+    const float dy = currentCenter.y - initialCenter.y;
+
+    return sqrtf(dx * dx + dy * dy);
+}
+static void UpdateDistanceTriggerState(DistanceTriggerPiece& trigger) {
+    const float distance = GetDistanceFromInitialRect(trigger.drag);
+
+    if (!trigger.detached &&
+        distance >= trigger.detachDistance) {
+
+        trigger.detached = true;
+    }
+    else if (trigger.detached &&
+        distance <= trigger.reattachDistance) {
+
+        trigger.detached = false;
+    }
+}
+
+static void StartDistanceTriggerReturn(DistanceTriggerPiece& trigger) {
+    DragPiece& piece = trigger.drag;
+
+    StartPieceMove(
+        piece,
+        {
+            piece.initialRect.x,
+            piece.initialRect.y
+        },
+        DragPieceState::RETURNING
+    );
+}
+
+static void BeginDragPiece(DragPiece& piece, Vector2 mouseWorld) {
+    piece.state = DragPieceState::DRAGGING;
+
+    piece.dragOffset = {
+        mouseWorld.x - piece.rect.x,
+        mouseWorld.y - piece.rect.y
+    };
+}
+static void UpdateDraggedPiecePosition(DragPiece& piece, Vector2 mouseWorld) {
+    piece.rect.x = mouseWorld.x - piece.dragOffset.x;
+    piece.rect.y = mouseWorld.y - piece.dragOffset.y;
+}
+
+// ピースをスロットの中央に配置するための座標を計算する
 static Vector2 GetPiecePositionInSlot(const DragPiece& piece, const SnapSlot& slot) {
     return {
         slot.rect.x + (slot.rect.width - piece.rect.width) * 0.5f,
         slot.rect.y + (slot.rect.height - piece.rect.height) * 0.5f
     };
 }
-
+// グループIDとスロットIDに一致するスロットのインデックスを検索する
 static int FindSlotIndex(const Stage& stage, int groupId, int slotId) {
     for (int i = 0; i < stage.snapSlotCount; i++) {
         const SnapSlot& slot = stage.snapSlots[i];
@@ -21,7 +129,7 @@ static int FindSlotIndex(const Stage& stage, int groupId, int slotId) {
     }
     return -1;
 }
-
+// ピースIDとグループIDに一致するピースのインデックスを検索する
 static int FindPieceIndex(const Stage& stage, int groupId, int pieceId) {
     for (int i = 0; i < stage.dragPieceCount; i++) {
         const DragPiece& piece = stage.dragPieces[i];
@@ -30,14 +138,7 @@ static int FindPieceIndex(const Stage& stage, int groupId, int pieceId) {
     return -1;
 }
 
-static void StartPieceMove(DragPiece& piece, Vector2 target, DragPieceState state) {
-    piece.moveStart = { piece.rect.x, piece.rect.y };
-    piece.moveTarget = target;
-    piece.moveTimer = 0.0f;
-    piece.moveDuration = 0.15f;
-    piece.state = state;
-}
-
+// ピースをスロットの中央に移動させる（スナップ中に使用）
 static void StartPieceMoveToSlot(DragPiece& piece, const SnapSlot& slot) {
     StartPieceMove(piece, GetPiecePositionInSlot(piece, slot), DragPieceState::SNAPPING);
 }
@@ -152,38 +253,18 @@ static void ApplySolvedLocks(Stage& stage) {
         if (piece.lockOnSolve && IsSnapGroupSolved(stage, piece.groupId)) piece.locked = true;
     }
 }
-
+// ピースのアニメーションを更新する
 static void UpdatePieceAnimations(Stage& stage, float dt) {
     for (int i = 0; i < stage.dragPieceCount; i++) {
-        DragPiece& piece = stage.dragPieces[i];
-        if (piece.effectTimer > 0.0f) piece.effectTimer -= dt;
-        if (piece.state != DragPieceState::SNAPPING && piece.state != DragPieceState::RETURNING) continue;
-
-        piece.moveTimer += dt;
-        float t = piece.moveDuration > 0.0f ? piece.moveTimer / piece.moveDuration : 1.0f;
-        if (t > 1.0f) t = 1.0f;
-
-        const float eased = 1.0f - powf(1.0f - t, 3.0f);
-        piece.rect.x = piece.moveStart.x + (piece.moveTarget.x - piece.moveStart.x) * eased;
-        piece.rect.y = piece.moveStart.y + (piece.moveTarget.y - piece.moveStart.y) * eased;
-
-        if (t < 1.0f) continue;
-
-        piece.rect.x = piece.moveTarget.x;
-        piece.rect.y = piece.moveTarget.y;
-
-        if (piece.state == DragPieceState::SNAPPING) {
-            piece.state = DragPieceState::SNAPPED;
-            piece.effectTimer = 0.18f;
-        }
-        else {
-            piece.state = piece.currentSlotId >= 0 ? DragPieceState::SNAPPED : DragPieceState::FREE;
-        }
+        UpdateDragPieceAnimation(stage.dragPieces[i], dt);
     }
 
     for (int i = 0; i < stage.snapSlotCount; i++) {
         SnapSlot& slot = stage.snapSlots[i];
-        if (slot.effectTimer > 0.0f) slot.effectTimer -= dt;
+
+        if (slot.effectTimer > 0.0f) {
+            slot.effectTimer -= dt;
+        }
     }
 }
 
@@ -207,17 +288,16 @@ bool UpdateSnapPuzzles(Stage& stage, Camera2D camera, float dt) {
             stage.draggingSnapPieceIndex = i;
             stage.snapMouseCaptured = true;
             consumedThisFrame = true;
-            piece.state = DragPieceState::DRAGGING;
             piece.dragOriginSlotId = piece.currentSlotId;
-            piece.dragOffset = { mouseWorld.x - piece.rect.x, mouseWorld.y - piece.rect.y };
+            BeginDragPiece(piece, mouseWorld);
             break;
         }
     }
 
     if (stage.draggingSnapPieceIndex >= 0) {
         DragPiece& piece = stage.dragPieces[stage.draggingSnapPieceIndex];
-        piece.rect.x = mouseWorld.x - piece.dragOffset.x;
-        piece.rect.y = mouseWorld.y - piece.dragOffset.y;
+		DistanceTriggerPiece& trigger = stage.distanceTriggerPieces[stage.draggingDistanceTriggerPieceIndex];
+        UpdateDraggedPiecePosition(piece, mouseWorld);
 
         const int candidateSlotIndex = FindNearestSnapSlot(stage, piece);
         if (candidateSlotIndex >= 0) {
@@ -228,9 +308,11 @@ bool UpdateSnapPuzzles(Stage& stage, Camera2D camera, float dt) {
                 ApplySolvedLocks(stage);
             }
         }
-        else if (mouseReleased) {
-            StartPieceReturn(stage, piece);
-            stage.draggingSnapPieceIndex = -1;
+        else if (piece.returnOnMiss) {
+            StartDistanceTriggerReturn(trigger);
+        }
+        else {
+            piece.state = DragPieceState::FREE;
         }
     }
 
@@ -246,6 +328,130 @@ bool UpdateSnapPuzzles(Stage& stage, Camera2D camera, float dt) {
     }
 
     return consumedThisFrame || stage.snapMouseCaptured || stage.draggingSnapPieceIndex >= 0 || hasAnimation;
+}
+
+bool UpdateDistanceTriggerPieces(
+    Stage& stage,
+    Camera2D camera,
+    float dt,
+    bool allowMouseInput
+) {
+    for (int i = 0; i < stage.distanceTriggerPieceCount; i++) {
+        UpdateDragPieceAnimation(
+            stage.distanceTriggerPieces[i].drag,
+            dt
+        );
+    }
+
+    const Vector2 mouseWorld =
+        GetScreenToWorld2D(
+            GetMousePosition(),
+            camera
+        );
+
+    const bool mousePressed =
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+
+    const bool mouseReleased =
+        IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
+
+    bool consumedThisFrame =
+        stage.distanceTriggerMouseCaptured;
+
+    if (allowMouseInput &&
+        stage.draggingDistanceTriggerPieceIndex < 0 &&
+        mousePressed) {
+
+        for (int i = stage.distanceTriggerPieceCount - 1;
+            i >= 0;
+            i--) {
+
+            DistanceTriggerPiece& trigger =
+                stage.distanceTriggerPieces[i];
+
+            DragPiece& piece = trigger.drag;
+
+            if (piece.locked) {
+                continue;
+            }
+
+            if (piece.state != DragPieceState::FREE) {
+                continue;
+            }
+
+            if (!CheckCollisionPointRec(mouseWorld, piece.rect)) {
+                continue;
+            }
+
+            stage.draggingDistanceTriggerPieceIndex = i;
+            stage.distanceTriggerMouseCaptured = true;
+            consumedThisFrame = true;
+
+            BeginDragPiece(piece, mouseWorld);
+            break;
+        }
+    }
+
+    if (stage.draggingDistanceTriggerPieceIndex >= 0) {
+        const int index =
+            stage.draggingDistanceTriggerPieceIndex;
+
+        DistanceTriggerPiece& trigger =
+            stage.distanceTriggerPieces[index];
+
+        DragPiece& piece = trigger.drag;
+
+        UpdateDraggedPiecePosition(
+            piece,
+            mouseWorld
+        );
+
+        if (mouseReleased) {
+            const float distance =
+                GetDistanceFromInitialRect(piece);
+
+            if (distance <= trigger.reattachDistance) {
+                piece.rect = piece.initialRect;
+                piece.state = DragPieceState::FREE;
+                trigger.detached = false;
+            }
+            else if (piece.returnOnMiss) {
+                StartDistanceTriggerReturn(trigger);
+            }
+            else {
+                piece.state = DragPieceState::FREE;
+            }
+
+            stage.draggingDistanceTriggerPieceIndex = -1;
+        }
+    }
+
+    if (mouseReleased) {
+        stage.distanceTriggerMouseCaptured = false;
+    }
+
+    for (int i = 0; i < stage.distanceTriggerPieceCount; i++) {
+        UpdateDistanceTriggerState(
+            stage.distanceTriggerPieces[i]
+        );
+    }
+
+    bool hasAnimation = false;
+
+    for (int i = 0; i < stage.distanceTriggerPieceCount; i++) {
+        const DragPieceState state =
+            stage.distanceTriggerPieces[i].drag.state;
+
+        if (state == DragPieceState::RETURNING) {
+            hasAnimation = true;
+            break;
+        }
+    }
+
+    return consumedThisFrame ||
+        stage.distanceTriggerMouseCaptured ||
+        stage.draggingDistanceTriggerPieceIndex >= 0 ||
+        hasAnimation;
 }
 
 static void DrawSlot(const SnapSlot& slot) {
@@ -294,6 +500,29 @@ void DrawSnapPuzzles(const Stage& stage) {
     }
 }
 
+void DrawDistanceTriggerPieces(const Stage& stage) {
+    for (int i = 0; i < stage.distanceTriggerPieceCount; i++) {
+        if (i == stage.draggingDistanceTriggerPieceIndex) {
+            continue;
+        }
+
+        DrawPiece(
+            stage.distanceTriggerPieces[i].drag
+        );
+    }
+
+    const int draggingIndex =
+        stage.draggingDistanceTriggerPieceIndex;
+
+    if (draggingIndex >= 0 &&
+        draggingIndex < stage.distanceTriggerPieceCount) {
+
+        DrawPiece(
+            stage.distanceTriggerPieces[draggingIndex].drag
+        );
+    }
+}
+
 void InitializeSnapPuzzles(Stage& stage) {
     stage.draggingSnapPieceIndex = -1;
     stage.snapMouseCaptured = false;
@@ -333,12 +562,44 @@ void InitializeSnapPuzzles(Stage& stage) {
     for (int i = 0; i < stage.dragPieceCount; i++) stage.dragPiecesInit[i] = stage.dragPieces[i];
     for (int i = 0; i < stage.snapSlotCount; i++) stage.snapSlotsInit[i] = stage.snapSlots[i];
 }
+void InitializeDistanceTriggerPieces(Stage& stage) {
+    stage.draggingDistanceTriggerPieceIndex = -1;
+    stage.distanceTriggerMouseCaptured = false;
 
+    for (int i = 0; i < stage.distanceTriggerPieceCount; i++) {
+        DistanceTriggerPiece& trigger =
+            stage.distanceTriggerPieces[i];
+
+        DragPiece& piece = trigger.drag;
+
+        piece.rect = piece.initialRect;
+        piece.state = DragPieceState::FREE;
+        piece.currentSlotId = -1;
+        piece.dragOriginSlotId = -1;
+        piece.moveTimer = 0.0f;
+        piece.effectTimer = 0.0f;
+        piece.locked = false;
+
+        trigger.detached = false;
+
+        stage.distanceTriggerPiecesInit[i] =
+            trigger;
+    }
+}
 void ResetSnapPuzzles(Stage& stage) {
     for (int i = 0; i < stage.dragPieceCount; i++) stage.dragPieces[i] = stage.dragPiecesInit[i];
     for (int i = 0; i < stage.snapSlotCount; i++) stage.snapSlots[i] = stage.snapSlotsInit[i];
     stage.draggingSnapPieceIndex = -1;
     stage.snapMouseCaptured = false;
+}
+void ResetDistanceTriggerPieces(Stage& stage) {
+    for (int i = 0; i < stage.distanceTriggerPieceCount; i++) {
+        stage.distanceTriggerPieces[i] =
+            stage.distanceTriggerPiecesInit[i];
+    }
+
+    stage.draggingDistanceTriggerPieceIndex = -1;
+    stage.distanceTriggerMouseCaptured = false;
 }
 
 bool IsHazardDisabledBySnapPuzzle(const Stage& stage, int hazardIndex) {
