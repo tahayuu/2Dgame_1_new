@@ -5,7 +5,8 @@
 // AudioManager.h の役割
 // ---------------------------------------------------------------
 // ・BGM/SEリソースと音量フェード状態をまとめて管理する。
-// ・main からは初期化/更新/再生/終了APIのみを呼ぶ想定。
+// ・タイトル画面1とタイトル画面2で別々のBGMを再生する。
+// ・ステージ1クリア後の専用BGMと、おじさん会話SEを管理する。
 // ================================================================
 
 enum class SfxId {
@@ -13,47 +14,85 @@ enum class SfxId {
     Damage,
     StageChoose,
     StageDecide,
+    DialogEnter,
     tabclick,
     Punch,
+    OjisanTalk
 };
 
 struct AudioManager {
-	Music titleBgm{};
-	Music stageBgm{};
-	Music stage3Bgm{};
-	Music chooseStageBgm{};
-	Music stage4Bgm{};
+    // タイトル画面1「やさしいゲーム」用。
+    Music title1Bgm{};
 
-	Sound jumpSe{};
-	Sound damageSe{};
-	Sound stageChooseSe{};
-	Sound stageDecideSe{};
-	Sound tabclickSe{};
-	Sound punch{};
+    // タイトル画面2「イージーなんていわせない」用。
+    // 既存の assets/BGM/titleBgm.mp3 を使用する。
+    Music title2Bgm{};
 
-	float titleMaxVol = 0.30f;
-	float stageMaxVol = 0.35f;
-	float stage3MaxVol = 0.35f;
-	float chooseStageMaxVol = 0.35f;
-	float stage4MaxVol = 0.35f;
-	float editorBgmVol = 0.12f;  // エディタ/UI時の低い音量
-	float fadeSpeed = 1.2f;
+    Music stageBgm{};
+    Music stage1ClearBgm{};
+    Music stage3Bgm{};
+    Music chooseStageBgm{};
+    Music stage4Bgm{};
 
-    float titleVol = 0.30f;
+    Sound jumpSe{};
+    Sound damageSe{};
+    Sound stageChooseSe{};
+    Sound stageDecideSe{};
+
+    // ステージ1クリア会話中のENTER専用SE。
+    Sound dialogEnterSe{};
+
+    Sound tabclickSe{};
+    Sound punch{};
+    Sound ojisanTalkSe{};
+
+    float title1MaxVol = 0.30f;
+    float title2MaxVol = 0.30f;
+    float stageMaxVol = 0.35f;
+    float stage1ClearMaxVol = 0.35f;
+    float stage3MaxVol = 0.35f;
+    float chooseStageMaxVol = 0.35f;
+    float stage4MaxVol = 0.35f;
+    float editorBgmVol = 0.12f;
+    float fadeSpeed = 1.2f;
+
+    float title1Vol = 0.0f;
+    float title2Vol = 0.0f;
     float stageVol = 0.0f;
+    float stage1ClearVol = 0.0f;
     float stage3Vol = 0.0f;
     float chooseStageVol = 0.0f;
     float stage4Vol = 0.0f;
 
+    float ojisanTalkSeVolume = 0.45f;
+    float dialogEnterSeVolume = 0.60f;
+
+    // 任意追加音源の読み込み状態。
+    // falseの場合もゲーム本体は動作する。
+    bool title1BgmLoaded = false;
+    bool stage1ClearBgmLoaded = false;
+    bool ojisanTalkSeLoaded = false;
+    bool dialogEnterSeLoaded = false;
+
     bool initialized = false;
 };
 
-// 目的: オーディオデバイスとBGM/SEを初期化する。
 bool AudioInit(AudioManager& a);
-// 目的: 各BGMの目標音量へフェードさせながら再生状態を更新する。
-void AudioUpdate(AudioManager& a, bool playTitleBgm, bool playStageBgm, bool playStage3Bgm, bool playStage4Bgm,
-    bool playChooseStageBgm, bool inEditor, bool inUITab, float dt);
-// 目的: 指定SEを再生する。
+
+void AudioUpdate(
+    AudioManager& a,
+    bool playTitle1Bgm,
+    bool playTitle2Bgm,
+    bool playStageBgm,
+    bool playStage1ClearBgm,
+    bool playStage3Bgm,
+    bool playStage4Bgm,
+    bool playChooseStageBgm,
+    bool inEditor,
+    bool inUITab,
+    float dt
+);
+
 void AudioPlaySfx(AudioManager& a, SfxId id);
-// 目的: すべての音声リソースを解放する。
+void AudioStopSfx(AudioManager& a, SfxId id);
 void AudioShutdown(AudioManager& a);

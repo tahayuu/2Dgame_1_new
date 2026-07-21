@@ -54,7 +54,17 @@ void OjisanVisual::TriggerMessage(const std::string& text, float durationSeconds
         useOverrideFont = false;
     }
 }
+// 目的: メッセージ表示をクリアし、タイマーとフォントモードをリセットする。
+void OjisanVisual::ClearMessage() {
+	message.clear();
+	showMessage = false;
+	timer = 0.0f;
+	duration = 0.0f;
 
+	overrideFontPtr = nullptr;
+	useOverrideFont = false;
+	useDefaultFontMode = false;
+}
 void OjisanVisual::Update(float dt) {
 	if (!showMessage) return;
 	timer += dt;

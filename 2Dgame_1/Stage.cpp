@@ -940,6 +940,11 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			stage.spikeBouncerCount = 0;
 			stage.craneCount = 0;
 			stage.ojisanPunchAreaCount = 0;
+			for (int i = 0; i < Stage::MAX_OJISAN_PUNCH_AREAS; i++) {
+				stage.ojisanPunchTriggered[i] = false;
+				stage.ojisanPunchDrawFront[i] = false;
+				stage.ojisanPunchApproachDuration[i] = 0.85f;
+			}
 			stage.tempFloorCount = 0;
 			stage.tempFloorSwitchCount = 0;
 			stage.decorArrowCount = 0;

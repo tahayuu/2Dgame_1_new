@@ -1,4 +1,4 @@
-#include "StageEditorInternal.h"
+﻿#include "StageEditorInternal.h"
 #include "DialogManager.h" 
 #include "EnemyManager.h"
 #include"StageSnapPuzzle.h"
@@ -429,6 +429,11 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
                 int i = c[t]++;
                 stage.ojisanPunchAreas[i] = o.rect;
                 stage.ojisanPunchTriggered[i] = false;
+                // p0: 0=ステージオブジェクトの後ろ、1=前
+                stage.ojisanPunchDrawFront[i] = (o.params[0] != 0.0f);
+                // p1: 拳が接近を開始してから死亡するまでの時間（秒）
+                stage.ojisanPunchApproachDuration[i] =
+                    (o.params[1] > 0.0f) ? o.params[1] : 0.85f;
             } break;
 
         case EditorObjectType::CURSOR_BOTTOM:
@@ -741,7 +746,9 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
         "assets/images/stage/stage_1/ActionButtn_on.png",
         "assets/images/stage/stage_3/Buttom_break.png",
         "assets/images/stage/stage_4/Magnet.png",
-        "assets/images/stage/stage_4/Magnet_Effect.png"
+        "assets/images/stage/stage_4/Magnet_Effect.png",
+        "assets/images/stage/stage_3/tempBlock.png",
+        "assets/images/stage/stage_4/circle.png"
     );
     enemyManager.Init();
 
@@ -809,7 +816,18 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         IMPORT_RECT_P(CLEAR_BLOCK, s.clearBlocks, s.clearsCount)
         IMPORT_RECT_P(CLEAR_BLOCK_X, s.clearBlocksX, s.clearsXCount)
         IMPORT_RAW_P(DEATH_BLOCK, s.deathBlocks, s.deathBlockCount)
-        IMPORT_RAW_P(OJISAN_PUNCH_AREA, s.ojisanPunchAreas, s.ojisanPunchAreaCount)
+
+        // おじさんパンチは描画順パラメータ付きなので個別に復元する。
+        for (int i = 0; i < s.ojisanPunchAreaCount; i++) {
+            PlacedObject o = { EditorObjectType::OJISAN_PUNCH_AREA, s.ojisanPunchAreas[i] };
+            InitDefaultParams(o);
+            o.params[0] = s.ojisanPunchDrawFront[i] ? 1.0f : 0.0f;
+            o.params[1] =
+                (s.ojisanPunchApproachDuration[i] > 0.0f)
+                ? s.ojisanPunchApproachDuration[i]
+                : 0.85f;
+            ed.objects.push_back(o);
+        }
 
 
         // 以下、パラメータ付きのオブジェクトは個別に処理

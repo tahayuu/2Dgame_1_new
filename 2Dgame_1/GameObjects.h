@@ -345,11 +345,11 @@ struct CirclePlatform {
             center.y + armLength * sinf(angle),
         };
     }
-
+	// 当たり判定用
     Rectangle GetRect() const {
         Vector2 pos = getRectposition();
         return Rectangle{
-            pos.x - radius, pos.y - radius, radius * 2, radius * 2
+            pos.x - radius, pos.y - radius, radius * 4, radius * 4
         };
     }
 };

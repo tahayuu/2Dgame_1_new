@@ -265,7 +265,7 @@ void PlayerStateUpdate(PlayerState& ps,
     em.UpdateAll(dt, ps.rect);
 
     // ── おじさんパンチ領域 ──────────────────────────
-    for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
+    /*for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
         if (!stage.ojisanPunchTriggered[i] &&
             CheckCollisionRecs(ps.rect, stage.ojisanPunchAreas[i]))
         {
@@ -283,7 +283,7 @@ void PlayerStateUpdate(PlayerState& ps,
             ps.lastDeathCause = DeathCause::OJISAN_PUNCH;
             return;
         }
-    }
+    }*/
 
     // ── ステージ機構の更新 ──────────────────────────
     MoveUpdateWithPlayrer(stage, ps.rect, ps.velocity, dt);

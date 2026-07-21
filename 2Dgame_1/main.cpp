@@ -6,6 +6,8 @@
 #include"StageCollision.h"
 #include"StageHazard.h"
 #include"StageDraw.h"
+#include "ScreenPunchEffect.h"
+#include "StageScreenPunch.h"
 #include "ChengeStage.h"
 #include <string>
 #include"EnemyManager.h"
@@ -19,6 +21,8 @@
 #include "AudioManager.h"
 #include "GameState.h"
 #include "TitleScene.h"
+#include "Stage1ClearDialog.h"
+#include "TitleTransition.h"
 #include "Player.h"
 #include "PlayerVisual.h"      
 #include "SpriteDatabase.h"
@@ -32,14 +36,14 @@
 
 int main() {
 
-	// 目的: 実行時の全システムを初期化し、シーン遷移ループを駆動する。
-	GameState gameState = GameState::START;
-	GameState pausePrevState = GameState::PLAYING; // ポーズ前の状態を保持
-	int pauseSelectIdx = 0; // 0=ゲームにもどる, 1=タイトルに戻る, 2=ゲーム終了
-	bool pauseTransitionBlocked = false; // ポーズ状態遷移直後の入力ブロック
+    // 目的: 実行時の全システムを初期化し、シーン遷移ループを駆動する。
+    GameState gameState = GameState::START;
+    GameState pausePrevState = GameState::PLAYING; // ポーズ前の状態を保持
+    int pauseSelectIdx = 0; // 0=ゲームにもどる, 1=タイトルに戻る, 2=ゲーム終了
+    bool pauseTransitionBlocked = false; // ポーズ状態遷移直後の入力ブロック
 
-	AudioManager audio;// オーディオ管理用構造体
-
+    AudioManager audio;// オーディオ管理用構造体
+    ScreenPunchEffect screenPunch;
     float deadTime = 0.0f;
     float deadingTime = 0.0f;
     const float deadDelay = 0.3f;
@@ -47,7 +51,7 @@ int main() {
     const int screenWidth = 1280;
     const int screenHeight = 720;
 
-    
+
     StageVisual sv;
     OjisanVisual ojisan;
 
@@ -55,65 +59,69 @@ int main() {
 
     namespace fs = std::filesystem;
 
-// 実行場所がどこでも、assets があるゲームルートを探索
-// 優先順位:
-// 1) <親>/2Dgame_1/assets（開発環境） 
-// 2) <実行フォルダ>/assets（配布zip）
-auto FindGameRoot = []() -> fs::path {
-    fs::path p = fs::path(GetApplicationDirectory());
-    fs::path fallbackDistRoot;
+    // 実行場所がどこでも、assets があるゲームルートを探索
+    // 優先順位:
+    // 1) <親>/2Dgame_1/assets（開発環境） 
+    // 2) <実行フォルダ>/assets（配布zip）
+    auto FindGameRoot = []() -> fs::path {
+        fs::path p = fs::path(GetApplicationDirectory());
+        fs::path fallbackDistRoot;
 
-    for (int i = 0; i < 8; ++i) {
-        const fs::path devRoot = p / "2Dgame_1";
-        if (fs::exists(devRoot / "assets")) {
-            return devRoot;
+        for (int i = 0; i < 8; ++i) {
+            const fs::path devRoot = p / "2Dgame_1";
+            if (fs::exists(devRoot / "assets")) {
+                return devRoot;
+            }
+
+            if (fallbackDistRoot.empty() && fs::exists(p / "assets")) {
+                fallbackDistRoot = p;
+            }
+
+            if (!p.has_parent_path()) break;
+            p = p.parent_path();
         }
 
-        if (fallbackDistRoot.empty() && fs::exists(p / "assets")) {
-            fallbackDistRoot = p;
+        if (!fallbackDistRoot.empty()) {
+            return fallbackDistRoot;
         }
 
-        if (!p.has_parent_path()) break;
-        p = p.parent_path();
+        return fs::path(GetApplicationDirectory());
+        };
+
+    const fs::path gameRoot = FindGameRoot();
+    ChangeDirectory(gameRoot.string().c_str()); // assets, ojisan_lines.text の相対パス基準
+
+    const fs::path stageDir = gameRoot / "data" / "stages";
+    fs::create_directories(stageDir);
+
+    AudioInit(audio);// オーディオ初期化
+
+    auto GetStageSaveName = [](int stageId) -> std::string {
+        return "stage_edit_" + std::to_string(stageId);
+        };
+
+    auto ResolveStageCsvPath = [&](const std::string& baseName) -> std::string {
+        return (stageDir / (baseName + ".csv")).string();
+        };
+
+    auto ResolveStageSaveBasePath = [&](const std::string& baseName) -> std::string {
+        return (stageDir / baseName).string();
+        };
+
+    StageVisualLoad(sv);
+    ojisan.Load();
+    EnemyLoadTextures();
+    SpriteDatabase::Load(); // ← 追加：SpriteIdごとの切り出し済みPNG（assets/images/sprites/*.png）を読み込む
+
+    Texture2D title1Bg = LoadTexture("assets/images/stage/background/title_1.png");
+    Texture2D title2Bg{};
+    if (FileExists("assets/images/stage/background/title_2.png")) {
+        title2Bg = LoadTexture("assets/images/stage/background/title_2.png");
     }
-
-    if (!fallbackDistRoot.empty()) {
-        return fallbackDistRoot;
-    }
-
-    return fs::path(GetApplicationDirectory());
-};
-
-const fs::path gameRoot = FindGameRoot();
-ChangeDirectory(gameRoot.string().c_str()); // assets, ojisan_lines.text の相対パス基準
-
-const fs::path stageDir = gameRoot / "data" / "stages";
-fs::create_directories(stageDir);
-
-AudioInit(audio);// オーディオ初期化
-
-auto GetStageSaveName = [](int stageId) -> std::string {
-    return "stage_edit_" + std::to_string(stageId);
-};
-
-auto ResolveStageCsvPath = [&](const std::string& baseName) -> std::string {
-    return (stageDir / (baseName + ".csv")).string();
-};
-
-auto ResolveStageSaveBasePath = [&](const std::string& baseName) -> std::string {
-    return (stageDir / baseName).string();
-};
-
-StageVisualLoad(sv);
-ojisan.Load();
-EnemyLoadTextures();
-SpriteDatabase::Load(); // ← 追加：SpriteIdごとの切り出し済みPNG（assets/images/sprites/*.png）を読み込む
-
-Texture2D titleBg = LoadTexture("assets/images/stage/background/title_1.png");
-Texture2D stage1Bg = LoadTexture("assets/images/stage/background/stage1.png");
-Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
-Texture2D stage4Bg = LoadTexture("assets/images/stage/background/stage4.png");
-Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.png");
+    Texture2D stage1Bg = LoadTexture("assets/images/stage/background/stage1.png");
+    Texture2D stage2Bg = LoadTexture("assets/images/stage/background/stage2.png");
+    Texture2D stage4Bg = LoadTexture("assets/images/stage/background/stage4.png");
+    Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.png");
 
 
 
@@ -140,12 +148,22 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
         u8"ゲームにもどる\n"
         u8"タイトルにもどる\n"
         u8"ゲームしゅうりょう\n"
-        u8"\n"    
+        u8"\n"
         ;
 
-     
+
     std::string uiText = reinterpret_cast<const char*>(uiChars8);
     allDialogText += uiText;
+
+    // ステージ1クリア後の専用会話で使用する文字をフォントへ追加する。
+    const char8_t* stage1ClearDialogChars8 =
+        u8"ふーーむやはりこのていどじゃクリアされてしまうか"
+        u8"。。。。。。。"
+        u8"ふむ、やはりハードにすべきじゃな"
+        u8"イージーなんていわせないほどにな"
+        u8"ほれ「TAB」をおしてタイトルにもどるんじゃ"
+        u8"ぜんぶやりなおしじゃ";
+    allDialogText += reinterpret_cast<const char*>(stage1ClearDialogChars8);
 
     // Editor UI text (for font codepoints)s
     const char8_t* editorChars8 =
@@ -195,15 +213,15 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
 
     // ひらがな網羅（必要に応じて拡張）
     allDialogText += reinterpret_cast<const char*>(u8"ぁあぃいぅうぇえぉお"
-    "かがきぎくぐけげこご"
-    "さざしじすずせぜそぞ"
-    "ただちぢっつづてでとど"
-    "なにぬねの"
-    "はばぱひびぴふぶぷへべぺほぼぽ"
-    "まみむめも"
-    "ゃやゅゆょよ"
-    "らりるれろ"
-    "わわゐゑをんー"
+        "かがきぎくぐけげこご"
+        "さざしじすずせぜそぞ"
+        "ただちぢっつづてでとど"
+        "なにぬねの"
+        "はばぱひびぴふぶぷへべぺほぼぽ"
+        "まみむめも"
+        "ゃやゅゆょよ"
+        "らりるれろ"
+        "わわゐゑをんー"
         "アイウエオ"
         "カキクケコ"
         "サシスセソ"
@@ -225,7 +243,7 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     // フォントサイズを64に増やして高解像度テクスチャを生成
     Font ojisanFont = LoadFontEx("assets/images/font/YDWaosagi.otf", 64, ojisanCps, ojisanCpCount);
     if (ojisanFont.texture.id == 0) {
-   
+
     }
     else {
         GenTextureMipmaps(&ojisanFont.texture);
@@ -238,7 +256,7 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     int* jpCps = LoadCodepoints(allDialogText.c_str(), &jpCpCount);
     Font jpFont = LoadFontEx("assets/images/font/titlefont.ttf", 64, jpCps, jpCpCount);
     if (jpFont.texture.id == 0) {
-     
+
     }
     else {
         GenTextureMipmaps(&jpFont.texture);
@@ -251,6 +269,7 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     ojisan.SetFont(ojisanFont);
 
     SetTargetFPS(60);
+    ScreenPunchEffectInit(screenPunch);
     Stage* stagePtr = new Stage{};
     Stage& stage = *stagePtr;
     StageEditor stageEditor;
@@ -260,8 +279,22 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     itemManager.Init();
     itemManager.Load();
     Font textFont = jpFont;
+    // Debug構成では、最初から全ステージを選択可能にする。
+    // Release構成では、タイトル画面1の間はステージ1だけを選択可能にする。
+#if defined(_DEBUG)
+    constexpr bool ALLOW_ALL_STAGES_FOR_DEBUG = true;
+#else
+    constexpr bool ALLOW_ALL_STAGES_FOR_DEBUG = false;
+#endif
+
     TitleScene titleScene;
-    TitleSceneInit(titleScene, titleBg, textFont, audio);
+    TitleSceneInit(titleScene, title1Bg, title2Bg, textFont, audio, ALLOW_ALL_STAGES_FOR_DEBUG);
+
+    Stage1ClearDialog stage1ClearDialog;
+    Stage1ClearDialogInit(stage1ClearDialog, ojisan.portrait, textFont, audio);
+
+    // 会話画面からタイトル画面2へ戻る際のフェードを管理する。
+    TitleTransition titleTransition;
 
     int currentStage = 1;
     stage.fallingTexts[0].Init({ 200.0f,220.0f }, jpFont);// フォント情報で幅/高さを設定
@@ -282,8 +315,8 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     int& deaths = playerState.deaths;
     bool& isOjisanPunchDeath = playerState.isOjisanPunchDeath;
 
-	const float stageWidth = 15000.0f;
-	const float spikeW = 15.0f;
+    const float stageWidth = 15000.0f;
+    const float spikeW = 15.0f;
 
     //横スクロール
     Camera2D camera = { 0 };/*初期化Raylivが用意している構造体
@@ -304,11 +337,11 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     auto ResetPlayerToDefault = [&](float invincibleSec = -1.0f) {
         Vector2 startPos = { 100.0f, 300.0f }; // デフォルト
         if (currentStage == 4) {
-            startPos = { 50, 300  };
-		}
-		else if (currentStage == 3) {
-			startPos = { 100, 500 };
-		}
+            startPos = { 50, 300 };
+        }
+        else if (currentStage == 3) {
+            startPos = { 100, 500 };
+        }
         player = { startPos.x, startPos.y, (float)PLAYER_W, (float)PLAYER_H };
         velocity = { 0.0f, 0.0f };
         respawn = startPos;
@@ -320,6 +353,7 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     auto LoadSelectedStage = [&]() {
         StageClear(stage);
         ojisan.showPunch = false;  // パンチフラグをリセット
+        ScreenPunchEffectReset(screenPunch);
 
         switch (titleScene.selectStage) {
         case 0:
@@ -371,9 +405,12 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
         enemyManager.saveEnemiesInit();
         enemyManager.RestorInitialEnemies();
         itemManager.RestorInitialItems();
-    };
+        };
 
     auto EnterStageEditor = [&]() {
+        // プレイ中の画面パンチ演出を残したままエディタへ入らない。
+        ScreenPunchEffectReset(screenPunch);
+
         stageEditor.savePath = (currentStage == 100)
             ? ResolveStageSaveBasePath("stage_editor_output")
             : ResolveStageSaveBasePath(GetStageSaveName(currentStage));
@@ -387,31 +424,88 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
         };
         gameState = GameState::EDITOR;
         editorKeyBlockTimer = editorKeyBlockDuration; // キー入力を一時的にブロック
-    };
+        };
 
     while (!WindowShouldClose()) {
 
         float dt = GetFrameTime();
 
 
-		const bool playTitleBgm = (gameState == GameState::START);
-		const bool inStageScene =
-			(gameState == GameState::PLAYING ||
-			 gameState == GameState::DEADING_SCREEN ||
-			 gameState == GameState::DEAD_SCREEN ||
-			 gameState == GameState::PAUSE ||
-			 gameState == GameState::EDITOR);  // エディタ中もステージBGMを流す
-		const bool playStageBgm = inStageScene && (currentStage == 1 || currentStage == 2);
-		const bool playStage3Bgm = inStageScene && (currentStage == 3);
-		const bool playStage4Bgm = inStageScene && (currentStage == 4);
-		const bool playChooseStageBgm = inStageScene && (currentStage == 0);
+        // 会話の上にポーズ画面を開いているか。
+        const bool pauseOverStage1ClearDialog =
+            gameState == GameState::PAUSE &&
+            pausePrevState == GameState::STAGE1_CLEAR_DIALOG;
 
-		// エディタモード中、またはUIパネルが開いている場合は音量を下げる
-		bool inEditor = (gameState == GameState::EDITOR);
-		bool inUITab = (gameState == GameState::EDITOR) && 
-					   (stageEditor.propSelectedIdx >= 0 || stageEditor.enemyMenuOpen);
+        const bool pauseOverGameplay =
+            gameState == GameState::PAUSE &&
+            pausePrevState == GameState::PLAYING;
 
-		AudioUpdate(audio, playTitleBgm, playStageBgm, playStage3Bgm, playStage4Bgm, playChooseStageBgm, inEditor, inUITab, dt);// オーディオ更新
+        // タイトル遷移中に、背面へどちらの画面を描くか。
+        const bool transitionShowsTitle =
+            gameState == GameState::TITLE_TRANSITION &&
+            TitleTransitionShouldDrawTitle(titleTransition);
+
+        const bool transitionShowsDialog =
+            gameState == GameState::TITLE_TRANSITION &&
+            !TitleTransitionShouldDrawTitle(titleTransition);
+
+        const bool titleScreenVisible =
+            gameState == GameState::START ||
+            transitionShowsTitle;
+
+        // タイトル画面1とタイトル画面2で別々のBGMを選ぶ。
+        const bool playTitle1Bgm =
+            titleScreenVisible &&
+            titleScene.version == TitleVersion::EASY_GAME;
+
+        const bool playTitle2Bgm =
+            titleScreenVisible &&
+            titleScene.version == TitleVersion::NO_MORE_EASY;
+
+        const bool inStageScene =
+            (gameState == GameState::PLAYING ||
+                gameState == GameState::STAGE1_CLEAR_DIALOG ||
+                gameState == GameState::DEADING_SCREEN ||
+                gameState == GameState::DEAD_SCREEN ||
+                gameState == GameState::PAUSE ||
+                gameState == GameState::EDITOR);  // エディタ中もステージBGMを流す
+
+        // 会話本編、会話上のポーズ、タイトルへのフェードアウト中は
+        // ステージ1クリア後の専用BGMを継続する。
+        const bool playStage1ClearBgm =
+            gameState == GameState::STAGE1_CLEAR_DIALOG ||
+            pauseOverStage1ClearDialog ||
+            transitionShowsDialog;
+
+        // 会話中は通常のステージ1BGMを停止対象にし、
+        // AudioManager側で専用BGMとクロスフェードさせる。
+        const bool playStageBgm =
+            inStageScene &&
+            !playStage1ClearBgm &&
+            (currentStage == 1 || currentStage == 2);
+
+        const bool playStage3Bgm = inStageScene && (currentStage == 3);
+        const bool playStage4Bgm = inStageScene && (currentStage == 4);
+        const bool playChooseStageBgm = inStageScene && (currentStage == 0);
+
+        // エディタモード中、またはUIパネルが開いている場合は音量を下げる
+        bool inEditor = (gameState == GameState::EDITOR);
+        bool inUITab = (gameState == GameState::EDITOR) &&
+            (stageEditor.propSelectedIdx >= 0 || stageEditor.enemyMenuOpen);
+
+        AudioUpdate(
+            audio,
+            playTitle1Bgm,
+            playTitle2Bgm,
+            playStageBgm,
+            playStage1ClearBgm,
+            playStage3Bgm,
+            playStage4Bgm,
+            playChooseStageBgm,
+            inEditor,
+            inUITab,
+            dt
+        );// オーディオ更新
 
         // ===== エディタモード: BeginDrawing より前に完結させる =====
         if (gameState == GameState::EDITOR) {
@@ -434,11 +528,11 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
                 if (stage.hasRespawnPoint) {
                     player = { stage.respawnPoint.x, stage.respawnPoint.y, (float)PLAYER_W, (float)PLAYER_H };
                     respawn = stage.respawnPoint;
-				}
-				else if (currentStage == 4) {
-					ResetPlayerToDefault();
-					respawn = { 50.0f, 100.0f };
-				}// 4面はスタート位置を変更
+                }
+                else if (currentStage == 4) {
+                    ResetPlayerToDefault();
+                    respawn = { 50.0f, 100.0f };
+                }// 4面はスタート位置を変更
                 else {
                     ResetPlayerToDefault();
                     respawn = { 100.0f, 500.0f };
@@ -496,10 +590,12 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
             for (int i = 0; i < stage.clearsCount; i++) {
                 stage.clearBlocks[i].clearflag = false;
             }
-           
 
-            // ★ 死亡ブロック(TRAP)死亡時はコメントを出さない
-            if (cause == DeathCause::TRAP) {
+
+            // 死亡ブロックと画面パンチでは、おじさんのコメントを表示しない。
+            if (cause == DeathCause::TRAP ||
+                cause == DeathCause::OJISAN_PUNCH) {
+                ojisan.ClearMessage();
                 return;
             }
 
@@ -538,7 +634,7 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
             }
             ojisan.SetFont(ojisanFont);
             ojisan.TriggerMessage(line, 3.0f, &ojisanFont);
-        };
+            };
 
         auto RestartGame = [&]() {
             player.x = respawn.x;
@@ -553,6 +649,7 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
             playerState.visual.deathFrame = 0;
             playerState.visual.deathTimer = 0.0f;
             ojisan.showPunch = false;  // パンチフラグをリセット
+            ScreenPunchEffectReset(screenPunch);
 
             StageReset(stage);
             HazardReset(stage);
@@ -561,33 +658,80 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
             gameState = GameState::PLAYING;
             };
 
-		//プレイ画面
-		 if (gameState == GameState::PLAYING) {
-             const bool isInvincible = (editorExitInvTimer > 0.0f);
-             PlayerStateUpdate(playerState, stage, enemyManager, itemManager, ojisan, camera, dt, isInvincible, audio);
-			 //ポーズメニューを開く
-			 if (IsKeyPressed(KEY_TAB)) {
-				 pausePrevState = gameState;
-				 pauseSelectIdx = 0;
-				 pauseTransitionBlocked = true;
-				 gameState = GameState::PAUSE;
-				 AudioPlaySfx(audio, SfxId::tabclick);
-			 }
+        //プレイ画面
+        if (gameState == GameState::PLAYING) {
+            const bool isInvincible = (editorExitInvTimer > 0.0f);
+            PlayerStateUpdate(playerState, stage, enemyManager, itemManager, ojisan, camera, dt, isInvincible, audio);
+            //ポーズメニューを開く
+            if (IsKeyPressed(KEY_TAB)) {
+                pausePrevState = gameState;
+                pauseSelectIdx = 0;
+                pauseTransitionBlocked = true;
+                gameState = GameState::PAUSE;
+                AudioPlaySfx(audio, SfxId::tabclick);
+            }
 
-			if (editorExitInvTimer > 0.0f) {
-				editorExitInvTimer -= dt;
-				if (editorExitInvTimer < 0.0f) editorExitInvTimer = 0.0f;
-			}
-		
+            if (editorExitInvTimer > 0.0f) {
+                editorExitInvTimer -= dt;
+                if (editorExitInvTimer < 0.0f) editorExitInvTimer = 0.0f;
+            }
 
-			
 
-			if (playerState.pendingEnterEditor) {
-				EnterStageEditor();
-				continue;
-			}
 
-			if (playerState.pendingDeath) {
+            // V / F1 が押された場合は、PlayerStateUpdateが出した要求を受け取る。
+            if (playerState.pendingEnterEditor) {
+                EnterStageEditor();
+                continue;
+            }
+
+            // プレイヤー移動後の位置で、パンチエリアへの侵入・脱出を判定する。
+            if (!playerState.pendingDeath) {
+                UpdateScreenPunchAreas(
+                    stage,
+                    screenPunch,
+                    playerState.rect,
+                    dt
+                );
+
+                // パンチ領域へ入っている間は、吹き出しとコメントを消す。
+                if (ScreenPunchEffectIsActive(screenPunch)) {
+                    ojisan.ClearMessage();
+                }
+            }
+
+            // UpdateScreenPunchAreasの後で死亡要求を受け取る。
+            // これにより、IMPACTへ切り替わった同じフレームで張り付き画像を有効にできる。
+            if (ScreenPunchEffectConsumeKillRequest(screenPunch)) {
+                const Vector2 playerCenter = {
+                    playerState.rect.x + playerState.rect.width * 0.5f,
+                    playerState.rect.y + playerState.rect.height * 0.5f
+                };
+
+                const Vector2 playerScreenPos =
+                    GetWorldToScreen2D(playerCenter, camera);
+
+                const Vector2 stuckTargetPos = {
+                    screenWidth * 0.5f,
+                    screenHeight * 0.5f
+                };
+
+                ScreenPunchEffectSetStuckPlayer(
+                    screenPunch,
+                    playerScreenPos,
+                    stuckTargetPos
+                );
+
+                AudioPlaySfx(audio, SfxId::Punch);
+
+                playerState.isOjisanPunchDeath = true;
+                playerState.gravityReversedAtDeath = stage.gravityReversed;
+                playerState.velocity = { 0.0f, 0.0f };
+                playerState.lastDeathCause = DeathCause::OJISAN_PUNCH;
+                playerState.pendingDeath = true;
+                ojisan.showPunch = true;
+            }
+
+            if (playerState.pendingDeath) {
                 cause = playerState.lastDeathCause;
 
                 // 死亡アニメ開始
@@ -596,8 +740,8 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
                 playerState.visual.deathTimer = 0.0f;
 
                 if ((cause == DeathCause::ENEMY_WALKER ||
-                     cause == DeathCause::ENEMY_FLYER ||
-                     cause == DeathCause::ENEMY_SHOOTER) &&
+                    cause == DeathCause::ENEMY_FLYER ||
+                    cause == DeathCause::ENEMY_SHOOTER) &&
                     enemyManager.touchedEnemyFromSide &&
                     enemyManager.touchedEnemyIndex >= 0 &&
                     enemyManager.touchedEnemyIndex < (int)enemyManager.enemies.size()) {
@@ -607,86 +751,139 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
                 RespawnPlayer();
             }
 
-			if (gameState != GameState::PLAYING) {
-				continue;
-			}
+            if (gameState != GameState::PLAYING) {
+                continue;
+            }
 
-			// exitDoor判定：上向きキーでステージ遷移
-			if (stage.exitDoorTriggered >= 0) {
-				if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
-					int targetStage = stage.exitDoors[stage.exitDoorTriggered].targetStage;
-				 titleScene.selectStage = targetStage;
-					LoadSelectedStage();
-					ResetPlayerToDefault(1.0f);
-					gameState = GameState::PLAYING;
-				}
-			}
+            // exitDoor判定：上向きキーでステージ遷移
+            if (stage.exitDoorTriggered >= 0) {
+                if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+                    // ステージ1だけは通常のステージ移動を行わず、
+                    // 専用のクリア後会話画面へ切り替える。
+                    if (currentStage == 1) {
+                        velocity = { 0.0f, 0.0f };
+                        stage.exitDoorTriggered = -1;
+                        Stage1ClearDialogBegin(stage1ClearDialog);
+                        gameState = GameState::STAGE1_CLEAR_DIALOG;
+                    }
+                    else {
+                        int targetStage = stage.exitDoors[stage.exitDoorTriggered].targetStage;
+                        titleScene.selectStage = targetStage;
+                        LoadSelectedStage();
+                        ResetPlayerToDefault(1.0f);
+                        gameState = GameState::PLAYING;
+                    }
+                }
+            }
 
-			// ワープホール判定：W キーでテレポート
-			if (stage.warpTriggered >= 0) {
-				player.x = stage.warps[stage.warpTriggered].place.x;
-				player.y = stage.warps[stage.warpTriggered].place.y;
-				stage.warpTriggered = -1;
-			}
-		}
+            // ワープホール判定：W キーでテレポート
+            if (stage.warpTriggered >= 0) {
+                player.x = stage.warps[stage.warpTriggered].place.x;
+                player.y = stage.warps[stage.warpTriggered].place.y;
+                stage.warpTriggered = -1;
+            }
+        }
 
-		//死亡硬直画面
-		else if (gameState == GameState::DEADING_SCREEN) {//死亡してから少しの間、プレイヤーの操作を受け付けない状態
-			deadingTime += dt;
+        // ステージ1クリア後の専用会話画面
+        else if (gameState == GameState::STAGE1_CLEAR_DIALOG) {
+            const Stage1ClearDialogResult result = Stage1ClearDialogUpdate(stage1ClearDialog, dt);
 
-			// ギミックは死亡中も動き続ける
-			StageUpdate(stage, dt, itemManager, camera);
-			HazardUpdate(stage, playerState.rect, dt);
-			enemyManager.UpdateAll(dt, playerState.rect);
-			itemManager.UpdateAll(dt, playerState.rect, velocity);
+            // 最後のセリフでTABが押されたら、直接タイトルへ戻さず
+            // 従来のポーズ画面を会話画面の上へ開く。
+            if (result == Stage1ClearDialogResult::OPEN_PAUSE) {
+                pausePrevState = GameState::STAGE1_CLEAR_DIALOG;
+                pauseSelectIdx = 0;
+                pauseTransitionBlocked = true;
+                gameState = GameState::PAUSE;
+            }
+        }
 
-			// 死亡中はプレイヤーをその場で止める
-			playerState.velocity = { 0.0f, 0.0f };
+        // 会話画面からタイトル画面2へ戻るフェード遷移
+        else if (gameState == GameState::TITLE_TRANSITION) {
+            const TitleTransitionResult result =
+                TitleTransitionUpdate(titleTransition, dt);
 
-			// ビジュアル更新
-			PlayerVisualUpdate(playerState.visual, dt, playerState.velocity, playerState.onGround);
+            // 画面が完全に黒くなった瞬間に、背面をタイトル画面2へ交換する。
+            if (result == TitleTransitionResult::SWITCH_TO_TITLE) {
+                StageClear(stage);
+                enemyManager.Reset();
+                itemManager.Reset();
+                ojisan.ClearMessage();
+                ojisan.showPunch = false;
+                ScreenPunchEffectReset(screenPunch);
+                deaths = 0;
+                editorExitInvTimer = 0.0f;
 
-			if (deadingTime >= deadingstate) {
-				gameState = GameState::DEAD_SCREEN;
-				deadTime = 0.0f;
-			}
-		}
+                Stage1ClearDialogEnd(stage1ClearDialog);
+                TitleSceneSetVersion(titleScene, TitleVersion::NO_MORE_EASY);
+                titleScene.isSelectingStage = false;
+            }
 
-		//死亡画面
-		else if (gameState == GameState::DEAD_SCREEN) {
-			deadTime += dt;
+            // タイトル画面2が完全に現れたら、通常のSTART状態へ戻す。
+            if (result == TitleTransitionResult::FINISHED) {
+                gameState = GameState::START;
+            }
+        }
 
-			// ギミックは死亡中も動き続ける
-			StageUpdate(stage, dt, itemManager, camera);
-			HazardUpdate(stage, playerState.rect, dt);
-			enemyManager.UpdateAll(dt, playerState.rect);
-			itemManager.UpdateAll(dt, playerState.rect, velocity);
+        //死亡硬直画面
+        else if (gameState == GameState::DEADING_SCREEN) {//死亡してから少しの間、プレイヤーの操作を受け付けない状態
+            deadingTime += dt;
+            // 画面パンチエフェクトの更新
+            ScreenPunchEffectUpdate(screenPunch, dt);
+            // ギミックは死亡中も動き続ける
+            StageUpdate(stage, dt, itemManager, camera);
+            HazardUpdate(stage, playerState.rect, dt);
+            enemyManager.UpdateAll(dt, playerState.rect);
+            itemManager.UpdateAll(dt, playerState.rect, velocity);
 
-			// 死亡中はプレイヤーをその場で止める
-			playerState.velocity = { 0.0f, 0.0f };
+            // 死亡中はプレイヤーをその場で止める
+            playerState.velocity = { 0.0f, 0.0f };
 
-			// ビジュアル更新
-			PlayerVisualUpdate(playerState.visual, dt, playerState.velocity, playerState.onGround);
+            // ビジュアル更新
+            PlayerVisualUpdate(playerState.visual, dt, playerState.velocity, playerState.onGround);
 
-			if (deadTime >= deadDelay && (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
-				RestartGame();
-			}
-		}
+            if (deadingTime >= deadingstate) {
+                gameState = GameState::DEAD_SCREEN;
+                deadTime = 0.0f;
+            }
+        }
 
-		else if (gameState == GameState::START) {
-			if (TitleSceneUpdate(titleScene, gameState, dt)) {
-				LoadSelectedStage();
-				ResetPlayerToDefault(1.0f); // スタート開始時に1秒無敵
-			}
+        //死亡画面
+        else if (gameState == GameState::DEAD_SCREEN) {
+            deadTime += dt;
+            // 画面パンチエフェクトの更新
+            ScreenPunchEffectUpdate(screenPunch, dt);
+            // ギミックは死亡中も動き続ける
+            StageUpdate(stage, dt, itemManager, camera);
+            HazardUpdate(stage, playerState.rect, dt);
+            enemyManager.UpdateAll(dt, playerState.rect);
+            itemManager.UpdateAll(dt, playerState.rect, velocity);
 
-			// V/F1 でエディタ開始（TitleScene 側に未実装のため main で補完）
-			if (titleScene.isSelectingStage && (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1))) {
-				LoadSelectedStage();
-				ResetPlayerToDefault();
-				titleScene.isSelectingStage = false;
-				EnterStageEditor();
-			}
-		}
+            // 死亡中はプレイヤーをその場で止める
+            playerState.velocity = { 0.0f, 0.0f };
+
+            // ビジュアル更新
+            PlayerVisualUpdate(playerState.visual, dt, playerState.velocity, playerState.onGround);
+
+            if (deadTime >= deadDelay && (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
+                RestartGame();
+            }
+        }
+
+        else if (gameState == GameState::START) {
+            if (TitleSceneUpdate(titleScene, gameState, dt)) {
+                LoadSelectedStage();
+                ResetPlayerToDefault(1.0f); // スタート開始時に1秒無敵
+            }
+
+            // V/F1 でエディタ開始（TitleScene 側に未実装のため main で補完）
+            if (titleScene.isSelectingStage && (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1))) {
+                LoadSelectedStage();
+                ResetPlayerToDefault();
+                titleScene.isSelectingStage = false;
+                EnterStageEditor();
+            }
+        }
 
         else if (gameState == GameState::Deback) {
 
@@ -698,14 +895,15 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
             if (pauseTransitionBlocked) {
                 pauseTransitionBlocked = false;
 
-            } else {
-    
+            }
+            else {
+
                 const int pauseMenuCount = 3;
 
                 // 上下で選択
                 if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
                     pauseSelectIdx = (pauseSelectIdx + pauseMenuCount - 1) % pauseMenuCount;
-					AudioPlaySfx(audio, SfxId::StageChoose);
+                    AudioPlaySfx(audio, SfxId::StageChoose);
                 }
                 if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
                     pauseSelectIdx = (pauseSelectIdx + 1) % pauseMenuCount;
@@ -728,15 +926,27 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
                         gameState = pausePrevState;
                     }
                     else if (pauseSelectIdx == 1) {
-                        // タイトルに戻る
-                        StageClear(stage);
-                        ojisan.showPunch = false;  // パンチフラグをリセット
-                        enemyManager.Reset();
-                        itemManager.Reset();
-                        deaths = 0;
-                        editorExitInvTimer = 0.0f;
-                        gameState = GameState::START;
-                        titleScene.isSelectingStage = false;
+                        AudioPlaySfx(audio, SfxId::StageDecide);
+
+                        if (pausePrevState == GameState::STAGE1_CLEAR_DIALOG) {
+                            // 会話終了後だけは、すぐにタイトルへ移動せず
+                            // 会話画面→黒→タイトル画面2の順にフェードする。
+                            TitleTransitionBegin(titleTransition);
+                            gameState = GameState::TITLE_TRANSITION;
+                        }
+                        else {
+                            // 通常プレイ中のポーズは、これまでどおりタイトルへ戻る。
+                            StageClear(stage);
+                            ojisan.showPunch = false;
+                            ScreenPunchEffectReset(screenPunch);
+
+                            enemyManager.Reset();
+                            itemManager.Reset();
+                            deaths = 0;
+                            editorExitInvTimer = 0.0f;
+                            gameState = GameState::START;
+                            titleScene.isSelectingStage = false;
+                        }
                     }
                     else {
                         // ゲーム終了
@@ -752,13 +962,25 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
         // ===== 描画 =====
         BeginDrawing();
 
-        if (gameState == GameState::START) {
+        if (gameState == GameState::START || transitionShowsTitle) {
             TitleSceneDraw(titleScene, screenWidth, screenHeight);
         }
-        
+
+        else if (
+            (gameState == GameState::STAGE1_CLEAR_DIALOG &&
+                !Stage1ClearDialogShouldDrawStageBehind(stage1ClearDialog)) ||
+            pauseOverStage1ClearDialog ||
+            transitionShowsDialog
+            ) {
+            Stage1ClearDialogDraw(stage1ClearDialog, screenWidth, screenHeight);
+        }
+
         else if (gameState == GameState::PLAYING ||
             gameState == GameState::DEADING_SCREEN ||
-            gameState == GameState::DEAD_SCREEN) {
+            gameState == GameState::DEAD_SCREEN ||
+            pauseOverGameplay ||
+            (gameState == GameState::STAGE1_CLEAR_DIALOG &&
+                Stage1ClearDialogShouldDrawStageBehind(stage1ClearDialog))) {
 
             ClearBackground({ 135, 206, 235, 255 }); // 空色
 
@@ -770,21 +992,21 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
                     { 0, 0, (float)stage1Bg.width, (float)stage1Bg.height },
                     { 0, 0, (float)screenWidth,    (float)screenHeight },
                     { 0, 0 }, 0.0f, WHITE);
-			}// ステージ3は地下背景を全画面表示
+            }// ステージ3は地下背景を全画面表示
             if ((currentStage == 3) && stage2Bg.id != 0) {
                 DrawTexturePro(
                     stage2Bg,
                     { 0, 0, (float)stage2Bg.width, (float)stage2Bg.height },
                     { 0, 0, (float)screenWidth,    (float)screenHeight },
                     { 0, 0 }, 0.0f, WHITE);
-			}// ステージ4は選択画面背景を全画面表示
-			if ((currentStage == 0) && selectStage.id != 0) {
-				DrawTexturePro(
-					selectStage,
-					{ 0, 0, (float)selectStage.width, (float)selectStage.height },
-					{ 0, 0, (float)screenWidth,    (float)screenHeight },
-					{ 0, 0 }, 0.0f, WHITE);
-			}
+            }// ステージ4は選択画面背景を全画面表示
+            if ((currentStage == 0) && selectStage.id != 0) {
+                DrawTexturePro(
+                    selectStage,
+                    { 0, 0, (float)selectStage.width, (float)selectStage.height },
+                    { 0, 0, (float)screenWidth,    (float)screenHeight },
+                    { 0, 0 }, 0.0f, WHITE);
+            }
             if ((currentStage == 4) && stage4Bg.id != 0) {
                 DrawTexturePro(
                     stage4Bg,
@@ -811,15 +1033,60 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
                 }
             }
 
+            Camera2D drawCamera = camera;
 
-			BeginMode2D(camera);
-			StageDraw(stage, spikeW, player, stage.heldSpringIndex);
-			enemyManager.DrawAll();
-			itemManager.DrawAll();
-			const bool isDeadScreen = (gameState == GameState::DEADING_SCREEN || gameState == GameState::DEAD_SCREEN);
-			PlayerStateDrawWorld(playerState, editorExitInvTimer, isDeadScreen);
-			StageDrawFrontDecoSprites(stage);// 前景デコスプライトを描画
-			EndMode2D();
+            const Vector2 punchShake =
+                ScreenPunchEffectGetCameraShake(
+                    screenPunch
+                );
+
+            drawCamera.offset.x += punchShake.x;
+            drawCamera.offset.y += punchShake.y;
+
+            const bool drawFistFrontOfBackLayer =
+                ScreenPunchEffectShouldDrawFistInFront(screenPunch);
+
+            // OFF：拳をすべてのステージオブジェクトより後ろに描く。
+            if (!drawFistFrontOfBackLayer) {
+                ScreenPunchEffectDrawFistLayer(
+                    screenPunch,
+                    screenWidth,
+                    screenHeight
+                );
+            }
+
+            BeginMode2D(drawCamera);
+
+            if (drawFistFrontOfBackLayer) {
+                // ON：奥レイヤーの床・奥側ドアだけを先に描く。
+                StageDrawBackLayer(stage);
+                EndMode2D();
+
+                // 拳は奥レイヤーより前に置くが、通常床やプレイヤーより後ろに置く。
+                ScreenPunchEffectDrawFistLayer(
+                    screenPunch,
+                    screenWidth,
+                    screenHeight
+                );
+
+                BeginMode2D(drawCamera);
+            }
+
+            // ONの場合は奥レイヤーを描画済みなのでfalseを渡す。
+            StageDraw(
+                stage,
+                spikeW,
+                player,
+                stage.heldSpringIndex,
+                !drawFistFrontOfBackLayer
+            );
+
+            enemyManager.DrawAll();
+            itemManager.DrawAll();
+            const bool isDeadScreen = (gameState == GameState::DEADING_SCREEN || gameState == GameState::DEAD_SCREEN);
+            PlayerStateDrawWorld(playerState, editorExitInvTimer, isDeadScreen);
+            StageDrawFrontDecoSprites(stage);// 前景デコスプライトを描画
+            EndMode2D();
 
             // ← ここでUIを描く（スクリーン固定）
             DrawItemUI(stage);
@@ -827,10 +1094,10 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
             // HUD：死亡回数
             std::string deathText = "Deaths: " + std::to_string(deaths);
             DrawTextEx(textFont, deathText.c_str(), { 10, 10 }, 24, 0, WHITE);
-            
+
             // 死亡演出・死亡画面
             if (isDeadScreen) {
-				PlayerStateDrawScreen(playerState, isDeadScreen, ojisan.punchEffect, audio, SfxId::Punch);
+                //PlayerStateDrawScreen(playerState, isDeadScreen, ojisan.punchEffect, audio, SfxId::Punch);
 
                 unsigned char alpha = (gameState == GameState::DEADING_SCREEN)
                     ? (unsigned char)(deadingTime / deadingstate * 180.0f)
@@ -847,11 +1114,37 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
                 }
             }
 
-            // おじさんをUI要素として描画（カメラ変換外）
-            ojisan.Draw(screenWidth, screenHeight);
+            // ステージ1のプレイ画面では、右下のおじさんを表示しない。
+            // ステージ2以降では、これまでどおり表示する。
+            const bool shouldDrawOjisan = (currentStage != 1);
+            if (shouldDrawOjisan) {
+                ojisan.Draw(screenWidth, screenHeight);
+            }
+
+            // 暗転・衝撃波・張り付きプレイヤーは常に画面最前面。
+            ScreenPunchEffectDrawOverlay(
+                screenPunch,
+                screenWidth,
+                screenHeight
+            );
+
+            // ステージ1クリア直後は、停止したステージ画面の上へ
+            // 待機・暗転用の会話オーバーレイを重ねる。
+            if (gameState == GameState::STAGE1_CLEAR_DIALOG) {
+                Stage1ClearDialogDraw(stage1ClearDialog, screenWidth, screenHeight);
+            }
         }
 
-        // ポーズメニュー描画（PLAYINGの描画の上に重ねる）
+        // 会話画面またはタイトル画面の上へ、黒いフェードを重ねる。
+        if (gameState == GameState::TITLE_TRANSITION) {
+            TitleTransitionDrawOverlay(
+                titleTransition,
+                screenWidth,
+                screenHeight
+            );
+        }
+
+        // ポーズメニュー描画（プレイ画面または会話画面の上に重ねる）
         if (gameState == GameState::PAUSE) {
             // 半透明オーバーレイ
             DrawRectangle(0, 0, screenWidth, screenHeight, { 0, 0, 0, 160 });
@@ -904,7 +1197,9 @@ Texture2D selectStage = LoadTexture("assets/images/stage/background/selectStage.
     SpriteDatabase::Unload(); // ← 追加：スプライトアトラスの解放
     PlayerStateUnload(playerState);
     StageVisualUnload(sv);
+    Stage1ClearDialogUnload(stage1ClearDialog);
     ojisan.Unload();
+    ScreenPunchEffectUnload(screenPunch);
     UnloadFont(ojisanFont);
     UnloadFont(jpFont);
     TitleSceneUnload(titleScene);

@@ -1,4 +1,4 @@
-#include "StageEditorInternal.h"
+﻿#include "StageEditorInternal.h"
 
 // ================================================================
 // StageEditor.cpp の役割
@@ -77,7 +77,7 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {//•	�
     /* 45 SPRING                */ { 2, {{"bounceVelX",0,false},{"bounceVelY",-800,false}} },
     /* 46 CRANE_LAUNCH_PAD      */ { 1, {{"launchVelY",-900,false}} },
     /* 47 CRANE                 */ { 5, {{"maxArmLen",200,false},{"detectRangeY",600,false},{"carrySpeedX",250,false},{"carryDir",1,false},{"carryDist",2000,false}}},
-    /* 48 OJISAN_PUNCH_AREA     */ { 0, {} },
+    /* 48 OJISAN_PUNCH_AREA     */ { 2, {{"drawFront",0,true},{"deathTime",0.85f,false}} },
     /* 49 WARP_HOLE             */ { 2, {{"destX",0,false},{"destY",0,false}} },
     /*50  ENEMY                 */ {0,{} },
     /* 51 TEMP_FLOOR            */ { 1, {{"showSec",2.0f,false}} },

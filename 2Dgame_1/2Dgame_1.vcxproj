@@ -172,8 +172,10 @@
     <ClCompile Include="OjisanVIsual.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="PlayerVisual.cpp" />
+    <ClCompile Include="ScreenPunchEffect.cpp" />
     <ClCompile Include="SpriteDatabase.cpp" />
     <ClCompile Include="Stage.cpp" />
+    <ClCompile Include="Stage1ClearDialog.cpp" />
     <ClCompile Include="StageCollision.cpp" />
     <ClCompile Include="StageDraw.cpp" />
     <ClCompile Include="StageEditor.cpp" />
@@ -188,10 +190,16 @@
     <ClCompile Include="StageInit_4.cpp" />
     <ClCompile Include="StageInit_choseStage.cpp" />
     <ClCompile Include="StageInit_deback.cpp" />
+    <ClCompile Include="StageScreenPunch.cpp" />
     <ClCompile Include="StageSnapPuzzle.cpp" />
-	<ClInclude Include="StageSnapPuzzle.h" />
+    <ClCompile Include="TitleTransition.cpp" />
+    <ClInclude Include="ScreenPunchEffect.h" />
+    <ClInclude Include="Stage1ClearDialog.h" />
+    <ClInclude Include="StageScreenPunch.h" />
+    <ClInclude Include="StageSnapPuzzle.h" />
     <ClCompile Include="StageTheme.cpp" />
     <ClCompile Include="TitleScene.cpp" />
+    <ClInclude Include="TitleTransition.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioManager.h" />

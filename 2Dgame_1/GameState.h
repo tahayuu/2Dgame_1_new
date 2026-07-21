@@ -12,6 +12,8 @@ enum class GameState {
     START,
     SELECT,
     PLAYING,
+    STAGE1_CLEAR_DIALOG,
+    TITLE_TRANSITION,
     DEAD_SCREEN,
     DEADING_SCREEN,
     Deback,

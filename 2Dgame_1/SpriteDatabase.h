@@ -18,76 +18,82 @@
 // の2箇所を変更すればOK。
 // ================================================================
 enum class SpriteId {
-	None = 0,
-	Douka,
-	MetalFloor01,
-	MetalFloor02,
-	MetalWall01,
-	MetalWall02,
-	Ladder01,
-	PipeStraight,
-	PipeCorner,
-	Vent,
-	Door,
-	Fence,
-	Beam,
-	ground1,
-	ground2,
-	CursorPlatform,
-	Dassh,
-	Arrow,
-	Buttom_break,
-	Exitdoor_2,
-	Exitdoor_1,
-	Exitdoor2_fake,
-	Drum_1,
-	Drum_2,
-	tempBlock,
-	NextStage_1,
-	NextStage_2,
-	NextStage_fake,
-	Bullet,
-	Stage_2,
-	Stage_3,
-	Stage_4,
-	Enemy_auto,
-	DIE_block,
-	Nedle3,
-	IceBlock,
-	Fake_clear,
-	Jump_Space,
-	Jump_N,
+	None = 0,//1
+	Douka,//2
+	MetalFloor01,//3
+	MetalFloor02,//4
+	MetalWall01,//5
+	MetalWall02,//6
+	Ladder01,//7
+	PipeStraight,//8
+	PipeCorner,//9
+	Vent,//10
+	Door,//11
+	Fence,//12
+	Beam,//13
+	ground1,//14
+	ground2,//15
+	CursorPlatform,//16
+	Dassh,//17
+	Arrow,//18
+	Buttom_break,//19
+	Exitdoor_2,//20
+	Exitdoor_1,//21
+	Exitdoor2_fake,//22
+	Drum_1,//23
+	Drum_2,//24
+	tempBlock,//25
+	NextStage_1,//26
+	NextStage_2,//27
+	NextStage_fake,//28
+	Bullet,//29
+	Stage_2,//30
+	Stage_3,//31
+	Stage_4,//32
+	Enemy_auto,//33
+	DIE_block,//34
+	Nedle3,//35
+	IceBlock,//36
+	Fake_clear,//37
+	Jump_Space,//38
+	Jump_N,//39
 
 	//おじさん
-	Ojisan_car,
-	Ojisan_real1,
-	Ojisan_real2,
-	Ojisan_real3,
-	Ojisan_kick,
-	Ojisan_waruguti1,
-	Ojisan_waruguti2,
-	Ojisan_waruguti3,
-	Ojisan_idle,
-	Ojisan_notWalk,
-	canWalk,
-	notWalk,
+	Ojisan_car,//40
+	Ojisan_real1,//41
+	Ojisan_real2,//42
+	Ojisan_real3,//43
+	Ojisan_kick,//44
+	Ojisan_waruguti1,//45
+	Ojisan_waruguti2,//46
+	Ojisan_waruguti3,//47
+	Ojisan_idle,//48
+	Ojisan_notWalk,//49
+	canWalk,//50
+	notWalk,//51
 
 	//パズル
-	PuzzleBridge,
-	PuzzleEdg,
-	bored_brigename,
-	bored_wataru,
-	brige_road,
-	brige_saku,
-	brige_saku2,
+	PuzzleBridge,//52
+	PuzzleEdg,//53
+	bored_brigename,//54
+	bored_wataru,//55
+	brige_road,//56
+	brige_saku,//57
+	brige_saku2,//58
 
-	enemy_muteki,
-	enemy_teki,
-	mu,
-
-
-
-	COUNT
+	enemy_muteki,//59
+	enemy_teki,//60
+	mu,//61
+	Ojisan_real5,//62
+	give,//63
+	punch_4,//64
+	punch_comment,//65
+	punch_comment_2,//66
+	punch_comment_3,//67
+	punch_comment_4,//68
+	fuck,//69
+	move,//70
+	COUNT//71
 };
 
 // ================================================================

@@ -296,6 +296,10 @@ struct Stage {
 	static constexpr int MAX_OJISAN_PUNCH_AREAS = 4;
 	Rectangle ojisanPunchAreas[MAX_OJISAN_PUNCH_AREAS];
 	bool ojisanPunchTriggered[MAX_OJISAN_PUNCH_AREAS];
+	// false: 拳をステージオブジェクトの後ろ / true: 前に描画する
+	bool ojisanPunchDrawFront[MAX_OJISAN_PUNCH_AREAS] = {};
+	// 拳が接近を開始してからプレイヤーが死亡するまでの時間（秒）
+	float ojisanPunchApproachDuration[MAX_OJISAN_PUNCH_AREAS] = {};
 	int ojisanPunchAreaCount = 0;
 	
 	// 一時的に消える床

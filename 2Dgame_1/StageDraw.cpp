@@ -154,60 +154,76 @@ static void DrawArrowTexture(const Texture2D& tex, Rectangle rect, float angleDe
 // 出力: 描画のみ（stageデータは変更しない）。
 // 注意: 移動ギミックのスプライト上書きは initRect 基準で対応しているため、
 //       Export/Import の初期矩形管理と整合が必要。
-void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int heldSpringIndex) {
-	// ===== Tiled タイルレイヤーを最初に描画（背景） =====
+void StageDrawBackLayer(const Stage& stage) {
 	const float bScale = stage.BACK_LAYER_SCALE;
 
-
-
-	// ===== 奥レイヤーの床（常に先に描画＝背面） =====
+	// ===== 奥レイヤーの床 =====
 	for (int i = 0; i < stage.backPlatformCount; i++) {
 		const auto& p = stage.backPlatforms[i];
 		if (HasSpriteOverride(stage, p)) continue;
 
-		// 位置はそのまま、サイズだけ縮小（中心基準）
-		float sw = p.width * bScale;
-		float sh = p.height * bScale;
+		const float sw = p.width * bScale;
+		const float sh = p.height * bScale;
 		Rectangle drawRect = {
-			p.x + (p.width - sw) / 2,
-			p.y + (p.height - sh) / 2,
-			sw, sh
+			p.x + (p.width - sw) * 0.5f,
+			p.y + (p.height - sh) * 0.5f,
+			sw,
+			sh
 		};
 
 		if (stage.currentLayer == 1) {
 			DrawRectangleRec(drawRect, BEIGE);
-			DrawRectangleLinesEx(drawRect, 2, BROWN);
+			DrawRectangleLinesEx(drawRect, 2.0f, BROWN);
 		}
 		else {
 			DrawRectangleRec(drawRect, ColorAlpha(DARKGRAY, 0.3f));
-			DrawRectangleLinesEx(drawRect, 1, ColorAlpha(BLACK, 0.2f));
+			DrawRectangleLinesEx(drawRect, 1.0f, ColorAlpha(BLACK, 0.2f));
 		}
 	}
 
-	// ===== 奥行きドア（常に描画） =====
+	// ===== 奥行きドアの奥側 =====
+	for (int i = 0; i < stage.layerDoorCount; i++) {
+		const auto& r = stage.layerDoors[i].backRect;
+		const float dw = r.width * bScale;
+		const float dh = r.height * bScale;
+		Rectangle drawRect = {
+			r.x + (r.width - dw) * 0.5f,
+			r.y + (r.height - dh) * 0.5f,
+			dw,
+			dh
+		};
+
+		const Color color = (stage.currentLayer == 1)
+			? DARKPURPLE
+			: ColorAlpha(DARKPURPLE, 0.4f);
+
+		DrawRectangleRec(drawRect, color);
+		DrawRectangleLinesEx(drawRect, 2.0f, PURPLE);
+	}
+}
+
+// 目的: ステージ中の全ギミックを適切なレイヤ順で描画する中核関数。
+// drawBackLayer=false の場合は、奥レイヤーを別描画済みとして省略する。
+void StageDraw(
+	const Stage& stage,
+	float spikeW,
+	const Rectangle& player,
+	int heldSpringIndex,
+	bool drawBackLayer
+) {
+	if (drawBackLayer) {
+		StageDrawBackLayer(stage);
+	}
+
+	// ===== 奥行きドアの手前側 =====
 	for (int i = 0; i < stage.layerDoorCount; i++) {
 		const auto& ld = stage.layerDoors[i];
+		const Color color = (stage.currentLayer == 0)
+			? DARKGREEN
+			: ColorAlpha(DARKGREEN, 0.4f);
 
-		// 奥のドア（サイズだけ縮小、位置はそのまま）
-		{
-			const auto& r = ld.backRect;
-			float dw = r.width * bScale;
-			float dh = r.height * bScale;
-			Rectangle dr = {
-				r.x + (r.width - dw) / 2,
-				r.y + (r.height - dh) / 2,
-				dw, dh
-			};
-			Color c = (stage.currentLayer == 1) ? DARKPURPLE : ColorAlpha(DARKPURPLE, 0.4f);
-			DrawRectangleRec(dr, c);
-			DrawRectangleLinesEx(dr, 2, PURPLE);
-		}
-		// 手前のドア（通常サイズ）
-		{
-			Color c = (stage.currentLayer == 0) ? DARKGREEN : ColorAlpha(DARKGREEN, 0.4f);
-			DrawRectangleRec(ld.frontRect, c);
-			DrawRectangleLinesEx(ld.frontRect, 3, GREEN);
-		}
+		DrawRectangleRec(ld.frontRect, color);
+		DrawRectangleLinesEx(ld.frontRect, 3.0f, GREEN);
 	}
 
 	// ===== 手前レイヤーの普通床 =====
@@ -361,7 +377,16 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 		Rectangle pseudoInit = { cpInit.center.x - cpInit.armLength, cpInit.center.y - cpInit.armLength,
 			cpInit.armLength * 2.0f, cpInit.armLength * 2.0f };
 		if (!TryDrawMovingGimmickSprite(stage, pseudoInit, cp.GetRect())) {
-			DrawRectangleRec(cp.GetRect(), DARKGRAY);
+
+			if (stage.theme.circleTex.id != 0) {
+				// ★ 円軌道床専用のテクスチャを反映
+				Rectangle src = { 0, 0, (float)stage.theme.circleTex.width, (float)stage.theme.circleTex.height };
+				DrawTexturePro(stage.theme.circleTex, src, cp.GetRect(), { 0, 0 }, 0, WHITE);
+			}
+			else {
+				// テクスチャ未ロード時のフォールバック
+				DrawRectangleRec(cp.GetRect(), DARKGRAY);
+			}
 		}
 	}
 	//乗ると動く床X
@@ -779,9 +804,9 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 	for (int i = 0; i < stage.tempFloorCount; i++) {
 		const auto& tf = stage.tempFloors[i];
 		if (!tf.visible) continue;
-		if (HasSpriteOverride(stage, tf.rect)) continue;
-		DrawRectangleRec(tf.rect, { 120,220,255,220 });
-		DrawRectangleLinesEx(tf.rect, 2, BLUE);
+		// エディタ上のスプライト上書きに関わらず、常にtempBlockTexを反映する
+		Rectangle src = { 0, 0, (float)stage.theme.tempBlockTex.width, (float)stage.theme.tempBlockTex.height };
+		DrawTexturePro(stage.theme.tempBlockTex, src, tf.rect, { 0, 0 }, 0, WHITE);
 	}
 	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
 		const auto& sw = stage.tempFloorSwitches[i];
@@ -796,7 +821,7 @@ void StageDraw(const Stage& stage, float spikeW, const Rectangle& player, int he
 void StageDrawFrontDecoSprites(const Stage& stage) {
 	for (int i = 0; i < stage.decoSpriteCount; i++) {
 		const auto& ds = stage.decoSprites[i];
-
+		
 		if (ds.spriteId == SpriteId::None) continue;
 		if (!ds.drawFront) continue;
 

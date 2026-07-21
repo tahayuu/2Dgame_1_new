@@ -58,6 +58,8 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.ojisanPunchAreaCount = 1;
 	stage.ojisanPunchAreas[0] = { 2350.0f, 420.0f, 220.0f, 220.0f };
 	stage.ojisanPunchTriggered[0] = false;
+	stage.ojisanPunchDrawFront[0] = false;
+	stage.ojisanPunchApproachDuration[0] = 0.85f;
 
 	//復活用	
 	for (int i = 0; i < stage.moveExtYCount; i++) {

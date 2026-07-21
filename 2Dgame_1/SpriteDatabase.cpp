@@ -19,13 +19,14 @@ namespace {
         const char* name;
         const char* path;
     };
+
     const SpriteEntry g_spriteTable[] = {
         /*stage_3*/
         // id                      name             path（切り出し済みPNG）
         { SpriteId::None,          "None",          "" }, // 見た目なし   1
         {SpriteId::Douka,          "Douka",    "assets/images/stage/stage_1/douka.png"},//2
         { SpriteId::MetalFloor01,  "MetalFloor01",  "assets/images/stage/stage_3/wall_2.png" },//3
-        { SpriteId::MetalFloor02,  "MetalFloor02",  "assets/images/stage/stage_3/wall_1.png" },//4
+        { SpriteId::MetalFloor02,  "MetalFwoor02",  "assets/images/stage/stage_3/wall_1.png" },//4
         { SpriteId::MetalWall01,   "MetalWall01",   "assets/images/stage/stage_3/ground_1.png" },//5
 		{ SpriteId::MetalWall02,   "MetalWall02",   "assets/images/stage/stage_3/object1.png" },//6
 		{ SpriteId::Ladder01,      "Ladder01",      "assets/images/stage/stage_3/object2.png" },//7
@@ -35,15 +36,15 @@ namespace {
 		{ SpriteId::Door,          "Door",          "assets/images/stage/stage_3/nedle2.png" },//11
 		{ SpriteId::Nedle3,          "Nedle3",          "assets/images/stage/stage_3/nedle3.png" },//12
 		{ SpriteId::CursorPlatform, "CursorPlatform", "assets/images/stage/stage_3/CursorBlock.png" },//13
-		 {SpriteId::Dassh,          "Dassh",    "assets/images/stage/stage_3/dassh_1.png"},//14
-		 {SpriteId::Arrow,          "Arrow",    "assets/images/stage/stage_3/Arrow_1.png"},//15
-         {SpriteId::Buttom_break,          "Buttom_break",    "assets/images/stage/stage_3/Buttom_break.png"},//16
-         {SpriteId::Exitdoor_2,          "Exitdoor_2",    "assets/images/stage/stage_3/Exitdoor_2.png"},//17
-         {SpriteId::Exitdoor2_fake,          "Exitdoor2_fake",    "assets/images/stage/stage_3/Exitdoor_fake.png"},//18
+		{SpriteId::Dassh,          "Dassh",    "assets/images/stage/stage_3/dassh_1.png"},//14
+		{SpriteId::Arrow,          "Arrow",    "assets/images/stage/stage_3/Arrow_1.png"},//15
+        {SpriteId::Buttom_break,          "Buttom_break",    "assets/images/stage/stage_3/Buttom_break.png"},//16
+        {SpriteId::Exitdoor_2,          "Exitdoor_2",    "assets/images/stage/stage_3/Exitdoor_2.png"},//17
+        {SpriteId::Exitdoor2_fake,          "Exitdoor2_fake",    "assets/images/stage/stage_3/Exitdoor_fake.png"},//18
 
-         {SpriteId::tempBlock,          "tempBlock",    "assets/images/stage/stage_3/tempBlock.png"},//19
-         {SpriteId::Drum_1,          "Drum_1",    "assets/images/stage/stage_3/drum_1.png"},//20
-		 {SpriteId::Drum_2,          "Drum_2",    "assets/images/stage/stage_3/drum_2.png"},//21
+        {SpriteId::tempBlock,          "tempBlock",    "assets/images/stage/stage_3/tempBlock.png"},//19
+        {SpriteId::Drum_1,          "Drum_1",    "assets/images/stage/stage_3/drum_1.png"},//20
+		{SpriteId::Drum_2,          "Drum_2",    "assets/images/stage/stage_3/drum_2.png"},//21
 
 
 
@@ -89,10 +90,19 @@ namespace {
         {SpriteId::Ojisan_notWalk,          "Ojisan_notWalk",    "assets/images/ojisan/ojisan_notWalk.png"},//57
         {SpriteId::canWalk,          "canWalk",    "assets/images/stage/stage_4/canWalk.png"},//58
        {SpriteId::notWalk,          "notWalk",    "assets/images/stage/stage_4/notWalk.png"},//59
-
               {SpriteId::enemy_muteki,          "enemy_muteki",    "assets/images/enemy/enemy_muteki.png"},//60
               {SpriteId::enemy_teki,          "enemy_teki",    "assets/images/enemy/enemy_teki.png"},//61
               {SpriteId::mu,          "mu",    "assets/images/enemy/mu.png"},//62
+               {SpriteId::Ojisan_real5,          "Ojisan_real5","assets/images/ojisan/ojisan_real5.png"},//63
+                {SpriteId::give,          "give",    "assets/images/stage/stage_4/give.png"},//64
+                {SpriteId::punch_4,          "punch_4",    "assets/images/stage/stage_4/punch_4.png"},//65
+                {SpriteId::punch_comment,          "punch_comment",    "assets/images/stage/stage_4/punch_comment.png"},//66
+				{SpriteId::punch_comment_2,          "punch_comment_2",    "assets/images/stage/stage_4/punch_comment_2.png"},//67
+				{SpriteId::punch_comment_3,          "punch_comment_3",    "assets/images/stage/stage_4/punch_comment_3.png"},//68
+				{SpriteId::punch_comment_4,          "punch_comment_4",    "assets/images/stage/stage_4/punch_comment_4.png"},//69
+                {SpriteId::fuck,          "fuck",    "assets/images/stage/stage_4/fuck_2.png"},//70
+                {SpriteId::move,          "move",    "assets/images/stage/stage_4/move.png"},//71
+    };
     };
 
     constexpr int kSpriteTableCount = sizeof(g_spriteTable) / sizeof(g_spriteTable[0]);
@@ -109,7 +119,7 @@ namespace {
         return -1;
     }
 
-} // namespace（無名）
+
 
 // ----------------------------------------------------------------
 // ゲーム起動時に1回だけ呼ぶ想定。

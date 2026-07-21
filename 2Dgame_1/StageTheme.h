@@ -22,8 +22,10 @@ struct StageTheme {
 	Texture2D actionButtonOn{};  //アクションボタンのテクスチャ（ON）
 	Texture2D magnetTex{};	  // 磁石のテクスチャ
 	Texture2D magnetEffectTex{}; // 磁石のエフェクトテクスチャ
+	Texture2D tempBlockTex{};    // 一時的に表れるブロック（透明ブロック）のテクスチャ
+	Texture2D circleTex{};       // 円軌道床のテクスチャ
 
-    float tileSize = 50.0f;
+	float tileSize = 50.0f;
     bool hasTextures = false;
     bool useLeftRight = false;   // true: 左右モード / false: 上下モード
 };
@@ -38,7 +40,9 @@ void StageThemeLoadObjectTextures(
 	const char* ActionButtn_onPath,
 	const char* touchBlockPath,
 	const char* magnetPath,
-	const char* magnetEffectPath
+	const char* magnetEffectPath,
+	const char* tempBlockPath,
+	const char* circlePath
 );
 
 // 目的: 上面+内部の2テクスチャ構成で床テーマを読み込む。
