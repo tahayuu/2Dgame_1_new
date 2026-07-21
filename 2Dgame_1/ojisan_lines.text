@@ -20,3 +20,31 @@ death_ojisan_punch|わしのパンチは重いぞい！
 
 # ===== どれにも当てはまらないとき ====
 death_unknown|うーん…何があったんじゃ？
+
+# ===== ステージクリア会話 =====
+# キー形式: stage<ステージ番号>_clear_<セリフ番号>
+# 例: stage2_clear_1|ステージ2用の最初のセリフ
+stage1_clear_1|ふーーむやはりこのていどじゃクリアされてしまうか
+stage1_clear_2|。。。。。。。
+stage1_clear_3|ふむ、やはりハードにすべきじゃな
+stage1_clear_4|イージーなんていわせないほどにな
+stage1_clear_5|ほれ「TAB」をおしてタイトルにもどるんじゃ
+stage1_clear_6|ぜんぶやりなおしじゃ
+
+stage2_clear_1|どうじゃったかの
+stage2_clear_2|ステージ2はむずかしかったじゃろう
+stage2_clear_3|クリアするとはおぬしみこみがあるわい
+stage2_clear_4|つぎはそううまくいかんぞ
+
+stage3_clear_1|だいぶとおまわりしたみたいじゃな
+stage3_clear_2|なんじゃそのかおは
+stage3_clear_3|ふふくそうじゃな
+stage3_clear_4|。。。。。
+stage3_clear_5|ぷぷ
+stage3_clear_6|そのちょうしでたのむぞ
+
+stage4_clear_1|ふーむ、よそうがいじゃ。。
+stage4_clear_2|まさかここまでくるとは
+stage4_clear_3|おぬしならエンディングに。。。
+stage4_clear_4|それはないか！
+stage4_clear_5|つぎあえることをたのしみにしとるぞ	

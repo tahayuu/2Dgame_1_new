@@ -21,7 +21,7 @@
 #include "AudioManager.h"
 #include "GameState.h"
 #include "TitleScene.h"
-#include "Stage1ClearDialog.h"
+#include "StageClearDialog.h"
 #include "TitleTransition.h"
 #include "Player.h"
 #include "PlayerVisual.h"      
@@ -155,15 +155,15 @@ int main() {
     std::string uiText = reinterpret_cast<const char*>(uiChars8);
     allDialogText += uiText;
 
-    // ステージ1クリア後の専用会話で使用する文字をフォントへ追加する。
-    const char8_t* stage1ClearDialogChars8 =
-        u8"ふーーむやはりこのていどじゃクリアされてしまうか"
-        u8"。。。。。。。"
-        u8"ふむ、やはりハードにすべきじゃな"
-        u8"イージーなんていわせないほどにな"
+    // 会話設定がまだない新ステージで使用するフォールバック文字を追加する。
+    // 通常のステージ別セリフは ojisan_lines.text から自動的に追加される。
+    const char8_t* stageClearFallbackChars8 =
+        u8"ステージをクリアしたか"
+        u8"なかなかやるではないか"
         u8"ほれ「TAB」をおしてタイトルにもどるんじゃ"
-        u8"ぜんぶやりなおしじゃ";
-    allDialogText += reinterpret_cast<const char*>(stage1ClearDialogChars8);
+        u8"ほれ、つぎのステージをえらぶんじゃ"
+        u8"0123456789";
+    allDialogText += reinterpret_cast<const char*>(stageClearFallbackChars8);
 
     // Editor UI text (for font codepoints)s
     const char8_t* editorChars8 =
@@ -290,8 +290,8 @@ int main() {
     TitleScene titleScene;
     TitleSceneInit(titleScene, title1Bg, title2Bg, textFont, audio, ALLOW_ALL_STAGES_FOR_DEBUG);
 
-    Stage1ClearDialog stage1ClearDialog;
-    Stage1ClearDialogInit(stage1ClearDialog, ojisan.portrait, textFont, audio);
+    StageClearDialog stageClearDialog;
+    StageClearDialogInit(stageClearDialog, ojisan.portrait, textFont, audio);
 
     // 会話画面からタイトル画面2へ戻る際のフェードを管理する。
     TitleTransition titleTransition;
@@ -432,9 +432,9 @@ int main() {
 
 
         // 会話の上にポーズ画面を開いているか。
-        const bool pauseOverStage1ClearDialog =
+        const bool pauseOverStageClearDialog =
             gameState == GameState::PAUSE &&
-            pausePrevState == GameState::STAGE1_CLEAR_DIALOG;
+            pausePrevState == GameState::STAGE_CLEAR_DIALOG;
 
         const bool pauseOverGameplay =
             gameState == GameState::PAUSE &&
@@ -464,29 +464,32 @@ int main() {
 
         const bool inStageScene =
             (gameState == GameState::PLAYING ||
-                gameState == GameState::STAGE1_CLEAR_DIALOG ||
+                gameState == GameState::STAGE_CLEAR_DIALOG ||
                 gameState == GameState::DEADING_SCREEN ||
                 gameState == GameState::DEAD_SCREEN ||
                 gameState == GameState::PAUSE ||
                 gameState == GameState::EDITOR);  // エディタ中もステージBGMを流す
 
         // 会話本編、会話上のポーズ、タイトルへのフェードアウト中は
-        // ステージ1クリア後の専用BGMを継続する。
-        const bool playStage1ClearBgm =
-            gameState == GameState::STAGE1_CLEAR_DIALOG ||
-            pauseOverStage1ClearDialog ||
+        // ステージクリア後の共通BGMを継続する。
+        const bool playStageClearBgm =
+            gameState == GameState::STAGE_CLEAR_DIALOG ||
+            pauseOverStageClearDialog ||
             transitionShowsDialog;
 
-        // 会話中は通常のステージ1BGMを停止対象にし、
+        // 会話中は通常の各ステージBGMを停止対象にし、
         // AudioManager側で専用BGMとクロスフェードさせる。
         const bool playStageBgm =
             inStageScene &&
-            !playStage1ClearBgm &&
+            !playStageClearBgm &&
             (currentStage == 1 || currentStage == 2);
 
-        const bool playStage3Bgm = inStageScene && (currentStage == 3);
-        const bool playStage4Bgm = inStageScene && (currentStage == 4);
-        const bool playChooseStageBgm = inStageScene && (currentStage == 0);
+        const bool playStage3Bgm =
+            inStageScene && !playStageClearBgm && (currentStage == 3);
+        const bool playStage4Bgm =
+            inStageScene && !playStageClearBgm && (currentStage == 4);
+        const bool playChooseStageBgm =
+            inStageScene && !playStageClearBgm && (currentStage == 0);
 
         // エディタモード中、またはUIパネルが開いている場合は音量を下げる
         bool inEditor = (gameState == GameState::EDITOR);
@@ -498,7 +501,7 @@ int main() {
             playTitle1Bgm,
             playTitle2Bgm,
             playStageBgm,
-            playStage1ClearBgm,
+            playStageClearBgm,
             playStage3Bgm,
             playStage4Bgm,
             playChooseStageBgm,
@@ -758,16 +761,20 @@ int main() {
             // exitDoor判定：上向きキーでステージ遷移
             if (stage.exitDoorTriggered >= 0) {
                 if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
-                    // ステージ1だけは通常のステージ移動を行わず、
-                    // 専用のクリア後会話画面へ切り替える。
-                    if (currentStage == 1) {
+                    // 通常ステージでは直接次のステージへ移動せず、
+                    // 共通のクリア後会話画面へ切り替える。
+                    // currentStage == 100 はエディタのプレイテスト用ステージ。
+                    // 通常ステージだけ、クリア後会話へ入る。
+                    const bool shouldShowClearDialog = currentStage > 0 && currentStage != 100;
+
+                    if (shouldShowClearDialog) {
                         velocity = { 0.0f, 0.0f };
                         stage.exitDoorTriggered = -1;
-                        Stage1ClearDialogBegin(stage1ClearDialog);
-                        gameState = GameState::STAGE1_CLEAR_DIALOG;
+                        StageClearDialogBegin(stageClearDialog, currentStage);
+                        gameState = GameState::STAGE_CLEAR_DIALOG;
                     }
                     else {
-                        int targetStage = stage.exitDoors[stage.exitDoorTriggered].targetStage;
+                        const int targetStage = stage.exitDoors[stage.exitDoorTriggered].targetStage;
                         titleScene.selectStage = targetStage;
                         LoadSelectedStage();
                         ResetPlayerToDefault(1.0f);
@@ -784,17 +791,27 @@ int main() {
             }
         }
 
-        // ステージ1クリア後の専用会話画面
-        else if (gameState == GameState::STAGE1_CLEAR_DIALOG) {
-            const Stage1ClearDialogResult result = Stage1ClearDialogUpdate(stage1ClearDialog, dt);
+        // ステージクリア後の共通会話画面
+        else if (gameState == GameState::STAGE_CLEAR_DIALOG) {
+            const StageClearDialogResult result = StageClearDialogUpdate(stageClearDialog, dt);
 
             // 最後のセリフでTABが押されたら、直接タイトルへ戻さず
             // 従来のポーズ画面を会話画面の上へ開く。
-            if (result == Stage1ClearDialogResult::OPEN_PAUSE) {
-                pausePrevState = GameState::STAGE1_CLEAR_DIALOG;
+            if (result == StageClearDialogResult::OPEN_PAUSE) {
+                pausePrevState = GameState::STAGE_CLEAR_DIALOG;
                 pauseSelectIdx = 0;
                 pauseTransitionBlocked = true;
                 gameState = GameState::PAUSE;
+            }
+
+            // ステージ2以降は最後のセリフ表示後にENTERが押されたら、
+            // タイトル画面を経由せずステージ選択用ステージへ移動する。
+            if (result == StageClearDialogResult::GO_TO_STAGE_SELECT) {
+                StageClearDialogEnd(stageClearDialog);
+                titleScene.selectStage = TitleScene::STAGE_SELECT_INDEX;
+                LoadSelectedStage();
+                ResetPlayerToDefault(1.0f);
+                gameState = GameState::PLAYING;
             }
         }
 
@@ -814,7 +831,7 @@ int main() {
                 deaths = 0;
                 editorExitInvTimer = 0.0f;
 
-                Stage1ClearDialogEnd(stage1ClearDialog);
+                StageClearDialogEnd(stageClearDialog);
                 TitleSceneSetVersion(titleScene, TitleVersion::NO_MORE_EASY);
                 titleScene.isSelectingStage = false;
             }
@@ -928,7 +945,7 @@ int main() {
                     else if (pauseSelectIdx == 1) {
                         AudioPlaySfx(audio, SfxId::StageDecide);
 
-                        if (pausePrevState == GameState::STAGE1_CLEAR_DIALOG) {
+                        if (pausePrevState == GameState::STAGE_CLEAR_DIALOG) {
                             // 会話終了後だけは、すぐにタイトルへ移動せず
                             // 会話画面→黒→タイトル画面2の順にフェードする。
                             TitleTransitionBegin(titleTransition);
@@ -967,20 +984,20 @@ int main() {
         }
 
         else if (
-            (gameState == GameState::STAGE1_CLEAR_DIALOG &&
-                !Stage1ClearDialogShouldDrawStageBehind(stage1ClearDialog)) ||
-            pauseOverStage1ClearDialog ||
+            (gameState == GameState::STAGE_CLEAR_DIALOG &&
+                !StageClearDialogShouldDrawStageBehind(stageClearDialog)) ||
+            pauseOverStageClearDialog ||
             transitionShowsDialog
             ) {
-            Stage1ClearDialogDraw(stage1ClearDialog, screenWidth, screenHeight);
+            StageClearDialogDraw(stageClearDialog, screenWidth, screenHeight);
         }
 
         else if (gameState == GameState::PLAYING ||
             gameState == GameState::DEADING_SCREEN ||
             gameState == GameState::DEAD_SCREEN ||
             pauseOverGameplay ||
-            (gameState == GameState::STAGE1_CLEAR_DIALOG &&
-                Stage1ClearDialogShouldDrawStageBehind(stage1ClearDialog))) {
+            (gameState == GameState::STAGE_CLEAR_DIALOG &&
+                StageClearDialogShouldDrawStageBehind(stageClearDialog))) {
 
             ClearBackground({ 135, 206, 235, 255 }); // 空色
 
@@ -1114,9 +1131,13 @@ int main() {
                 }
             }
 
-            // ステージ1のプレイ画面では、右下のおじさんを表示しない。
-            // ステージ2以降では、これまでどおり表示する。
-            const bool shouldDrawOjisan = (currentStage != 1);
+            // ステージ1の通常プレイ中は、右下のおじさんを表示しない。
+            // どのステージでもクリア会話中は、会話用の大きなおじさんだけを表示する。
+            const bool clearDialogVisible =
+                gameState == GameState::STAGE_CLEAR_DIALOG ||
+                pauseOverStageClearDialog ||
+                transitionShowsDialog;
+            const bool shouldDrawOjisan = (currentStage != 1) && !clearDialogVisible;
             if (shouldDrawOjisan) {
                 ojisan.Draw(screenWidth, screenHeight);
             }
@@ -1128,10 +1149,10 @@ int main() {
                 screenHeight
             );
 
-            // ステージ1クリア直後は、停止したステージ画面の上へ
+            // ステージクリア直後は、停止したステージ画面の上へ
             // 待機・暗転用の会話オーバーレイを重ねる。
-            if (gameState == GameState::STAGE1_CLEAR_DIALOG) {
-                Stage1ClearDialogDraw(stage1ClearDialog, screenWidth, screenHeight);
+            if (gameState == GameState::STAGE_CLEAR_DIALOG) {
+                StageClearDialogDraw(stageClearDialog, screenWidth, screenHeight);
             }
         }
 
@@ -1197,7 +1218,7 @@ int main() {
     SpriteDatabase::Unload(); // ← 追加：スプライトアトラスの解放
     PlayerStateUnload(playerState);
     StageVisualUnload(sv);
-    Stage1ClearDialogUnload(stage1ClearDialog);
+    StageClearDialogUnload(stageClearDialog);
     ojisan.Unload();
     ScreenPunchEffectUnload(screenPunch);
     UnloadFont(ojisanFont);

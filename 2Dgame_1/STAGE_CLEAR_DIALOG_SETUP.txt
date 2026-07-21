@@ -1,0 +1,52 @@
+手動で変更ファイルだけを適用する場合
+
+1. 会話文を追加する
+----------------------------------------
+ojisan_lines.text に、次の形式で上から連番で追加します。
+
+stage2_clear_1|ステージ2の1番目のセリフ
+stage2_clear_2|ステージ2の2番目のセリフ
+stage2_clear_3|ステージ2の3番目のセリフ
+
+・キー形式は stage<ステージ番号>_clear_<セリフ番号> です。
+・セリフ番号は1から始め、途中の番号を飛ばさないでください。
+・最大10個まで登録できます。
+・会話文を変更した後は、ゲームを再起動してください。
+・会話が未登録のステージでは、共通の仮セリフが3行表示されます。
+
+
+2. セリフごとのおじさん画像を追加する
+----------------------------------------
+次のフォルダとファイル名でPNGを配置します。
+
+ステージ2:
+assets/images/ojisan/stage2_clear/dialog_01.png
+assets/images/ojisan/stage2_clear/dialog_02.png
+assets/images/ojisan/stage2_clear/dialog_03.png
+
+ステージ3:
+assets/images/ojisan/stage3_clear/dialog_01.png
+assets/images/ojisan/stage3_clear/dialog_02.png
+
+・dialog_01.png が1番目のセリフに対応します。
+・画像がない行は、通常のおじさん画像が自動で使われます。
+・ステージ1の既存フォルダ stage1_clear はそのまま使用できます。
+
+
+3. ステージ追加時のコード変更
+----------------------------------------
+通常ステージの currentStage が1以上であれば、クリア後会話は自動で開始します。
+そのため、ステージ5以降を追加しても会話処理本体の変更は不要です。
+
+ただし、currentStage == 100 はエディタのプレイテスト用なので、
+クリア会話を出さず従来どおり出口の targetStage へ移動します。
+
+
+4. BGM
+----------------------------------------
+共通クリアBGMは、次の順で探します。
+
+1. assets/BGM/stageClear.mp3
+2. assets/BGM/stage1Clear.mp3（既存ファイル）
+
+stageClear.mp3 を追加しなくても、現在の stage1Clear.mp3 がそのまま使われます。

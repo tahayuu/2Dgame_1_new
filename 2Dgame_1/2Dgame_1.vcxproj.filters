@@ -204,7 +204,7 @@
     <ClCompile Include="StageScreenPunch.cpp">
       <Filter>ソース ファイル\Ojisan</Filter>
     </ClCompile>
-    <ClCompile Include="Stage1ClearDialog.cpp">
+    <ClCompile Include="StageClearDialog.cpp">
       <Filter>ソース ファイル\Ojisan</Filter>
     </ClCompile>
     <ClCompile Include="TitleTransition.cpp">
@@ -320,7 +320,7 @@
     <ClInclude Include="StageScreenPunch.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="Stage1ClearDialog.h">
+    <ClInclude Include="StageClearDialog.h">
       <Filter>ヘッダー ファイル\Ojisan</Filter>
     </ClInclude>
     <ClInclude Include="TitleTransition.h">
@@ -493,6 +493,7 @@
     <Text Include="memo_Editor.txt">
       <Filter>assets\data</Filter>
     </Text>
+    <Text Include="STAGE_CLEAR_DIALOG_SETUP.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="create_transparent_douka.py" />

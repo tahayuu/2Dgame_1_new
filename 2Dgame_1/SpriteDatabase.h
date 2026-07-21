@@ -93,7 +93,8 @@ enum class SpriteId {
 	punch_comment_4,//68
 	fuck,//69
 	move,//70
-	COUNT//71
+	exitdoor4,//71
+	COUNT//72
 };
 
 // ================================================================

@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------
 // ・BGM/SEリソースと音量フェード状態をまとめて管理する。
 // ・タイトル画面1とタイトル画面2で別々のBGMを再生する。
-// ・ステージ1クリア後の専用BGMと、おじさん会話SEを管理する。
+// ・ステージクリア後の専用BGMと、おじさん会話SEを管理する。
 // ================================================================
 
 enum class SfxId {
@@ -29,7 +29,7 @@ struct AudioManager {
     Music title2Bgm{};
 
     Music stageBgm{};
-    Music stage1ClearBgm{};
+    Music stageClearBgm{};
     Music stage3Bgm{};
     Music chooseStageBgm{};
     Music stage4Bgm{};
@@ -39,7 +39,7 @@ struct AudioManager {
     Sound stageChooseSe{};
     Sound stageDecideSe{};
 
-    // ステージ1クリア会話中のENTER専用SE。
+    // ステージクリア会話中のENTER専用SE。
     Sound dialogEnterSe{};
 
     Sound tabclickSe{};
@@ -49,7 +49,7 @@ struct AudioManager {
     float title1MaxVol = 0.30f;
     float title2MaxVol = 0.30f;
     float stageMaxVol = 0.35f;
-    float stage1ClearMaxVol = 0.35f;
+    float stageClearMaxVol = 0.35f;
     float stage3MaxVol = 0.35f;
     float chooseStageMaxVol = 0.35f;
     float stage4MaxVol = 0.35f;
@@ -59,7 +59,7 @@ struct AudioManager {
     float title1Vol = 0.0f;
     float title2Vol = 0.0f;
     float stageVol = 0.0f;
-    float stage1ClearVol = 0.0f;
+    float stageClearVol = 0.0f;
     float stage3Vol = 0.0f;
     float chooseStageVol = 0.0f;
     float stage4Vol = 0.0f;
@@ -70,7 +70,7 @@ struct AudioManager {
     // 任意追加音源の読み込み状態。
     // falseの場合もゲーム本体は動作する。
     bool title1BgmLoaded = false;
-    bool stage1ClearBgmLoaded = false;
+    bool stageClearBgmLoaded = false;
     bool ojisanTalkSeLoaded = false;
     bool dialogEnterSeLoaded = false;
 
@@ -84,7 +84,7 @@ void AudioUpdate(
     bool playTitle1Bgm,
     bool playTitle2Bgm,
     bool playStageBgm,
-    bool playStage1ClearBgm,
+    bool playStageClearBgm,
     bool playStage3Bgm,
     bool playStage4Bgm,
     bool playChooseStageBgm,

@@ -175,7 +175,7 @@
     <ClCompile Include="ScreenPunchEffect.cpp" />
     <ClCompile Include="SpriteDatabase.cpp" />
     <ClCompile Include="Stage.cpp" />
-    <ClCompile Include="Stage1ClearDialog.cpp" />
+    <ClCompile Include="StageClearDialog.cpp" />
     <ClCompile Include="StageCollision.cpp" />
     <ClCompile Include="StageDraw.cpp" />
     <ClCompile Include="StageEditor.cpp" />
@@ -194,7 +194,7 @@
     <ClCompile Include="StageSnapPuzzle.cpp" />
     <ClCompile Include="TitleTransition.cpp" />
     <ClInclude Include="ScreenPunchEffect.h" />
-    <ClInclude Include="Stage1ClearDialog.h" />
+    <ClInclude Include="StageClearDialog.h" />
     <ClInclude Include="StageScreenPunch.h" />
     <ClInclude Include="StageSnapPuzzle.h" />
     <ClCompile Include="StageTheme.cpp" />
@@ -300,6 +300,7 @@
   <ItemGroup>
     <Text Include="memo.txt" />
     <Text Include="memo_Editor.txt" />
+    <Text Include="STAGE_CLEAR_DIALOG_SETUP.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="create_transparent_douka.ps1" />

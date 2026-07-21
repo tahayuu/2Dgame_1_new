@@ -102,6 +102,7 @@ namespace {
 				{SpriteId::punch_comment_4,          "punch_comment_4",    "assets/images/stage/stage_4/punch_comment_4.png"},//69
                 {SpriteId::fuck,          "fuck",    "assets/images/stage/stage_4/fuck_2.png"},//70
                 {SpriteId::move,          "move",    "assets/images/stage/stage_4/move.png"},//71
+                {SpriteId::exitdoor4,          "exitdoor4",    "assets/images/stage/stage_4/exitdoor.png"},//72
     };
     };
 
