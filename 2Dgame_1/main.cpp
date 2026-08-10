@@ -129,6 +129,15 @@ int main() {
     DialogManager::Instance().LoadFromFile("ojisan_lines.text");
 
     // ダイアログから全テキストを取得して結合
+    /*DialogManagerに登録された全キーを取得
+                ↓
+キーを1個ずつ取り出す
+                ↓
+キーに対応するセリフを取得
+                ↓
+allDialogTextへ追加
+                ↓
+最後に改行を追加*/
     std::string allDialogText;
     for (const auto& key : DialogManager::Instance().Keys()) {
         std::string line = DialogManager::Instance().Get(key, "");
@@ -479,10 +488,11 @@ int main() {
 
         // 会話中は通常の各ステージBGMを停止対象にし、
         // AudioManager側で専用BGMとクロスフェードさせる。
+        const bool playStage1Bgm = inStageScene && !playStageClearBgm && (currentStage == 1);
         const bool playStageBgm =
             inStageScene &&
             !playStageClearBgm &&
-            (currentStage == 1 || currentStage == 2);
+            (currentStage == 2);
 
         const bool playStage3Bgm =
             inStageScene && !playStageClearBgm && (currentStage == 3);
@@ -501,6 +511,7 @@ int main() {
             playTitle1Bgm,
             playTitle2Bgm,
             playStageBgm,
+            playStage1Bgm,
             playStageClearBgm,
             playStage3Bgm,
             playStage4Bgm,
@@ -769,9 +780,9 @@ int main() {
 
                     if (shouldShowClearDialog) {
                         velocity = { 0.0f, 0.0f };
-                        stage.exitDoorTriggered = -1;
-                        StageClearDialogBegin(stageClearDialog, currentStage);
-                        gameState = GameState::STAGE_CLEAR_DIALOG;
+                        stage.exitDoorTriggered = -1;//出口ドアの検出を解除する
+                        StageClearDialogBegin(stageClearDialog, currentStage);//会話データを準備する
+                        gameState = GameState::STAGE_CLEAR_DIALOG;//ゲーム全体を会話状態へ変更する
                     }
                     else {
                         const int targetStage = stage.exitDoors[stage.exitDoorTriggered].targetStage;

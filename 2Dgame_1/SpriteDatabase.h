@@ -94,6 +94,9 @@ enum class SpriteId {
 	fuck,//69
 	move,//70
 	exitdoor4,//71
+	bord2,
+	nextUpdate,
+	nextdoor,
 	COUNT//72
 };
 

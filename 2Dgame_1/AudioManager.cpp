@@ -55,6 +55,7 @@ bool AudioInit(AudioManager& a)
     // 既存タイトルBGMはタイトル画面2用として使用する。
     a.title2Bgm = LoadMusicStream("assets/BGM/titleBgm.mp3");
     a.stageBgm = LoadMusicStream("assets/BGM/stage1.mp3");
+	a.stage1Bgm = LoadMusicStream("assets/BGM/stage_1p.mp3");
 
     // 新しい共通名を優先し、未配置なら既存の stage1Clear.mp3 をそのまま使う。
     const char* stageClearBgmPath = FileExists("assets/BGM/stageClear.mp3")
@@ -97,6 +98,7 @@ bool AudioInit(AudioManager& a)
 
     a.title2Bgm.looping = true;
     a.stageBgm.looping = true;
+    a.stage1Bgm.looping = true;
     a.stage3Bgm.looping = true;
     a.chooseStageBgm.looping = true;
     a.stage4Bgm.looping = true;
@@ -105,6 +107,7 @@ bool AudioInit(AudioManager& a)
     a.title2Vol = 0.0f;
     a.stageVol = 0.0f;
     a.stageClearVol = 0.0f;
+    a.stage1Vol = 0.0f;
     a.stage3Vol = 0.0f;
     a.chooseStageVol = 0.0f;
     a.stage4Vol = 0.0f;
@@ -112,6 +115,7 @@ bool AudioInit(AudioManager& a)
     if (a.title1BgmLoaded) SetMusicVolume(a.title1Bgm, a.title1Vol);
     SetMusicVolume(a.title2Bgm, a.title2Vol);
     SetMusicVolume(a.stageBgm, a.stageVol);
+    SetMusicVolume(a.stage1Bgm, a.stage1Vol);
     if (a.stageClearBgmLoaded) SetMusicVolume(a.stageClearBgm, a.stageClearVol);
     SetMusicVolume(a.stage3Bgm, a.stage3Vol);
     SetMusicVolume(a.chooseStageBgm, a.chooseStageVol);
@@ -126,6 +130,7 @@ void AudioUpdate(
     bool playTitle1Bgm,
     bool playTitle2Bgm,
     bool playStageBgm,
+    bool playStage1Bgm,
     bool playStageClearBgm,
     bool playStage3Bgm,
     bool playStage4Bgm,
@@ -155,6 +160,7 @@ void AudioUpdate(
     const float targetStageClear = useStageClearBgm
         ? a.stageClearMaxVol * volumeScale
         : 0.0f;
+    const float targetStage1 = playStage1Bgm ? a.stage1MaxVol * volumeScale : 0.0f;
     const float targetStage3 = playStage3Bgm ? a.stage3MaxVol * volumeScale : 0.0f;
     const float targetStage4 = playStage4Bgm ? a.stage4MaxVol * volumeScale : 0.0f;
     const float targetChooseStage = playChooseStageBgm
@@ -167,6 +173,7 @@ void AudioUpdate(
     if (a.stageClearBgmLoaded) {
         StartMusicWhenNeeded(a.stageClearBgm, targetStageClear, a.stageClearVol);
     }
+    StartMusicWhenNeeded(a.stage1Bgm, targetStage1, a.stage1Vol);
     StartMusicWhenNeeded(a.stage3Bgm, targetStage3, a.stage3Vol);
     StartMusicWhenNeeded(a.stage4Bgm, targetStage4, a.stage4Vol);
     StartMusicWhenNeeded(a.chooseStageBgm, targetChooseStage, a.chooseStageVol);
@@ -176,6 +183,7 @@ void AudioUpdate(
     a.title2Vol = Approach(a.title2Vol, targetTitle2, step);
     a.stageVol = Approach(a.stageVol, targetStage, step);
     a.stageClearVol = Approach(a.stageClearVol, targetStageClear, step);
+    a.stage1Vol = Approach(a.stage1Vol, targetStage1, step);
     a.stage3Vol = Approach(a.stage3Vol, targetStage3, step);
     a.stage4Vol = Approach(a.stage4Vol, targetStage4, step);
     a.chooseStageVol = Approach(a.chooseStageVol, targetChooseStage, step);
@@ -183,6 +191,7 @@ void AudioUpdate(
     if (a.title1BgmLoaded) SetMusicVolume(a.title1Bgm, a.title1Vol);
     SetMusicVolume(a.title2Bgm, a.title2Vol);
     SetMusicVolume(a.stageBgm, a.stageVol);
+    SetMusicVolume(a.stage1Bgm, a.stage1Vol);
     if (a.stageClearBgmLoaded) SetMusicVolume(a.stageClearBgm, a.stageClearVol);
     SetMusicVolume(a.stage3Bgm, a.stage3Vol);
     SetMusicVolume(a.stage4Bgm, a.stage4Vol);
@@ -191,6 +200,7 @@ void AudioUpdate(
     if (a.title1BgmLoaded) UpdateMusicStream(a.title1Bgm);
     UpdateMusicStream(a.title2Bgm);
     UpdateMusicStream(a.stageBgm);
+    UpdateMusicStream(a.stage1Bgm);
     if (a.stageClearBgmLoaded) UpdateMusicStream(a.stageClearBgm);
     UpdateMusicStream(a.stage3Bgm);
     UpdateMusicStream(a.stage4Bgm);
@@ -202,6 +212,7 @@ void AudioUpdate(
     if (a.stageClearBgmLoaded) {
         StopMusicWhenSilent(a.stageClearBgm, targetStageClear, a.stageClearVol);
     }
+    StopMusicWhenSilent(a.stage1Bgm, targetStage1, a.stage1Vol);
     StopMusicWhenSilent(a.stage3Bgm, targetStage3, a.stage3Vol);
     StopMusicWhenSilent(a.stage4Bgm, targetStage4, a.stage4Vol);
     StopMusicWhenSilent(a.chooseStageBgm, targetChooseStage, a.chooseStageVol);

@@ -16,6 +16,7 @@ namespace {
 
     std::string MakeDialogKey(int stageNumber, int lineNumber)
     {
+		//MakeDialogKey(3, 2) => "stage3_clear_2"
         return "stage" + std::to_string(stageNumber) +
             "_clear_" + std::to_string(lineNumber);
     }
@@ -294,14 +295,16 @@ void StageClearDialogUnload(StageClearDialog& dialog)
 
 void StageClearDialogBegin(StageClearDialog& dialog, int clearedStage)
 {
+    //前の会話音が残っていた場合に停止する
     StopTalkSound(dialog);
 
+    //どのステージをクリアしたか保存する
     dialog.clearedStage = clearedStage;
-    LoadDialogLines(dialog, clearedStage);
-    LoadLinePortraits(dialog);
+    LoadDialogLines(dialog, clearedStage);//そのステージの会話文を読み込む
+    LoadLinePortraits(dialog);//各セリフのおじさん画像を読み込む
 
     dialog.lineIndex = 0;
-    dialog.phase = StageClearDialogPhase::WAIT_AFTER_CLEAR;
+    dialog.phase = StageClearDialogPhase::WAIT_AFTER_CLEAR;//最初はクリア画面を少し残す
     dialog.phaseTimer = 0.0f;
     dialog.characterTimer = 0.0f;
     dialog.talkSeTimer = 0.0f;

@@ -39,8 +39,8 @@ namespace {
 		{SpriteId::Dassh,          "Dassh",    "assets/images/stage/stage_3/dassh_1.png"},//14
 		{SpriteId::Arrow,          "Arrow",    "assets/images/stage/stage_3/Arrow_1.png"},//15
         {SpriteId::Buttom_break,          "Buttom_break",    "assets/images/stage/stage_3/Buttom_break.png"},//16
-        {SpriteId::Exitdoor_2,          "Exitdoor_2",    "assets/images/stage/stage_3/Exitdoor_2.png"},//17
-        {SpriteId::Exitdoor2_fake,          "Exitdoor2_fake",    "assets/images/stage/stage_3/Exitdoor_fake.png"},//18
+        {SpriteId::Exitdoor_2,          "Exitdoor_2",    "assets/images/stage/stage_3/Exitdoor2.png"},//17
+        {SpriteId::Exitdoor2_fake,          "Exitdoor2_fake",    "assets/images/stage/stage_3/Exitdoor_fake1.png"},//18
 
         {SpriteId::tempBlock,          "tempBlock",    "assets/images/stage/stage_3/tempBlock.png"},//19
         {SpriteId::Drum_1,          "Drum_1",    "assets/images/stage/stage_3/drum_1.png"},//20
@@ -54,7 +54,7 @@ namespace {
         { SpriteId::ground1,         "ground1",         "assets/images/stage/stage_1/ground_2.png" },//24
         { SpriteId::ground2,          "ground2",          "assets/images/stage/stage_1/ground.png" },//25
         { SpriteId::ground2,          "ground2",          "assets/images/stage/stage_1/ground.png" },//26
-        {SpriteId::Exitdoor_1,          "Exitdoor_1",    "assets/images/stage/stage_1/Exitdoor_1.png"},//27
+        {SpriteId::Exitdoor_1,          "Exitdoor_1",    "assets/images/stage/stage_1/Exitdoor1.png"},//27
         {SpriteId::Enemy_auto,          "enemy_auto",    "assets/images/stage/stage_1/enemy_auto.png"},//28
         {SpriteId::NextStage_1,          "NextStage_1",    "assets/images/stage/stage_1/NextStage.png"},//29
         {SpriteId::Bullet,          "Bullet",    "assets/images/stage/stage_1/Bullet.png"},//30
@@ -97,12 +97,16 @@ namespace {
                 {SpriteId::give,          "give",    "assets/images/stage/stage_4/give.png"},//64
                 {SpriteId::punch_4,          "punch_4",    "assets/images/stage/stage_4/punch_4.png"},//65
                 {SpriteId::punch_comment,          "punch_comment",    "assets/images/stage/stage_4/punch_comment.png"},//66
-				{SpriteId::punch_comment_2,          "punch_comment_2",    "assets/images/stage/stage_4/punch_comment_2.png"},//67
+				{SpriteId::punch_comment_2,          "punch_comment_2",    "assets/images/stwage/stage_4/punch_comment_2.png"},//67
 				{SpriteId::punch_comment_3,          "punch_comment_3",    "assets/images/stage/stage_4/punch_comment_3.png"},//68
 				{SpriteId::punch_comment_4,          "punch_comment_4",    "assets/images/stage/stage_4/punch_comment_4.png"},//69
                 {SpriteId::fuck,          "fuck",    "assets/images/stage/stage_4/fuck_2.png"},//70
                 {SpriteId::move,          "move",    "assets/images/stage/stage_4/move.png"},//71
                 {SpriteId::exitdoor4,          "exitdoor4",    "assets/images/stage/stage_4/exitdoor.png"},//72
+                {SpriteId::bord2,          "bord2",    "assets/images/stage/stage_1/signbord2.png"},//73
+                {SpriteId::nextUpdate,          "nextUpdate",    "assets/images/stage/stage_4/nextUpdate.png"},//73
+                {SpriteId::nextdoor,          "nextdoor",    "assets/images/stage/stage_4/nextdoor.png"},//73
+
     };
     };
 

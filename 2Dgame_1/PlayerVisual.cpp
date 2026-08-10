@@ -334,7 +334,7 @@ void PlayerParticleDraw(const PlayerParticleEffect& effect) {
 		Color c = p.color;
 		/*
 		alpha × 255 の変化：
-  alpha = 1.0 → 1.0 × 255 = 255（完全に見える）
+       alpha = 1.0 → 1.0 × 255 = 255（完全に見える）
   alpha = 0.5 → 0.5 × 255 = 127（半透明）
   alpha = 0.1 → 0.1 × 255 =  25（ほぼ透明）
   なぜ p.color を直接変えないのか？

@@ -1294,6 +1294,7 @@ bool EditorSaveCSV(const StageEditor& ed, const char* filename) {
     return true;
 }
 
+
 // 目的: CSVからエディタ編集状態を復元する。
 // 入力: 読み込むCSVファイル。
 // 出力: ed.objects / ed.placedEnemies を更新し、成功時 true。
@@ -1386,6 +1387,7 @@ bool EditorLoadCSV(StageEditor& ed, const char* filename) {
         // 古い形式のファイル（Sprite情報が無い）の場合は分割数が足りないので、
         // その場合は何もせず spriteId=None のデフォルトのままにする。
         // ================================================================
+
         {
             // ダブルクォートで囲まれた text 部分と、その後ろの4項目を分離する
             std::string textPart = textField;

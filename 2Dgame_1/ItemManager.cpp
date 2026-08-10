@@ -220,7 +220,7 @@ float ItemManager::GetActiveItems() const {
 
 void ItemManager::Load() {
     texSpeedPotion      = LoadTexture("assets/images/items/speedportion.png");
-    texJumpPotion       = LoadTexture("assets/images/items/jumppotion.png");
+    texJumpPotion       = LoadTexture("assets/images/items/excessjumppotion.png");
     texExcessJumpPotion = LoadTexture("assets/images/items/excessjumppotion.png");
     texInvinciblePotion = LoadTexture("assets/images/items/invincible_potion.png");
 	texDebuffPotion = LoadTexture("assets/images/items/debuffpotion.png");

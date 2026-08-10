@@ -29,6 +29,7 @@ struct AudioManager {
     Music title2Bgm{};
 
     Music stageBgm{};
+	Music stage1Bgm{};
     Music stageClearBgm{};
     Music stage3Bgm{};
     Music chooseStageBgm{};
@@ -50,6 +51,7 @@ struct AudioManager {
     float title2MaxVol = 0.30f;
     float stageMaxVol = 0.35f;
     float stageClearMaxVol = 0.35f;
+    float stage1MaxVol = 0.35f;
     float stage3MaxVol = 0.35f;
     float chooseStageMaxVol = 0.35f;
     float stage4MaxVol = 0.35f;
@@ -59,6 +61,7 @@ struct AudioManager {
     float title1Vol = 0.0f;
     float title2Vol = 0.0f;
     float stageVol = 0.0f;
+    float stage1Vol = 0.0f;
     float stageClearVol = 0.0f;
     float stage3Vol = 0.0f;
     float chooseStageVol = 0.0f;
@@ -84,6 +87,7 @@ void AudioUpdate(
     bool playTitle1Bgm,
     bool playTitle2Bgm,
     bool playStageBgm,
+	bool playStage1Bgm,
     bool playStageClearBgm,
     bool playStage3Bgm,
     bool playStage4Bgm,

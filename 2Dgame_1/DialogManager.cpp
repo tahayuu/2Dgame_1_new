@@ -23,9 +23,9 @@ static inline std::string trim(const std::string& s) {
     return s.substr(a, b - a + 1);
 }
 
-// --- DialogManager implementation ---
+//全体で一つのインスタンスを返す
 DialogManager& DialogManager::Instance() {
-    static DialogManager inst;
+    static DialogManager inst;//共通のセリフ帳
     return inst;
 }
 
@@ -63,15 +63,22 @@ void DialogManager::LoadFromFile(const std::string& path) {
             }
         }
 
+		// 空行・コメント行をスキップ
         line = trim(line);
         if (line.empty()) continue;
         if (line.front() == '#') continue; // コメント
 
+        //|の左右を分ける
         size_t sep = line.find('|');
+		// もし | が見つからなければスキップ
         if (sep == std::string::npos) continue;
 
+		// ID とテキストを分離して辞書に登録
         std::string id = trim(line.substr(0, sep));
         std::string text = trim(line.substr(sep + 1)); // trim を追加
+		
+        //std::unordered_mapなので文字列を使って場所を特定できる
+        //lines["stage1_clear_1"] = "ふーーむ";
         lines[id] = text;
     }
 
@@ -85,11 +92,17 @@ void DialogManager::Reload() {
 // 目的: ID指定で台詞を取得する（必要時に遅延ロードする）。
 std::string DialogManager::Get(const std::string& id, const std::string& fallback) const {
     if (lines.empty()) {
-        // 自動ロード（実行時に Instance().LoadFromFile(...) を呼び出していない場合）
+        /*this	現在のDialogManager自身
+          const_cast<DialogManager*>	constを外して通常のポインタにする
+         ->	ポインタから関数を呼ぶ
+         LoadFromFile	セリフファイルを読み込む
+         lastPath	最後に使ったファイルパス*/
         const_cast<DialogManager*>(this)->LoadFromFile(lastPath);
     }
-    auto it = lines.find(id);
-    return it != lines.end() ? it->second : fallback;
+    
+	auto it = lines.find(id);// もし見つからなければ it == lines.end() になる
+	return it != lines.end() ? it->second : fallback;// もし見つからなければ fallback を返す
+	//例: Get("stage1_clear_1", "ふーーむ") で、lines["stage1_clear_1"] があればそれを返す。なければ "ふーーむ" を返す。
 }
 
 std::string DialogManager::GetRandom() const {
