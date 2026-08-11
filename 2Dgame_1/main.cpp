@@ -344,7 +344,7 @@ allDialogTextへ追加
     float editorKeyBlockTimer = 0.0f;       // エディタ切替直後のキー入力無視時間
     const float editorKeyBlockDuration = 0.3f; // キー無視秒数
     auto ResetPlayerToDefault = [&](float invincibleSec = -1.0f) {
-        Vector2 startPos = { 100.0f, 300.0f }; // デフォルト
+        Vector2 startPos = { 100.0f, 100.0f }; // デフォルト
         if (currentStage == 4) {
             startPos = { 50, 300 };
         }
