@@ -26,6 +26,8 @@ struct PlayerState {
     bool onGround = false;
     bool onTop = false;
 
+    bool savePoint = false;//セーブポイントに触れたか
+	Vector2 savePointPos = { 0.0f, 0.0f };//セーブポイントの座標
     bool isKnockedBack = false;
     float knockBackTimer = 0.0f;
     float knockBackDuration = 0.5f;

@@ -1129,9 +1129,15 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		if (stage.cursorPlatforms[i].isActive) {
 			if (ResolveSolidYPlayer(stage.cursorPlatforms[i].rect, player, velocity, prev, stage.gravityReversed)) {
 				onGround = true;
+				stage.cursorPlatforms[i].onGround = true;
+			}
+			else if (!ResolveSolidYPlayer(stage.cursorPlatforms[i].rect, player, velocity, prev, stage.gravityReversed)) {
+				stage.cursorPlatforms[i].onGround = false;
 			}
 		}
+	
 	}
+
 	//氷床
 	for (int i = 0; i < stage.icePlatformCount; i++) {
 		if(ResolveSolidYPlayer(stage.icePlatforms[i].rect,player,velocity, prev, stage.gravityReversed)){

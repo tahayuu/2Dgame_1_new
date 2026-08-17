@@ -86,6 +86,9 @@ void ItemDraw(const Item& item) {
 	case ItemType::excessJumpPotion:
 		DrawRectangleRec(item.rect, PURPLE);
 		break;
+	case ItemType::debuffPotion:
+		DrawRectangleRec(item.rect, RED);
+		break;
 	}
 
 }

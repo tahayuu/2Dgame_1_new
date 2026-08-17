@@ -38,11 +38,12 @@ void OjisanVisual::Unload() {
 
 // 目的: 新しいメッセージ表示を開始し、表示時間とフォントモードを設定する。
 void OjisanVisual::TriggerMessage(const std::string& text, float durationSeconds,
-                                   const Font* overrideFont, bool forceDefaultFont) {
+                                   const Font* overrideFont, bool forceDefaultFont,bool fromCommentBlock ){
     message = text;
     duration = durationSeconds;
     timer = 0.0f;
     showMessage = true;
+	messageFromCommentBlock = fromCommentBlock;//このメッセージがコメントブロック由来かどうかを記録
     useDefaultFontMode = forceDefaultFont;   // ← 追加
 
     if (!forceDefaultFont && overrideFont && overrideFont->texture.id != 0) {
@@ -60,7 +61,8 @@ void OjisanVisual::ClearMessage() {
 	showMessage = false;
 	timer = 0.0f;
 	duration = 0.0f;
-
+	messageFromCommentBlock = false;//コメントブロック由来フラグをリセット
+	
 	overrideFontPtr = nullptr;
 	useOverrideFont = false;
 	useDefaultFontMode = false;

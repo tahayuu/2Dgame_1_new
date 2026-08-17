@@ -35,7 +35,7 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	//stage.platforms[10] = { 3200, 600, 150, 200 };
 
 	//アイテムブロック
-	stage.itemBlocks[0] = { {1250.0f,200.0f,50.0f,50.0f}, false, ItemType::speedPotion, false };
+	stage.itemBlocks[0] = { {1250.0f,200.0f,50.0f,50.0f}, false, ItemType::debuffPotion, false };
 	stage.itemBlocks[1] = { {2750.0f,400.0f,60.0f,60.0f},false };
 	stage.itemBlocks[2] = { {4550.0f,330.0f,50.0f,50.0f},false,ItemType::excessJumpPotion };
 	//壊せるブロック

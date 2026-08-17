@@ -17,8 +17,8 @@ struct ItemManager {
 	float excessJumpBoostAmount = 1300.0f; //過剰なジャンプ力
 	float speedBoostAmount = 200.0f; // 速度アップ量
 	float invincibleDuration = 3.0f; // 無敵効果時間
-	float debuffJumpReduction = 1150.0f;
-	float debuffSpeedReduction = 300.0f;
+	float debuffJumpReduction = 100.0f;
+	float debuffSpeedReduction = 50.0f;
 	bool invincible = false;
 
     struct ActiveItem {

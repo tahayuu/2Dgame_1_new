@@ -89,6 +89,7 @@ static const TypeParamInfo TYPE_PARAMS[(int)EditorObjectType::COUNT] = {//•	�
     /* 57 DRAG_PIECE */ {6,{{"groupId",1,false},{"pieceId",1,false},{"startSlotId",-1,false},{"returnOnMiss",1,true},{"allowSwap",1,true},{"lockOnSolve",1,true}} },
     /* 58 SNAP_SLOT */ {6,{{"groupId",1,false},{"slotId",1,false},{"requiredPieceId",1,false},{"snapRadius",60,false},{"showGuide",1,true},{"lockOnCorrect",0,true}} },
     /* 59 DISTANCE_TRIGGER_PIECE */ {4, { {"outputSignalId", 1, false}, {"detachDistance", 80, false}, {"reattachDistance", 30, false},  {"returnOnRelease", 0, true}  }},
+	/* 60 SAVE_POINT */ {0,{}},
 };
 
 
@@ -242,7 +243,7 @@ static const char* const EN_NAMES[(int)EditorObjectType::COUNT] = {
     "switchPlatforms","fallingTexts","exitDoors","layerDoors","respawn","switchButtons",
     "commentBlocks","cursorButtons","deathBlocks","spikeBouncers","springs",
 	"craneLaunchPads","cranes","ojisanPunchAreas","warpHoles","enemies","tempFloors","tempFloorSwitches","decorArrows",
-    "decorSprites","movePlatformYXY","eventChangers","dragPieces","snapSlots","distanceTriggerPieces"
+    "decorSprites","movePlatformYXY","eventChangers","dragPieces","snapSlots","distanceTriggerPieces","savePoints"
 };
 
 static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
@@ -253,7 +254,8 @@ static const char8_t* const JP_NAMES_U8[(int)EditorObjectType::COUNT] = {
   u8"移動回転ボール",u8"転がるボール",u8"落下床",u8"上昇床",u8"上下移動床",u8"クリアブロック",u8"横クリアブロック",
   u8"スイッチ床",u8"落下文字",u8"ゴール",u8"レイヤードア",u8"リスポーン",u8"スイッチ",u8"コメント",u8"カーソルスイッチ",
   u8"即死ブロック",u8"トゲジャンプ",u8"ばね",u8"クレーン発射台",u8"クレーン",u8"おじさんパンチ",u8"ワープ",u8"敵",u8"一時床",
-  u8"一時床スイッチ",u8"矢印",u8"装飾",u8"Ｙ→Ｘ→Ｙ移動床",u8"イベント変更エリア",u8"ドラッグピース",u8"スナップスロット",u8"距離トリガーピース"
+  u8"一時床スイッチ",u8"矢印",u8"装飾",u8"Ｙ→Ｘ→Ｙ移動床",u8"イベント変更エリア",u8"ドラッグピース",u8"スナップスロット",u8"距離トリガーピース",
+  u8"セーブポイント"
 };
 
 const char* GetNameJP(int i) {
@@ -326,6 +328,7 @@ static const Color TYPE_COLORS[(int)EditorObjectType::COUNT] = {
       {100,220,255,220},  // 57 DRAG_PIECE
 {255,220,100,160},  // 58 SNAP_SLOT
 {255, 180, 100, 220}, // 59 DistanceTriggerPiece
+    {100, 255, 100, 255 }, // 60 SAVE_POINT
 };
 
 Color GetColor(int i) {

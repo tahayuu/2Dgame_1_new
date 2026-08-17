@@ -1,6 +1,7 @@
 #pragma once
 #include "raylib.h"
 #include "StageTypes.h"
+#include "player.h"
 #include"EnemyManager.h"
 #include"ItemManager.h"
 
@@ -20,7 +21,7 @@ void StageInit_debug(Stage& stage, EnemyManager& enemyManager,ItemManager& itemM
 
 // 更新
 // 目的: ギミック状態を1フレーム分更新する。
-void StageUpdate(Stage& stage, float dt,ItemManager& itemManager,Camera2D camera);
+void StageUpdate(Stage& stage, float dt,ItemManager& itemManager,Camera2D camera,PlayerState& ps);
 
 
 // リセット
@@ -30,7 +31,7 @@ void StageReset(Stage& stage);
 // ステージ切り替え前の全データクリア
 // 目的: ステージ切替前に配列/カウントを安全にクリアする。
 void StageClear(Stage& stage);
-
+void UpdateSavePoints(Stage& stage, PlayerState& playerState, AudioManager& audio);
 // トゲ描画関数（宣言）
 // 目的: トゲ描画ヘルパー（宣言のみ）。
 void DrawSpikes(Rectangle h, float spikeW);

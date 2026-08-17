@@ -13,42 +13,39 @@
 // ================================================================
 //壊せるブロック
 struct BreakableBlock {
-    Rectangle rect;
+	Rectangle rect;
 	bool isBroken = false;//壊れているか
 };
 
 //アイテムブロック
 struct ItemBlock {
-    Rectangle rect;
-    bool isActive = false;//アイテムが出現したか
-    ItemType spawnType = ItemType::jumpPotion;
+	Rectangle rect;
+	bool isActive = false;//アイテムが出現したか
+	ItemType spawnType = ItemType::jumpPotion;
 	bool hasSpawned = false;//アイテムが出現済みか
 };
 
 //透明ブロック
 struct ClearBlock {
-    Rectangle rect;
-    bool clearflag = false;
+	Rectangle rect;
+	bool clearflag = false;
 };
 //透明ブロック（横）
-struct ClearBlockX{
-    Rectangle rect;
-    bool clearflag = false;
+struct ClearBlockX {
+	Rectangle rect;
+	bool clearflag = false;
 
 };
 //スイッチによって動作する床
 struct SwitchPlatform {
-    Rectangle rect;
+	Rectangle rect;
 	Rectangle SwitchRect;//スイッチの当たり判定
 	Vector2 speed;//移動速度
 	float MaxY;//最大移動距離200t
 	float startY;//初期位置
 	float MaX;//最大移動距離200t
 	float startX;//初期位置
-    bool switchedOn;
-    
-
-
+	bool switchedOn;
 
 };
 //わかれる床のデータ
@@ -67,146 +64,147 @@ struct SplitPlatform {
 
 //カーソル追従床
 struct CursorPlatform {
-    Rectangle rect;
+	Rectangle rect;
 	float followSpeed;//追従速度
-    float maxDistance;
-    bool isActive;
-    bool isDragging = false;
-    
-    Vector2 GetCenter() const {
-        return {
-            rect.x + rect.width / 2,
-            rect.y + rect.height / 2
-        };
+	float maxDistance;
+	bool isActive;
+	bool isDragging = false;
+	bool onGround = false;
+
+	Vector2 GetCenter() const {
+		return {
+			rect.x + rect.width / 2,
+			rect.y + rect.height / 2
+		};
 	}
 };
 //カーソルによって作動
 struct CursorBottom {
-    Rectangle rect;
+	Rectangle rect;
 	float maxDistance;//カーソルからどれだけ離れたら作動するか
-    bool isActive;
+	bool isActive;
 
-    int targetRollingBall = -1;
-    bool oneShot = true;
+	int targetRollingBall = -1;
+	bool oneShot = true;
 	bool triggered = false;//一度作動したら作動しない
 
-    Vector2 GetCenter() const {
-        return {
-            rect.x + rect.width / 2,
-            rect.y + rect.height / 2
-        };
+	Vector2 GetCenter() const {
+		return {
+			rect.x + rect.width / 2,
+			rect.y + rect.height / 2
+		};
 	}
 };
 
 
 //磁石（引き寄せ）
 struct Magnet {
-    Rectangle rect;
-    float Force;
-    float maxDistance;
-    bool isActive;
-    bool isDragging = false;
+	Rectangle rect;
+	float Force;
+	float maxDistance;
+	bool isActive;
+	bool isDragging = false;
 	bool triggerd = false;
 
-    Vector2 GetCenter() const {
-        return {
-            rect.x + rect.width / 2,
-            rect.y + rect.height / 2
-        };
-    }
+	Vector2 GetCenter() const {
+		return {
+			rect.x + rect.width / 2,
+			rect.y + rect.height / 2
+		};
+	}
 };
 
 
 //氷床
 struct IcePlatform {
-    Rectangle rect;
-    float friction;        // 摩擦係数
-    float iceAccel;        // 現在の滑り速度
-    float maxSlideSpeed;   // 最大滑り速度
+	Rectangle rect;
+	float friction;        // 摩擦係数
+	float iceAccel;        // 現在の滑り速度
+	float maxSlideSpeed;   // 最大滑り速度
 };
 
 //移動低下床
 struct MoveDownPlatform {
-    Rectangle rect;
+	Rectangle rect;
 };
 
 //移動上昇床
 struct MoveUpPlatform {
-    Rectangle rect;
+	Rectangle rect;
 };
 
 //触れると吹っ飛ばす壁
 struct KnockBackWall {
-    Rectangle rect;
-    float startX;
-    Vector2 knockBackVelocity;//吹っ飛ばす速度
-    bool onTouch=false;//触れたか
+	Rectangle rect;
+	float startX;
+	Vector2 knockBackVelocity;//吹っ飛ばす速度
+	bool onTouch = false;//触れたか
 	bool twiceTouch = false;//二回目に触れたか
 	bool iswithdraw = false;//引っ込んでいるか
-    bool isRetrun = false;
-    float timer =0.0f; 
-    float delay = 0.1f;
-    float withdraw=5.0f;//どれくらい壁が引っ込むか
-    float stoptimer = 0.0f;
-    float limitStop = 0.1f;
+	bool isRetrun = false;
+	float timer = 0.0f;
+	float delay = 0.1f;
+	float withdraw = 5.0f;//どれくらい壁が引っ込むか
+	float stoptimer = 0.0f;
+	float limitStop = 0.1f;
 
-    Vector2 getRectposition() const {
-        return {
-            rect.x, rect.y
-        };
-    }
+	Vector2 getRectposition() const {
+		return {
+			rect.x, rect.y
+		};
+	}
 };
 
 
 //ジャンプ台
 struct JumpPlatfrom {
-    Rectangle rect;
-    Vector2 jumpVelocity;
-    float startY;
-    float stopTimer = 0.4f;
-    float timer = 0.0f;
-    float delay = 0.1f;
-    float withdraw = 3.0f;
-    float limitStop = 0.5f;
+	Rectangle rect;
+	Vector2 jumpVelocity;
+	float startY;
+	float stopTimer = 0.4f;
+	float timer = 0.0f;
+	float delay = 0.1f;
+	float withdraw = 3.0f;
+	float limitStop = 0.5f;
 	float jumpSpeed = 200.0f;
-    bool twiceTouch = false;
-    bool onTouch = false;
-    bool isReturn = false;
-    bool isWithdraw = false;
+	bool twiceTouch = false;
+	bool onTouch = false;
+	bool isReturn = false;
+	bool isWithdraw = false;
 
 };
 //プレイヤーが持ち運べるばね
 struct Spring {
-    Rectangle rect;
-    Vector2 bounceVelocity;
-    bool isActive;
-    bool pickedUpByPlayer;
+	Rectangle rect;
+	Vector2 bounceVelocity;
+	bool isActive;
+	bool pickedUpByPlayer;
 };
 
 //人が入ると発射する砲台
 struct BatteryHuman {
-    Rectangle rect;
+	Rectangle rect;
 	Vector2 BatteryVelocity;
-    bool onEnter = false;
-    bool isReturn = false;
-    bool onLeft = false;
+	bool onEnter = false;
+	bool isReturn = false;
+	bool onLeft = false;
 	bool onRight = false;
-    float timer = 0.0f;
-    float delay = 0.5f;
+	float timer = 0.0f;
+	float delay = 0.5f;
 };
 
 //乗ると動く床のデータ(x方向)
 struct MovePlatformX {
-    float moveSpeed;
-    float moveDistance;
-    float timer;
-    float delay;
+	float moveSpeed;
+	float moveDistance;
+	float timer;
+	float delay;
 	bool triggerd;//一回踏まれたか
 	bool ismoved;//動いているか
 	bool onplayer;//プレイヤーが乗っているか
-    Rectangle rect;
-    float initialX;  // 初期X座標（相対移動の基準点）
-    float prevX;     // 前フレームのX座標（移動量計算用）
+	Rectangle rect;
+	float initialX;  // 初期X座標（相対移動の基準点）
+	float prevX;     // 前フレームのX座標（移動量計算用）
 };
 
 struct MovePlatformYXY {//縦に動いた後に横に動き盾に動く床
@@ -217,11 +215,11 @@ struct MovePlatformYXY {//縦に動いた後に横に動き盾に動く床
 	float timer;
 	float delay;
 	bool onplayer;//プレイヤーが乗っているか
-    float initialX;  // 初期X座標
-    float initialY;  // 初期Y座標
+	float initialX;  // 初期X座標
+	float initialY;  // 初期Y座標
 	Rectangle rect;
 	float prevY1;     // 前フレームのY座標（移動量計算用）
-    float prevX2;
+	float prevX2;
 	float prevY3;
 	bool isMovingY1 = false; // 最初はY方向に動く
 	bool isMovingX2 = false; // 次にX方向に動く
@@ -232,55 +230,55 @@ struct MovePlatformYXY {//縦に動いた後に横に動き盾に動く床
 
 //動くとげ
 struct MoveHazard {
-    Rectangle rect;
-    bool ismoved;
-    bool triggerd;
-    float raiseHeight;//どれだけあがるか
-    float startY;     //初期Y（引っ込んでる値）
-    float moveSpeed;
+	Rectangle rect;
+	bool ismoved;
+	bool triggerd;
+	float raiseHeight;//どれだけあがるか
+	float startY;     //初期Y（引っ込んでる値）
+	float moveSpeed;
 };
 //動くとげY拡張
 struct MoveHazardExtentionY {
-    Rectangle rect;
-    bool ismoved;
-    bool triggerd;
-    float raiseHeight;//どれだけあがるか
-    float startY;     //初期Y（引っ込んでる値）
+	Rectangle rect;
+	bool ismoved;
+	bool triggerd;
+	float raiseHeight;//どれだけあがるか
+	float startY;     //初期Y（引っ込んでる値）
 	float moveSpeed;
-    int dir = 1;//移動方向
+	int dir = 1;//移動方向
 };
 
 //おちてくるとげ
 struct MoveDownHazardExtentionY {
-    Rectangle rect;
-    bool ismoved;
-    bool triggerd;
-    float raiseHeight;//どれだけあがるか
-    float startY;     //初期Y（引っ込んでる値）
-    float moveSpeed;
-    int dir = 1;//移動方向
+	Rectangle rect;
+	bool ismoved;
+	bool triggerd;
+	float raiseHeight;//どれだけあがるか
+	float startY;     //初期Y（引っ込んでる値）
+	float moveSpeed;
+	int dir = 1;//移動方向
 	float tolelance = 5.0f;//許容値
 };
 //動くとげX(ｙ厳密)
 struct MoveHazardRightX {
-    Rectangle rect;
-    bool ismoved;
-    bool triggerd;
-    float raiseWidth;//どれだけ出るか
-    float startX;     //初期Y（引っ込んでる値）
-    float moveSpeed;
-    float timer;
-    float delay;
-    int dir = 1;//出現方向（1=右, -1=左）
-    float toleranceX = 24.0f;//感知するX方向の許容範囲（プレイヤーが近づいたと判定する距離）
+	Rectangle rect;
+	bool ismoved;
+	bool triggerd;
+	float raiseWidth;//どれだけ出るか
+	float startX;     //初期Y（引っ込んでる値）
+	float moveSpeed;
+	float timer;
+	float delay;
+	int dir = 1;//出現方向（1=右, -1=左）
+	float toleranceX = 24.0f;//感知するX方向の許容範囲（プレイヤーが近づいたと判定する距離）
 	float toleranceY = 24.0f;//感知するY方向の許容範囲（プレイヤーが近づいたと判定する距離）
 };
 
 //追尾するとげ
 struct TrackingHazard {
-    Rectangle rect;
-    Vector2 startPos;
-    float speed;
+	Rectangle rect;
+	Vector2 startPos;
+	float speed;
 	float trackingRange;
 	float maxDistance;//最大追尾距離
 	bool isTracking;//追尾中か
@@ -290,277 +288,277 @@ struct TrackingHazard {
 
 //スパイク型トランポリン
 struct SpikeBouncer {
-    Rectangle rect;
-    Vector2 bounceVelosity;
-    float startY;
-    float stopTimer = 0.4f;
-    float timer = 0.0f;
-    float delay = 0.1f;
+	Rectangle rect;
+	Vector2 bounceVelosity;
+	float startY;
+	float stopTimer = 0.4f;
+	float timer = 0.0f;
+	float delay = 0.1f;
 	float compress = 5.0f;//どれだけ圧縮するか
 	float limitStop = 0.5f;//圧縮している時間
-    bool twiceTouch = false;
-    bool onTouch = false;
-    bool isCompressing = false;
-    
+	bool twiceTouch = false;
+	bool onTouch = false;
+	bool isCompressing = false;
+
 };
 // 落下床のデータ
 struct FallingPlatform {
-    Rectangle rect;
-    bool isfalling;
-    bool triggered;   // 一回踏まれたか
-    float fallDelay;  // 踏んでから落ちるまで
-    float timer;      // 経過時間
-    float fallSpeed;  // 落下速度
-    int detectMode = 0; // 0 = 両方、１＝プレイヤーのみ、２＝ボールのみ
+	Rectangle rect;
+	bool isfalling;
+	bool triggered;   // 一回踏まれたか
+	float fallDelay;  // 踏んでから落ちるまで
+	float timer;      // 経過時間
+	float fallSpeed;  // 落下速度
+	int detectMode = 0; // 0 = 両方、１＝プレイヤーのみ、２＝ボールのみ
 };
 
 //往復上昇床
 struct UpDownPlatform {
-    Rectangle rect;
-    bool isrising;
-    bool riseHeight; // 上昇高さ
-    bool riseSpeed;  // 上昇速度
-    bool fallSpeed;  // 下降速度
-    float upperY;     // 上昇限界Y座標
-    float lowerY;     // 下降限界Y座標
+	Rectangle rect;
+	bool isrising;
+	bool riseHeight; // 上昇高さ
+	bool riseSpeed;  // 上昇速度
+	bool fallSpeed;  // 下降速度
+	float upperY;     // 上昇限界Y座標
+	float lowerY;     // 下降限界Y座標
 	float timer;       // 経過時間
 	float stopTimer;      // 停止時間
-    bool goingUp; // 上昇中か
+	bool goingUp; // 上昇中か
 	bool onUpDownPlatform; // 上昇下降中か
 };
 
 //円軌道床
 struct CirclePlatform {
-    Vector2 vel = { 0.0f,0.0f };//速度
-    Vector2 center; // 回転中心
-    float radius;
-    float angle;
-    float angleSpeed;
-    float armLength;
+	Vector2 vel = { 0.0f,0.0f };//速度
+	Vector2 center; // 回転中心
+	float radius;
+	float angle;
+	float angleSpeed;
+	float armLength;
 	bool onPlayer = false;
 	Vector2 prevPos = { 0.0f,0.0f };//前のフレームの位置
-    Vector2 getRectposition() const {
-        return{
-            center.x + armLength * cosf(angle),
-            center.y + armLength * sinf(angle),
-        };
-    }
+	Vector2 getRectposition() const {
+		return{
+			center.x + armLength * cosf(angle),
+			center.y + armLength * sinf(angle),
+		};
+	}
 	// 当たり判定用
-    Rectangle GetRect() const {
-        Vector2 pos = getRectposition();
-        return Rectangle{
-            pos.x - radius, pos.y - radius, radius * 4, radius * 4
-        };
-    }
+	Rectangle GetRect() const {
+		Vector2 pos = getRectposition();
+		return Rectangle{
+			pos.x - radius, pos.y - radius, radius * 4, radius * 4
+		};
+	}
 };
 
 // 上昇床のデータ
 struct UpRisingPlatform {
-    Rectangle rect;
-    bool isrising;
-    bool triggered;   // 一回踏まれたか
-    float riseDelay;  // 踏んでから上がるまで
-    float timer;      // 経過時間
-    float riseSpeed;  // 上昇速度
+	Rectangle rect;
+	bool isrising;
+	bool triggered;   // 一回踏まれたか
+	float riseDelay;  // 踏んでから上がるまで
+	float timer;      // 経過時間
+	float riseSpeed;  // 上昇速度
 	float timeOnUpRising; // 上昇床に乗っている時間
-   
-    
+
+
 };
 
 //回転する鉄球
 struct RotatingBall {
-    Vector2 center;   // 回転中心
-    float radius;     // 回転半径
-    float angle;      // 現在の角度（ラジアン）
-    float angularSpeed; // 角速度（ラジアン/秒）
+	Vector2 center;   // 回転中心
+	float radius;     // 回転半径
+	float angle;      // 現在の角度（ラジアン）
+	float angularSpeed; // 角速度（ラジアン/秒）
 	float armLength;   // アームの長さ
-    Vector2 GetBallPosition() const {
-        return{
-            center.x + armLength * cosf(angle),
-            center.y + armLength * sinf(angle),
-        };
-    }
+	Vector2 GetBallPosition() const {
+		return{
+			center.x + armLength * cosf(angle),
+			center.y + armLength * sinf(angle),
+		};
+	}
 };
 
 //回転する鉄球
 struct MoveRotatingBall {
-Vector2 center;   // 回転中心
-    float radius;     // 回転半径
-    float angle;      // 現在の角度（ラジアン）
+	Vector2 center;   // 回転中心
+	float radius;     // 回転半径
+	float angle;      // 現在の角度（ラジアン）
 	float angularSpeed; // 角速度（ラジアン/秒）
 	float armLength;   // アームの長さ
-    bool onGround = false;
-    bool isFalling = false;
-    bool reverse = false;
+	bool onGround = false;
+	bool isFalling = false;
+	bool reverse = false;
 	float gravity = 1600.0f;
-    Vector2 vel = { 0.0f,0.0f };//速度
+	Vector2 vel = { 0.0f,0.0f };//速度
 
-    Vector2 GetBallPosition() const {//直行座標(x,y)
-        return{
-            center.x + armLength * cosf(angle),
-            center.y + armLength * sinf(angle),
-        };
+	Vector2 GetBallPosition() const {//直行座標(x,y)
+		return{
+			center.x + armLength * cosf(angle),
+			center.y + armLength * sinf(angle),
+		};
 	}
-    Rectangle GetRect() const {
-        Vector2 ballPos = GetBallPosition();
-        return Rectangle{
-            ballPos.x - radius,
-            ballPos.y - radius,
-            radius * 2,
-            radius * 2
-        };
-	} 
+	Rectangle GetRect() const {
+		Vector2 ballPos = GetBallPosition();
+		return Rectangle{
+			ballPos.x - radius,
+			ballPos.y - radius,
+			radius * 2,
+			radius * 2
+		};
+	}
 };
 
 //床を転がる鉄球
 struct RollingBall {
-    Vector2 center;
-    float radius;
+	Vector2 center;
+	float radius;
 	float angle;//現在の角度
 	float angularSpeed;//角速度
 
-    Vector2 vel;
-    float gravity = 1600.0f;
-    bool onGround = false;
+	Vector2 vel;
+	float gravity = 1600.0f;
+	bool onGround = false;
 	float rollSpeed;//転がる速度
 	float rollDerection; // 1.0f: 右回り, -1.0f: 左回り
-  
 
-    //カーソルボタントリガー待機
-    bool waitForCursorClick = false;
-    bool activated = true;
 
-    // 当たり判定用
-    Rectangle GetRect() const {
-        return {
-            center.x - radius,
-            center.y - radius,
-            radius * 2,
-            radius * 2
-        };
-    }
+	//カーソルボタントリガー待機
+	bool waitForCursorClick = false;
+	bool activated = true;
+
+	// 当たり判定用
+	Rectangle GetRect() const {
+		return {
+			center.x - radius,
+			center.y - radius,
+			radius * 2,
+			radius * 2
+		};
+	}
 };
 
 
 //落下文字
 struct FallingText {
-    bool sensed = false;//感知したか
-    bool isFalling = false;
-    bool onGround = false;
-    float fallDelay = 0.2f;
-    float timer = 0.0f;
-    float fallSpeed;
-    int fontSize = 48;
+	bool sensed = false;//感知したか
+	bool isFalling = false;
+	bool onGround = false;
+	float fallDelay = 0.2f;
+	float timer = 0.0f;
+	float fallSpeed;
+	int fontSize = 48;
 
-    Rectangle rect{ 0,0,0,0 };//当たり判定
-    Vector2 vel = { 0.0f,0.0f };//速度
-    float gravity = 1600.0f;
+	Rectangle rect{ 0,0,0,0 };//当たり判定
+	Vector2 vel = { 0.0f,0.0f };//速度
+	float gravity = 1600.0f;
 
-    int padding = 0;//余白
-    float tolerance = 300.0f;//感知範囲
+	int padding = 0;//余白
+	float tolerance = 300.0f;//感知範囲
 
-    std::string text = "SAFE";
-    Vector2 pos{ 0,0 };
+	std::string text = "SAFE";
+	Vector2 pos{ 0,0 };
 
-    Font font = { 0 };
+	Font font = { 0 };
 
-    void Init(Vector2 pos_, Font font_) {
-        pos = pos_;
-        font = font_;
-        RecalcRect();
-    }
+	void Init(Vector2 pos_, Font font_) {
+		pos = pos_;
+		font = font_;
+		RecalcRect();
+	}
 
-    void RecalcRect() {
-        if (font.texture.id == 0) {
-            // フォントが未設定なら既定フォントで測る（安全策）
-            Vector2 size = MeasureTextEx(GetFontDefault(), text.c_str(), (float)fontSize, 0.0f);
-            rect = { pos.x, pos.y, size.x, size.y };
-        }
-        else {
-            Vector2 size = MeasureTextEx(font, text.c_str(), (float)fontSize, 0.0f);
-            rect = { pos.x, pos.y, size.x, size.y };
-        }
-    }
+	void RecalcRect() {
+		if (font.texture.id == 0) {
+			// フォントが未設定なら既定フォントで測る（安全策）
+			Vector2 size = MeasureTextEx(GetFontDefault(), text.c_str(), (float)fontSize, 0.0f);
+			rect = { pos.x, pos.y, size.x, size.y };
+		}
+		else {
+			Vector2 size = MeasureTextEx(font, text.c_str(), (float)fontSize, 0.0f);
+			rect = { pos.x, pos.y, size.x, size.y };
+		}
+	}
 
-    Rectangle GetRect() const {
-        // 修正：y を返すようにし、幅と高さに padding*2 を加える（左右上下対称）
-        return Rectangle{
-            rect.x - (float)padding,
-            rect.y - (float)padding,
-            rect.width + (float)padding * 2,
-            rect.height + (float)padding * 2
-        };
-    }
+	Rectangle GetRect() const {
+		// 修正：y を返すようにし、幅と高さに padding*2 を加える（左右上下対称）
+		return Rectangle{
+			rect.x - (float)padding,
+			rect.y - (float)padding,
+			rect.width + (float)padding * 2,
+			rect.height + (float)padding * 2
+		};
+	}
 };
 
 // ボタンブロック（下から叩くとブロックが出現）
 struct ButtonBlock {
-    Rectangle buttonRect;       // ボタン本体（叩かれる側）
-    std::vector<Rectangle> blockRects;      // 出現するブロックの位置
-    bool activated = false;     // 叩かれたか
+	Rectangle buttonRect;       // ボタン本体（叩かれる側）
+	std::vector<Rectangle> blockRects;      // 出現するブロックの位置
+	bool activated = false;     // 叩かれたか
 };
 
 // 重力ブロック
 struct GravityBlock {
-    Rectangle rect;
+	Rectangle rect;
 };
 
 //奥行きドア（手前と奥をつなぐ）
 struct LayerDoor {
-    Rectangle frontRect;   // 手前側のドア
-    Rectangle backRect;    // 奥側のドア
+	Rectangle frontRect;   // 手前側のドア
+	Rectangle backRect;    // 奥側のドア
 };
 
 //エレベーター（上キーで自動上昇、下キーで自動下降）
 struct Elevator {
-    Rectangle rect;          // エレベーター床
-    float upperY;            // 上限Y座標
-    float lowerY;            // 下限Y座標
-    float speed;             // 移動速度
-    bool goingUp = false;    // 上昇中か
-    bool goingDown = false;  // 下降中か
-    bool onPlayer = false;   // プレイヤーが乗っているか
+	Rectangle rect;          // エレベーター床
+	float upperY;            // 上限Y座標
+	float lowerY;            // 下限Y座標
+	float speed;             // 移動速度
+	bool goingUp = false;    // 上昇中か
+	bool goingDown = false;  // 下降中か
+	bool onPlayer = false;   // プレイヤーが乗っているか
 };
 
 // 触れると壊れるブロック
 // 触れると壊れるブロック
 struct TouchBreakBlock {
-    Rectangle rect;
-    bool triggered = false;  // プレイヤーが触れたか
-    bool isBroken = false;   // 完全に壊れたか
-    float timer = 0.0f;      // 触れてからの経過時間
-    float breakDelay = 0.5f; // 壊れるまでの遅延（秒）
+	Rectangle rect;
+	bool triggered = false;  // プレイヤーが触れたか
+	bool isBroken = false;   // 完全に壊れたか
+	float timer = 0.0f;      // 触れてからの経過時間
+	float breakDelay = 0.5f; // 壊れるまでの遅延（秒）
 };
 
 //下から触れただけで壊れるブロック
 struct BottomBreakBlock {
-    Rectangle rect;
-    bool triggered = false;  // 触れたか
-    float breakDelay = 0.5f; // 壊れるまでの遅延（秒）
-    bool isBroken = false;   // 完全に壊れたか
-    float timer = 0.0f;      // 経過時間
+	Rectangle rect;
+	bool triggered = false;  // 触れたか
+	float breakDelay = 0.5f; // 壊れるまでの遅延（秒）
+	bool isBroken = false;   // 完全に壊れたか
+	float timer = 0.0f;      // 経過時間
 
 };
 // 退出ドア
 struct ExitDoor {
-    Rectangle rect;
-    int targetStage;
+	Rectangle rect;
+	int targetStage;
 };
 
 //コメントブロック（触れるとおじさんがコメントする／当たり判定なし）
 struct CommentBlock {
-    Rectangle rect;
-    std::string message;     // 表示するコメント
-    float duration = 3.0f;   // 表示秒数
-    bool triggered = false;  // 一度発動したか
-    float cooldown = 0.0f;   // 再発動までのクールダウン
+	Rectangle rect;
+	std::string message;     // 表示するコメント
+	float duration = 3.0f;   // 表示秒数
+	bool triggered = false;  // 一度発動したか
+	float cooldown = 0.0f;   // 再発動までのクールダウン
 };
 
 //クレーン発射台
 struct CraneLaunchPad {
-    Rectangle rect;
-    float launchVelY = -900.0f;
-    bool triggered = false;
+	Rectangle rect;
+	float launchVelY = -900.0f;
+	bool triggered = false;
 };
 
 //クレーン状態
@@ -568,56 +566,56 @@ enum class CraneState { IDLE, DESCENDING, GRABBING, CARRYING, DONE };
 
 //クレーン（天井ギミック）
 struct Crane {
-    Rectangle bodyRect;      // クレーンの本体（描画・判定用）
-    float armLength = 0.0f;  // 現在のアーム長さ（天井からの距離）
-    float maxArmLength = 200.0f;
-    float detectRangeX = 80.0f;  // 横方向の感知範囲
-    float descendSpeed = 300.0f;
-    float carrySpeedX = 400.0f;
-    int carryDir = 1;            // 1=右, -1=左
+	Rectangle bodyRect;      // クレーンの本体（描画・判定用）
+	float armLength = 0.0f;  // 現在のアーム長さ（天井からの距離）
+	float maxArmLength = 200.0f;
+	float detectRangeX = 80.0f;  // 横方向の感知範囲
+	float descendSpeed = 300.0f;
+	float carrySpeedX = 400.0f;
+	int carryDir = 1;            // 1=右, -1=左
 	float carryDist = 1000.0f;// 持ち去る距離
-    float carriedX = 0.0f;
-    float ceilingY = 0.0f;
-    Rectangle playerRect = {};   // main.cppから毎フレーム更新するプレイヤー矩形
-    CraneState state = CraneState::IDLE;
+	float carriedX = 0.0f;
+	float ceilingY = 0.0f;
+	Rectangle playerRect = {};   // main.cppから毎フレーム更新するプレイヤー矩形
+	CraneState state = CraneState::IDLE;
 };
 
 //ワープホール
 struct Warp {
-    Rectangle rect;
-    Vector2 place;//指定の位置
-    bool warped = false;
+	Rectangle rect;
+	Vector2 place;//指定の位置
+	bool warped = false;
 };
 
 //一時的に出現する床
 struct TempFloor {
-    Rectangle rect;
-    float timer = 0.0f;
-    float showSec = 100.0f;
+	Rectangle rect;
+	float timer = 0.0f;
+	float showSec = 100.0f;
 	bool visible = false;//表示されているか
 };
 
 struct TempFloorSwitch {
-    Rectangle rect;
-    int targetFloor = -1;
+	Rectangle rect;
+	int targetFloor = -1;
 	bool oneShot = true;//一度だけ作動するか
 	bool triggered = false;//一度踏まれたか
 	bool hover = false;//カーソルが上にあるか
 };
 
 struct DecorArrow {
-    Rectangle rect;
-    float angleDeg = 0.0f;
+	Rectangle rect;
+	float angleDeg = 0.0f;
 };
 
 struct DecoSprite {
 	Rectangle rect;
 	SpriteId spriteId = SpriteId::None;  // 描画に使う画像パーツ
-    int eventId = 0;
+	int eventId = 0;
 	float rotation = 0.0f;
 	bool flipX = false;
 	bool flipY = false;
-    bool drawFront = false;
+	bool drawFront = false;
 };
 
 enum class EventActionType {
@@ -628,16 +626,16 @@ enum class EventActionType {
 };
 
 struct EventChanger {
-    Rectangle rect;
+	Rectangle rect;
 	int targetEventId = 0;//対象のイベントID
-	
+
 	SpriteId changedSpriteId = SpriteId::None;//変更後のスプライトID
 
 	int jumpMode = -1;//ジャンプモードを変える（0=通常, 1=二段ジャンプ, 2=ジャンプ不可）
-    int inputSignalId = 0;//入力信号ID
+	int inputSignalId = 0;//入力信号ID
 
-    // 0なら従来どおりプレイヤー接触で発動
-    // 1以上なら指定された信号で発動
+	// 0なら従来どおりプレイヤー接触で発動
+	// 1以上なら指定された信号で発動
 	bool restoreOnExit = true;//退出時に元の状態に戻すか
 	bool oneShot = false;//一度だけ作動するか
 	bool triggered = false;//一度作動したか
@@ -659,27 +657,27 @@ enum class DragPieceState {
 };
 // ドラッグ可能なパズルピース
 struct DragPiece {
-    Rectangle rect = {};
+	Rectangle rect = {};
 	Rectangle initialRect = {};// 初期位置を保持するための矩形
 
-    SpriteId spriteId = SpriteId::None;
-    float rotation = 0.0f;
-    bool flipX = false;
-    bool flipY = false;
+	SpriteId spriteId = SpriteId::None;
+	float rotation = 0.0f;
+	bool flipX = false;
+	bool flipY = false;
 
 	int groupId = 0;// 同じグループのピースは同時にスナップ可能
 	int pieceId = 0;// ピースのID（スナップ判定用）
 
-    int currentSlotId = -1;// 現在のスロットID
-    int dragOriginSlotId = -1;// ドラッグ開始時のスロットID
+	int currentSlotId = -1;// 現在のスロットID
+	int dragOriginSlotId = -1;// ドラッグ開始時のスロットID
 
-    DragPieceState state = DragPieceState::FREE;
+	DragPieceState state = DragPieceState::FREE;
 
 	Vector2 dragOffset = {};// ドラッグ開始時のマウス位置とピース位置の差
-    Vector2 moveStart = {};// 移動開始位置
-    Vector2 moveTarget = {};// 移動目標位置
+	Vector2 moveStart = {};// 移動開始位置
+	Vector2 moveTarget = {};// 移動目標位置
 
-    float moveTimer = 0.0f;
+	float moveTimer = 0.0f;
 	float moveDuration = 0.15f;// 移動にかかる時間（秒）d
 	float effectTimer = 0.0f;// エフェクト用タイマー
 
@@ -714,16 +712,22 @@ struct SnapSlot {
 };
 
 struct DistanceTriggerPiece {
-    DragPiece drag;
+	DragPiece drag;
 	int outputSignalId = 0;
 	float detachDistance = 80.0f;//離れた距離
-    float reattachDistance = 30.0f;//未発動状態から発動状態になる距離
-    /*80ピクセル以上離れると発動
-      30ピクセル以内へ戻ると解除
-      同じ距離にすると、境界付近で次のように細かく切り替わる可能性があります。
-      ON → OFF → ON → OFF
-      そのため、発動距離と解除距離を分ける*/
-    bool detached = false;//現在初期位置から外れているか
+	float reattachDistance = 30.0f;//未発動状態から発動状態になる距離
+	/*80ピクセル以上離れると発動
+	  30ピクセル以内へ戻ると解除
+	  同じ距離にすると、境界付近で次のように細かく切り替わる可能性があります。
+	  ON → OFF → ON → OFF
+	  そのため、発動距離と解除距離を分ける*/
+	bool detached = false;//現在初期位置から外れているか
+};
+
+struct savePoint {
+	Rectangle rect;
+	bool issaved;//セーブ済みか
+	Vector2 savePos;
 };
 
 // トゲ描画関数（宣言）

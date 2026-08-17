@@ -69,12 +69,14 @@ void PlayerStateUpdate(PlayerState& ps,
     // 結果フラグをリセット
     ps.pendingDeath = false;
     ps.pendingEnterEditor = false;
-
+#ifdef _DEBUG
     // ── V / F1 : エディタモードへ ──────────────────
     if (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1)) {
         ps.pendingEnterEditor = true;
+      
         return;
     }
+#endif
 
     // ── ステージからのフラグを受け取る ─────────────
     if (stage.playerKnockedBack) {
@@ -119,7 +121,7 @@ void PlayerStateUpdate(PlayerState& ps,
         stage.cranes[i].playerRect = ps.rect;
 
     // ── ステージ・アイテム更新 ──────────────────────
-    StageUpdate(stage, dt, im, cam);
+    StageUpdate(stage, dt, im, cam, ps);
     im.UpdateAll(dt, ps.rect, ps.velocity);
     im.ItemCollisionAll(ps.item, ps.rect, dt, ps.velocity);
     HazardUpdate(stage, ps.rect, dt);
@@ -264,26 +266,7 @@ void PlayerStateUpdate(PlayerState& ps,
     }
     em.UpdateAll(dt, ps.rect);
 
-    // ── おじさんパンチ領域 ──────────────────────────
-    /*for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
-        if (!stage.ojisanPunchTriggered[i] &&
-            CheckCollisionRecs(ps.rect, stage.ojisanPunchAreas[i]))
-        {
-     
-            stage.ojisanPunchTriggered[i] = true;
-            ps.ojisanPunchScreenPos = GetWorldToScreen2D({ ps.rect.x, ps.rect.y }, cam);
-            ps.isOjisanPunchDeath = true;
-            ps.gravityReversedAtDeath = stage.gravityReversed;
-            ojisan.showPunch = true;
-            
 
-            AudioPlaySfx(audio, SfxId::Punch);
-            ps.velocity = { 0.0f, 0.0f };
-            ps.pendingDeath = true;
-            ps.lastDeathCause = DeathCause::OJISAN_PUNCH;
-            return;
-        }
-    }*/
 
     // ── ステージ機構の更新 ──────────────────────────
     MoveUpdateWithPlayrer(stage, ps.rect, ps.velocity, dt);
@@ -315,6 +298,8 @@ void PlayerStateUpdate(PlayerState& ps,
         return;
     }
 
+
+
     // ── 死亡判定（デスブロック・トゲ） ──────────────
     bool hitDeathBlock = false;
     for (int i = 0; i < stage.deathBlockCount; i++) {
@@ -339,10 +324,11 @@ void PlayerStateUpdate(PlayerState& ps,
         if (!cb.triggered && CheckCollisionRecs(ps.rect, cb.rect)) {
             cb.triggered = true;
             cb.cooldown = cb.duration + 1.0f;
-            ojisan.TriggerMessage(cb.message, cb.duration, nullptr, false);
+            ojisan.TriggerMessage(cb.message, cb.duration, nullptr, false,true);
         }
         if (cb.triggered && !CheckCollisionRecs(ps.rect, cb.rect)) {
             cb.triggered = false;
+            
         }
     }
 }

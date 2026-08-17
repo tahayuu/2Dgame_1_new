@@ -148,6 +148,7 @@ void ItemManager::ApplyItemEffect(ItemType type, ItemManager& itemManag, Item& i
 		itemManag.activeItems.push_back({ type, duration });
 		item.isActive = false;
 		break;
+	
 	}
 	}
 

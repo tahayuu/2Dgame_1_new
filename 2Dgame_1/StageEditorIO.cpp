@@ -31,7 +31,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     CameraConfig savedCameraConfig = stage.cameraConfig;
     StageClear(stage);
     stage.cameraConfig = savedCameraConfig;
-    int c[(int)EditorObjectType::COUNT] = {};
+	int c[(int)EditorObjectType::COUNT] = {};// 各ギミックタイプの配置数カウンタ
 
     // 見た目専用データ(SpriteId)の書き出し先をリセット
 // （StageClear がゼロ初期化していない可能性があるため念のため明示的に初期化）
@@ -664,6 +664,15 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
                 trigger.reattachDistance = o.params[2]; trigger.detached = false;
             }
             break;
+        case EditorObjectType::SAVE_POINT:
+                if (c[t] < Stage::MAX_SAVEPOINT) {
+					int i = c[t]++;
+
+                    savePoint& sp = stage.savePoints[i];
+                    sp.rect = o.rect; sp.issaved = false; sp.savePos = { o.rect.x,o.rect.y }; 
+                    stage.savePointsInit[i] = sp;
+                }
+                break;
         default: break;
         }
 
@@ -724,6 +733,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     stage.dragPieceCount = c[(int)EditorObjectType::DRAG_PIECE];
     stage.snapSlotCount = c[(int)EditorObjectType::SNAP_SLOT];
     stage.distanceTriggerPieceCount = c[(int)EditorObjectType::DISTANCE_TRIGGER_PIECE];
+	stage.savePointCount = c[(int)EditorObjectType::SAVE_POINT];
 
     InitializeSnapPuzzles(stage);// SnapPuzzle の初期化
     InitializeDistanceTriggerPieces(stage);

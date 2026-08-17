@@ -97,7 +97,8 @@ enum class SpriteId {
 	bord2,
 	nextUpdate,
 	nextdoor,
-	COUNT//72
+	savepoint,
+	COUNT//73
 };
 
 // ================================================================

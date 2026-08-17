@@ -17,7 +17,8 @@ enum class SfxId {
     DialogEnter,
     tabclick,
     Punch,
-    OjisanTalk
+    OjisanTalk,
+    Save,
 };
 
 struct AudioManager {
@@ -29,7 +30,7 @@ struct AudioManager {
     Music title2Bgm{};
 
     Music stageBgm{};
-	Music stage1Bgm{};
+    Music stage1Bgm{};
     Music stageClearBgm{};
     Music stage3Bgm{};
     Music chooseStageBgm{};
@@ -39,6 +40,7 @@ struct AudioManager {
     Sound damageSe{};
     Sound stageChooseSe{};
     Sound stageDecideSe{};
+    Sound saveSe{};
 
     // ステージクリア会話中のENTER専用SE。
     Sound dialogEnterSe{};
@@ -76,6 +78,7 @@ struct AudioManager {
     bool stageClearBgmLoaded = false;
     bool ojisanTalkSeLoaded = false;
     bool dialogEnterSeLoaded = false;
+	bool saveSeLoaded = false;
 
     bool initialized = false;
 };

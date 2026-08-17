@@ -11,6 +11,7 @@
 #include "StageSnapPuzzle.h"
 #include "EnemyManager.h"
 #include "ItemManager.h"
+#include "player.h"
 #include <cmath>
 
 // ================================================================
@@ -21,7 +22,7 @@
 // ================================================================
 
 // 目的: カーソル追従床の追従処理を更新する。
-void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera) {
+static void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera,PlayerState& ps) {
 	Vector2 mouseScreen = GetMousePosition(); // 画面座標
 	Vector2 mousePos = GetScreenToWorld2D(mouseScreen, camera); // ワールド座標に変換
 	bool mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
@@ -39,7 +40,7 @@ void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera) {
 			cp.isDragging = false;
 		}
 
-		if (cp.isDragging) {
+		if (cp.isDragging && !cp.onGround) {
 			Vector2 center = cp.GetCenter();
 			Vector2 platformCenter = {
 				cp.rect.x + cp.rect.width / 2,
@@ -131,8 +132,10 @@ static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom&
 	}
 }
 
+
+
 // 目的: カーソル床スイッチのクリック検知と連動起動を処理する。
-void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
+static void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
 	Vector2 mouseScreen = GetMousePosition(); // 画面座標
 	Vector2 mousePos = GetScreenToWorld2D(mouseScreen, camera); // ワールド座標に変換
 	bool mouseClicked = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
@@ -156,7 +159,7 @@ void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
 }
 
 //一時床ギミックの更新
-static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera,bool allowMouseInput) {
+static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera, bool allowMouseInput) {
 	Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
 	bool clicked = allowMouseInput && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);//マウスクリックが有効な場合のみ、クリック判定を行う
 
@@ -194,8 +197,8 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera,bool 
 	if (!anyVisible) {
 		for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
 			auto& sw = stage.tempFloorSwitches[i];
-				sw.triggered = false;
-			
+			sw.triggered = false;
+
 		}
 	}
 
@@ -205,7 +208,7 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera,bool 
 // 入力: stage、経過時間dt、アイテム管理、カメラ。
 // 出力: 各ギミックの位置・状態フラグが更新される。
 // 注意: プレイヤー挙動に影響が大きいため、更新順変更時は要検証。
-void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camera) {
+void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D camera, PlayerState& ps) {
 
 	const bool snapMouseConsumed =
 		UpdateSnapPuzzles(stage, camera, dt);
@@ -263,8 +266,8 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 	}
 	if (!mouseConsumed) {
 		//カーソル追従床
-		UpdateCursorPlatform(stage, dt, camera);
-     	//カーソルクリックギミック
+		UpdateCursorPlatform(stage, dt, camera, ps);
+		//カーソルクリックギミック
 		UpdateCursorBottom(stage, dt, camera);
 	}
 
@@ -285,7 +288,7 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 		// 前フレームのX座標を保存（移動量計算用）
 		mpx.prevX = mpx.rect.x;
 
-		if (mpx.ismoved ) {
+		if (mpx.ismoved) {
 			mpx.rect.x += mpx.moveSpeed * dt;
 			// 初期X座標 + 移動距離に達したら止める（相対移動として判定）
 			if (mpx.rect.x >= mpx.initialX + mpx.moveDistance) {
@@ -594,10 +597,10 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 
 	//スイッチによって動作する床
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
-		auto& sp=stage.switchPlatforms[i];
+		auto& sp = stage.switchPlatforms[i];
 		float startX = sp.rect.x;
-		if(sp.switchedOn){
-			sp.rect.x+=sp.speed.x * dt;
+		if (sp.switchedOn) {
+			sp.rect.x += sp.speed.x * dt;
 			sp.rect.y += sp.speed.y * dt;
 			if (sp.rect.x >= sp.startX + sp.MaX) {//上限に達したら止める
 				sp.rect.x = sp.startX + sp.MaX;//上限に達したら止める
@@ -623,74 +626,74 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 			ib.hasSpawned = true;
 		}
 	}
-		//クレーン
-		for (int i = 0; i < stage.craneCount; i++) {
-			auto& cr = stage.cranes[i];
+	//クレーン
+	for (int i = 0; i < stage.craneCount; i++) {
+		auto& cr = stage.cranes[i];
 
-			switch (cr.state) {
-			case CraneState::IDLE: {
-				// クレーン本体の中心X
-				float craneCenterX = cr.bodyRect.x + cr.bodyRect.width / 2;
-				// プレイヤーの中心X・Y
-				float playerCenterX = cr.playerRect.x + cr.playerRect.width / 2;
-				float playerY       = cr.playerRect.y;
+		switch (cr.state) {
+		case CraneState::IDLE: {
+			// クレーン本体の中心X
+			float craneCenterX = cr.bodyRect.x + cr.bodyRect.width / 2;
+			// プレイヤーの中心X・Y
+			float playerCenterX = cr.playerRect.x + cr.playerRect.width / 2;
+			float playerY = cr.playerRect.y;
 
-				// X方向：クレーンの真下（本体幅 + 少し余裕）に入っているか
-				bool underCrane = fabsf(playerCenterX - craneCenterX) < (cr.bodyRect.width / 2 + 40.0f);
+			// X方向：クレーンの真下（本体幅 + 少し余裕）に入っているか
+			bool underCrane = fabsf(playerCenterX - craneCenterX) < (cr.bodyRect.width / 2 + 40.0f);
 
-				// Y方向：クレーンの天井から detectRangeX px 以内の距離にいるか
-				bool inRange = (playerY > cr.ceilingY) && 
-				               (playerY < cr.ceilingY + cr.detectRangeX);
+			// Y方向：クレーンの天井から detectRangeX px 以内の距離にいるか
+			bool inRange = (playerY > cr.ceilingY) &&
+				(playerY < cr.ceilingY + cr.detectRangeX);
 
-				if (underCrane && inRange) {
-					cr.state = CraneState::DESCENDING;
-				}
-				break;
+			if (underCrane && inRange) {
+				cr.state = CraneState::DESCENDING;
 			}
-
-			case CraneState::DESCENDING: {
-				cr.armLength += cr.descendSpeed * dt;
-				if (cr.armLength > cr.maxArmLength) {
-					cr.armLength = cr.maxArmLength;
-				}
-
-				// フック先端の当たり判定
-				float hookCX = cr.bodyRect.x + cr.bodyRect.width / 2;
-				float hookY  = cr.ceilingY + cr.armLength;
-				Rectangle hookRect = { hookCX - 10, hookY - 10, 20, 20 };
-
-				// プレイヤーにフックが触れたら即掴む
-				if (CheckCollisionRecs(hookRect, cr.playerRect)) {
-					cr.state = CraneState::GRABBING;
-				}
-				// 最大まで伸びても当たらなければそのまま掴む
-				else if (cr.armLength >= cr.maxArmLength) {
-					cr.state = CraneState::GRABBING;
-				}
-				break;
-			}
-
-			case CraneState::GRABBING: {
-				stage.playerGrabbedByCrane = true;
-				cr.state = CraneState::CARRYING;
-				cr.carriedX = 0.0f;
-				break;
-			}
-
-			case CraneState::CARRYING: {
-				cr.bodyRect.x += cr.carryDir * cr.carrySpeedX * dt;
-				cr.carriedX += fabsf(cr.carryDir * cr.carrySpeedX * dt);
-
-				if (cr.carriedX >= cr.carryDist) {//運ぶ距離を運び終えたら
-					cr.state = CraneState::DONE;
-					stage.playerCraneKill = true;
-				}
-				break;
-			}
-
-			}
+			break;
 		}
-	
+
+		case CraneState::DESCENDING: {
+			cr.armLength += cr.descendSpeed * dt;
+			if (cr.armLength > cr.maxArmLength) {
+				cr.armLength = cr.maxArmLength;
+			}
+
+			// フック先端の当たり判定
+			float hookCX = cr.bodyRect.x + cr.bodyRect.width / 2;
+			float hookY = cr.ceilingY + cr.armLength;
+			Rectangle hookRect = { hookCX - 10, hookY - 10, 20, 20 };
+
+			// プレイヤーにフックが触れたら即掴む
+			if (CheckCollisionRecs(hookRect, cr.playerRect)) {
+				cr.state = CraneState::GRABBING;
+			}
+			// 最大まで伸びても当たらなければそのまま掴む
+			else if (cr.armLength >= cr.maxArmLength) {
+				cr.state = CraneState::GRABBING;
+			}
+			break;
+		}
+
+		case CraneState::GRABBING: {
+			stage.playerGrabbedByCrane = true;
+			cr.state = CraneState::CARRYING;
+			cr.carriedX = 0.0f;
+			break;
+		}
+
+		case CraneState::CARRYING: {
+			cr.bodyRect.x += cr.carryDir * cr.carrySpeedX * dt;
+			cr.carriedX += fabsf(cr.carryDir * cr.carrySpeedX * dt);
+
+			if (cr.carriedX >= cr.carryDist) {//運ぶ距離を運び終えたら
+				cr.state = CraneState::DONE;
+				stage.playerCraneKill = true;
+			}
+			break;
+		}
+
+		}
+	}
+
 
 	//わかれる床
 	for (int i = 0; i < stage.splitPlatformCount; i++) {
@@ -705,284 +708,307 @@ void StageUpdate(Stage& stage, float dt,ItemManager& itemManager, Camera2D camer
 	}
 }
 
-		void UpdateMagnet(Stage& stage, Rectangle& player, Vector2& velocity, float dt,Camera2D camera) {
-			Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
-			bool mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-			
-			for (int i = 0; i < stage.magnetCount; i++) {
-				auto& mg = stage.magnets[i];
+void UpdateMagnet(Stage& stage, Rectangle& player, Vector2& velocity, float dt, Camera2D camera) {
+	Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
+	bool mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+
+	for (int i = 0; i < stage.magnetCount; i++) {
+		auto& mg = stage.magnets[i];
 
 
 
-				bool mouseOnMagnet = CheckCollisionPointRec(mousePos, mg.rect);
-				/*if (mouseDown) {
-					mg.triggerd = true;
-				}*/
-				if (mouseOnMagnet && mouseDown) {
-					mg.isActive = true;
-					mg.triggerd = true;
-				}
-				else if (!mouseDown) {
+		bool mouseOnMagnet = CheckCollisionPointRec(mousePos, mg.rect);
+		/*if (mouseDown) {
+			mg.triggerd = true;
+		}*/
+		if (mouseOnMagnet && mouseDown) {
+			mg.isActive = true;
+			mg.triggerd = true;
+		}
+		else if (!mouseDown) {
+			mg.isActive = false;
+			mg.triggerd = false;
+		}
+
+		if (mg.isActive) {
+			Vector2 magnetCenter = mg.GetCenter();
+			Vector2 playerCenter = {
+				player.x + player.width / 2,
+				player.y + player.height / 2
+			};
+			Vector2 dir = {
+				magnetCenter.x - playerCenter.x,
+				magnetCenter.y - playerCenter.y
+			};
+
+			float dis = sqrt(dir.x * dir.x + dir.y * dir.y);
+			if (dis > 1.0f) {
+				dir.x /= dis;
+				dir.y /= dis;
+
+				float movedis = mg.Force;
+				if (dis > mg.maxDistance) {
 					mg.isActive = false;
-					mg.triggerd = false;
 				}
-
-				if (mg.isActive) {
-					Vector2 magnetCenter = mg.GetCenter();
-					Vector2 playerCenter = {
-						player.x + player.width / 2,
-						player.y + player.height / 2
-					};
-					Vector2 dir = {
-						magnetCenter.x - playerCenter.x,
-						magnetCenter.y - playerCenter.y
-					};
-
-					float dis = sqrt(dir.x * dir.x + dir.y * dir.y);
-					if (dis > 1.0f) {
-						dir.x /= dis;
-						dir.y /= dis;
-
-						float movedis = mg.Force ;
-						if (dis > mg.maxDistance) {
-							mg.isActive = false;
-						}
-						else {
-							velocity.x += dir.x * movedis;
-							velocity.y += dir.y * movedis;
-						}
-					}
+				else {
+					velocity.x += dir.x * movedis;
+					velocity.y += dir.y * movedis;
 				}
 			}
 		}
+	}
+}
 
-
-
-
-
-		//ステージリセット
-		// 目的: ステージ内の可変ギミックを初期状態へ戻す。
-		void StageReset(Stage & stage) {
-			for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-				stage.touchBreakBlocks[i] = stage.touchBreakBlocksInit[i];
-			}
-			for (int i = 0; i < stage.fallingCount; i++) {
-				stage.fallingPlatforms[i] = stage.fallingPlatformsInit[i];
-			}
-
-			for (int i = 0; i < stage.knockBackWallCount; i++) {
-				stage.knockBackWalls[i] = stage.knockBackWallsInit[i];
-			}
-			for (int i = 0; i < stage.upRisingCount; i++) {
-				stage.upRisingPlatforms[i] = stage.upRisingPlatformsInit[i];
-			}
-			for (int i = 0; i < stage.upDownCount; i++) {
-				stage.upDouwnPlatforms[i] = stage.upDouwnPlatformsInit[i];
-			}
-			stage.gravityCooldown = 0.0f;
-			stage.gravityReversed = false;
-			for (int i = 0; i < stage.gravityBlockCount; i++) {
-				stage.gravityBlocks[i] = stage.gravityBlocksInit[i];
-			}
-			for (int i = 0; i < stage.movePlatformCountYXY; i++) {
-				stage.movePlatformsYXY[i] = stage.movePlatformsYXYInit[i];
-			}
-			for (int i = 0; i < stage.rotatingBallCount; i++) {
-				stage.rotatingBalls[i] = stage.rotatingBallsInit[i];
-			}
-			for (int i = 0; i < stage.moveRotatingBallCount; i++) {
-				stage.moveRotatingBalls[i] = stage.moveRotatingBallsInit[i];
-			}
-			for (int i = 0; i < stage.rollingBallCount; i++) {
-				stage.rollingBalls[i] = stage.rollingBallsInit[i];
-			}
-			for (int i = 0; i < stage.movePlatformCountX; i++) {
-				stage.movePlatformsX[i] = stage.moveplatformsXInit[i];
-			}
-			for (int i = 0; i < stage.splitPlatformCount; i++) {
-				auto& sp = stage.splitPlatforms[i];
-				sp.base = sp.baseInit;
-				sp.triggered = false;
-				sp.offsetX = 0.0f;
-
-				float halfW = sp.base.width / 2;
-				sp.left = { sp.base.x,sp.base.y,halfW,sp.base.height };
-				sp.right = { sp.base.x + halfW,sp.base.y,halfW,sp.base.height };
-			}
-			for (int i = 0; i < stage.movePlatformCountX; i++) {
-				stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
-			}
-			for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-				stage.touchBreakBlocks[i] = stage.touchBreakBlocksInit[i];
+void UpdateSavePoints(Stage& stage, PlayerState& playerState, AudioManager& audio) {
+	for (int i = 0; i < stage.savePointCount; i++) {
+		auto& sp = stage.savePoints[i];
+        
+		if (CheckCollisionRecs(playerState.rect, sp.rect)) {
+			if (!sp.issaved) {
+				sp.issaved = true;
+				AudioPlaySfx(audio, SfxId::Save);
 			}
 			
-			for (int i = 0; i < stage.itemBlockCount; i++) {
-				stage.itemBlocks[i] = stage.itemBlocksInit[i];
-			}
-			for (int i = 0; i < stage.jumpPlatfromCount; i++) {
-				stage.jumpPlatfroms[i] = stage.jumpPlatfromsInit[i];
-			}
-			for (int i = 0; i < stage.switchPlatformCount; i++) {
-				stage.switchPlatforms[i] = stage.switchplatformsInit[i];
-			}
-			for (int i = 0; i < stage.breakableBlockCount; i++) {
-				stage.breakableBlocks[i] = stage.breakableBlocksInit[i];
-			}
-			for (int i = 0; i < stage.clearsXCount; i++) {
-				stage.clearBlocksX[i] = stage.clearBlocksXInit[i];
-			}
-			for (int i = 0; i < stage.buttonBlockCount; i++) {
-				stage.buttonBlocks[i] = stage.buttonBlocksInit[i];
-			}
-			for (int i = 0; i < stage.deathBlockCount; i++) {
-				stage.deathBlocks[i] = stage.deathBlocksInit[i];
-			}
-			for (int i = 0; i < stage.springCount; i++) {
-				stage.springs[i] = stage.springsInit[i];
-			}
-			stage.heldSpringIndex = -1;  
-			for (int i = 0; i < stage.elevatorCount; i++) {
-				stage.elevators[i] = stage.elevatorsInit[i];
-			}
-			for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
-				stage.bottomBreakBlocks[i] = stage.bottomBreakBlocksInit[i];
-			}
-			for (int i = 0; i < stage.commentBlockCount; i++) {
-				stage.commentBlocks[i] = stage.commentBlocksInit[i];
-			}
+			//プレイヤーがセーブポイントに触れたことを記録
+			playerState.savePoint = true;
+			//死亡後に戻る位置を記録
+			playerState.savePointPos = sp.savePos;
 
-			for (int i = 0; i < stage.cursorBottomCount; i++) {
-				stage.cursorBottoms[i] = stage.cursorBottomsInit[i];
-			}
-			for (int i = 0; i < stage.deathBlockCount; i++) {
-				stage.deathBlocks[i] = stage.deathBlocksInit[i];
-			}
-			stage.currentLayer = 0;
-			for (int i = 0; i < stage.craneCount; i++) {
-				stage.cranes[i] = stage.cranesInit[i];
-			}
-			for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
-				stage.ojisanPunchTriggered[i] = false;
-			}
-			for (int i = 0; i < stage.tempFloorCount; i++) {
-				stage.tempFloors[i] = stage.tempFloorsInit[i];
-			}
-			for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
-				stage.tempFloorSwitches[i] = stage.tempFloorSwitchesInit[i];
-			}
-			ResetSnapPuzzles(stage);
-			ResetDistanceTriggerPieces(stage);
-
-			ClearGimmickSignals(stage);
-			ResetEventChangers(stage);
+			break;
 		}
-	
-		
+	}
+}
 
-		// 目的: ステージ切替前にカウント類を安全に初期化する。
-		// 目的: ステージ切替前にカウント類を安全に初期化する。
-		void StageClear(Stage& stage) {
-			StageThemeUnload(stage.theme);
-			stage.touchBreakBlockCount = 0;
-			stage.springCount = 0;
-			stage.heldSpringIndex = -1;
-			stage.bottomBreakBlockCount = 0;
-			stage.backPlatformCount = 0;
-			stage.currentLayer = 0;
-			stage.layerDoorCount = 0;
-			stage.elevatorCount = 0;
 
-			stage.cameraConfig = CameraConfig();
-			stage.gravityBlockCount = 0;
-			stage.gravityReversed = false;
-			stage.gravityCooldown = 0.0f;
-			stage.platformCount = 0;
-			stage.buttonBlockCount = 0;
-			stage.hazardCount = 0;
-			stage.moveCount = 0;
-			stage.moveExtYCount = 0;
-			stage.fallingCount = 0;
-			stage.upRisingCount = 0;
-			stage.upDownCount = 0;
-			stage.clearsCount = 0;
-		stage.clearsXCount = 0;
-			stage.splitPlatformCount = 0;
-			stage.itemBlockCount = 0;
-			stage.breakableBlockCount = 0;
-			stage.knockBackWallCount = 0;
-			stage.batteryHumanCount = 0;
-			stage.jumpPlatfromCount = 0;
-			stage.switchPlatformCount = 0;
-			stage.icePlatformCount = 0;
-			stage.cursorPlatformCount = 0;
-			stage.magnetCount = 0;
-			stage.moveUpPlatformCount = 0;
-			stage.moveDownPlatformCount = 0;
-			stage.circlePlatformCount = 0;
-			stage.movePlatformCountX = 0;
-			stage.moveHazardRightCount = 0;
-			stage.moveDownHazardExtYCount = 0;
-			stage.trackingHazardCount = 0;
-			stage.rotatingBallCount = 0;
-			stage.moveRotatingBallCount = 0;
-			stage.rollingBallCount = 0;
-			stage.movePlatformCountYXY = 0;
-			stage.fallingTextCount = 0;
-			stage.exitDoorCount = 0;
-			stage.warpCount = 0;
-			stage.hasRespawnPoint = false;
-			stage.respawnPoint = { 100.0f, 500.0f };  // ← 追加
-			stage.commentBlockCount = 0;
-			stage.cursorPlatformCount = 0;
-			stage.cursorBottomCount = 0;
-			stage.magnetCount = 0;
-			stage.deathBlockCount = 0;
-			stage.spikeBouncerCount = 0;
-			stage.craneCount = 0;
-			stage.ojisanPunchAreaCount = 0;
-			for (int i = 0; i < Stage::MAX_OJISAN_PUNCH_AREAS; i++) {
-				stage.ojisanPunchTriggered[i] = false;
-				stage.ojisanPunchDrawFront[i] = false;
-				stage.ojisanPunchApproachDuration[i] = 0.85f;
-			}
-			stage.tempFloorCount = 0;
-			stage.tempFloorSwitchCount = 0;
-			stage.decorArrowCount = 0;
-			stage.decoSpriteCount = 0;
-			stage.dragPieceCount = 0;
-			stage.snapSlotCount = 0;
-			stage.draggingSnapPieceIndex = -1;
-			stage.snapMouseCaptured = false;
-			stage.distanceTriggerPieceCount = 0;
-			stage.draggingDistanceTriggerPieceIndex =-1;stage.distanceTriggerMouseCaptured =false;
-            stage.eventChangerCount = 0;			
-			stage.currentJumpMode = 0;
-			stage.spriteInstanceCount = 0;
-			for (int i = 0;i < MAX_HAZARDS;i++) {
-            stage.hazardDisableSnapGroupIds[i] =0;
-            stage.hazardDisableSignalIds[i] =0;
-			}
-			ClearGimmickSignals(stage);//ギミック信号の初期化
-		}
+
+//ステージリセット
+// 目的: ステージ内の可変ギミックを初期状態へ戻す。
+void StageReset(Stage& stage) {
+	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
+		stage.touchBreakBlocks[i] = stage.touchBreakBlocksInit[i];
+	}
+	for (int i = 0; i < stage.fallingCount; i++) {
+		stage.fallingPlatforms[i] = stage.fallingPlatformsInit[i];
+	}
+
+	for (int i = 0; i < stage.knockBackWallCount; i++) {
+		stage.knockBackWalls[i] = stage.knockBackWallsInit[i];
+	}
+	for (int i = 0; i < stage.upRisingCount; i++) {
+		stage.upRisingPlatforms[i] = stage.upRisingPlatformsInit[i];
+	}
+	for (int i = 0; i < stage.upDownCount; i++) {
+		stage.upDouwnPlatforms[i] = stage.upDouwnPlatformsInit[i];
+	}
+	stage.gravityCooldown = 0.0f;
+	stage.gravityReversed = false;
+	for (int i = 0; i < stage.gravityBlockCount; i++) {
+		stage.gravityBlocks[i] = stage.gravityBlocksInit[i];
+	}
+	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
+		stage.movePlatformsYXY[i] = stage.movePlatformsYXYInit[i];
+	}
+	for (int i = 0; i < stage.rotatingBallCount; i++) {
+		stage.rotatingBalls[i] = stage.rotatingBallsInit[i];
+	}
+	for (int i = 0; i < stage.moveRotatingBallCount; i++) {
+		stage.moveRotatingBalls[i] = stage.moveRotatingBallsInit[i];
+	}
+	for (int i = 0; i < stage.rollingBallCount; i++) {
+		stage.rollingBalls[i] = stage.rollingBallsInit[i];
+	}
+	for (int i = 0; i < stage.movePlatformCountX; i++) {
+		stage.movePlatformsX[i] = stage.moveplatformsXInit[i];
+	}
+	for (int i = 0; i < stage.splitPlatformCount; i++) {
+		auto& sp = stage.splitPlatforms[i];
+		sp.base = sp.baseInit;
+		sp.triggered = false;
+		sp.offsetX = 0.0f;
+
+		float halfW = sp.base.width / 2;
+		sp.left = { sp.base.x,sp.base.y,halfW,sp.base.height };
+		sp.right = { sp.base.x + halfW,sp.base.y,halfW,sp.base.height };
+	}
+	for (int i = 0; i < stage.movePlatformCountX; i++) {
+		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
+	}
+	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
+		stage.touchBreakBlocks[i] = stage.touchBreakBlocksInit[i];
+	}
+
+	for (int i = 0; i < stage.itemBlockCount; i++) {
+		stage.itemBlocks[i] = stage.itemBlocksInit[i];
+	}
+	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
+		stage.jumpPlatfroms[i] = stage.jumpPlatfromsInit[i];
+	}
+	for (int i = 0; i < stage.switchPlatformCount; i++) {
+		stage.switchPlatforms[i] = stage.switchplatformsInit[i];
+	}
+	for (int i = 0; i < stage.breakableBlockCount; i++) {
+		stage.breakableBlocks[i] = stage.breakableBlocksInit[i];
+	}
+	for (int i = 0; i < stage.clearsXCount; i++) {
+		stage.clearBlocksX[i] = stage.clearBlocksXInit[i];
+	}
+	for (int i = 0; i < stage.buttonBlockCount; i++) {
+		stage.buttonBlocks[i] = stage.buttonBlocksInit[i];
+	}
+	for (int i = 0; i < stage.deathBlockCount; i++) {
+		stage.deathBlocks[i] = stage.deathBlocksInit[i];
+	}
+	for (int i = 0; i < stage.springCount; i++) {
+		stage.springs[i] = stage.springsInit[i];
+	}
+	stage.heldSpringIndex = -1;
+	for (int i = 0; i < stage.elevatorCount; i++) {
+		stage.elevators[i] = stage.elevatorsInit[i];
+	}
+	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
+		stage.bottomBreakBlocks[i] = stage.bottomBreakBlocksInit[i];
+	}
+	for (int i = 0; i < stage.commentBlockCount; i++) {
+		stage.commentBlocks[i] = stage.commentBlocksInit[i];
+	}
+
+	for (int i = 0; i < stage.cursorBottomCount; i++) {
+		stage.cursorBottoms[i] = stage.cursorBottomsInit[i];
+	}
+	for (int i = 0; i < stage.deathBlockCount; i++) {
+		stage.deathBlocks[i] = stage.deathBlocksInit[i];
+	}
+	stage.currentLayer = 0;
+	for (int i = 0; i < stage.craneCount; i++) {
+		stage.cranes[i] = stage.cranesInit[i];
+	}
+	for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
+		stage.ojisanPunchTriggered[i] = false;
+	}
+	for (int i = 0; i < stage.tempFloorCount; i++) {
+		stage.tempFloors[i] = stage.tempFloorsInit[i];
+	}
+	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
+		stage.tempFloorSwitches[i] = stage.tempFloorSwitchesInit[i];
+	}
+	ResetSnapPuzzles(stage);
+	ResetDistanceTriggerPieces(stage);
+
+	ClearGimmickSignals(stage);
+	ResetEventChangers(stage);
+}
+
+
+
+// 目的: ステージ切替前にカウント類を安全に初期化する。
+// 目的: ステージ切替前にカウント類を安全に初期化する。
+void StageClear(Stage& stage) {
+	StageThemeUnload(stage.theme);
+	stage.touchBreakBlockCount = 0;
+	stage.springCount = 0;
+	stage.heldSpringIndex = -1;
+	stage.bottomBreakBlockCount = 0;
+	stage.backPlatformCount = 0;
+	stage.currentLayer = 0;
+	stage.layerDoorCount = 0;
+	stage.elevatorCount = 0;
+
+	stage.cameraConfig = CameraConfig();
+	stage.gravityBlockCount = 0;
+	stage.gravityReversed = false;
+	stage.gravityCooldown = 0.0f;
+	stage.platformCount = 0;
+	stage.buttonBlockCount = 0;
+	stage.hazardCount = 0;
+	stage.moveCount = 0;
+	stage.moveExtYCount = 0;
+	stage.fallingCount = 0;
+	stage.upRisingCount = 0;
+	stage.upDownCount = 0;
+	stage.clearsCount = 0;
+	stage.clearsXCount = 0;
+	stage.splitPlatformCount = 0;
+	stage.itemBlockCount = 0;
+	stage.breakableBlockCount = 0;
+	stage.knockBackWallCount = 0;
+	stage.batteryHumanCount = 0;
+	stage.jumpPlatfromCount = 0;
+	stage.switchPlatformCount = 0;
+	stage.icePlatformCount = 0;
+	stage.cursorPlatformCount = 0;
+	stage.magnetCount = 0;
+	stage.moveUpPlatformCount = 0;
+	stage.moveDownPlatformCount = 0;
+	stage.circlePlatformCount = 0;
+	stage.movePlatformCountX = 0;
+	stage.moveHazardRightCount = 0;
+	stage.moveDownHazardExtYCount = 0;
+	stage.trackingHazardCount = 0;
+	stage.rotatingBallCount = 0;
+	stage.moveRotatingBallCount = 0;
+	stage.rollingBallCount = 0;
+	stage.movePlatformCountYXY = 0;
+	stage.fallingTextCount = 0;
+	stage.exitDoorCount = 0;
+	stage.warpCount = 0;
+	stage.hasRespawnPoint = false;
+	stage.respawnPoint = { 100.0f, 500.0f };  // ← 追加
+	stage.commentBlockCount = 0;
+	stage.cursorPlatformCount = 0;
+	stage.cursorBottomCount = 0;
+	stage.magnetCount = 0;
+	stage.deathBlockCount = 0;
+	stage.spikeBouncerCount = 0;
+	stage.craneCount = 0;
+	stage.ojisanPunchAreaCount = 0;
+	for (int i = 0; i < Stage::MAX_OJISAN_PUNCH_AREAS; i++) {
+		stage.ojisanPunchTriggered[i] = false;
+		stage.ojisanPunchDrawFront[i] = false;
+		stage.ojisanPunchApproachDuration[i] = 0.85f;
+	}
+	stage.tempFloorCount = 0;
+	stage.tempFloorSwitchCount = 0;
+	stage.decorArrowCount = 0;
+	stage.decoSpriteCount = 0;
+	stage.dragPieceCount = 0;
+	stage.snapSlotCount = 0;
+	stage.draggingSnapPieceIndex = -1;
+	stage.snapMouseCaptured = false;
+	stage.distanceTriggerPieceCount = 0;
+	stage.draggingDistanceTriggerPieceIndex = -1; stage.distanceTriggerMouseCaptured = false;
+	stage.eventChangerCount = 0;
+	stage.currentJumpMode = 0;
+	stage.spriteInstanceCount = 0;
+	stage.savePointCount = 0;
+	for (int i = 0; i < Stage::MAX_SAVEPOINT; i++) {
+		stage.savePoints[i] = {};
+		stage.savePointsInit[i] = {};
+	}
+	for (int i = 0; i < MAX_HAZARDS; i++) {
+		stage.hazardDisableSnapGroupIds[i] = 0;
+		stage.hazardDisableSignalIds[i] = 0;
+	}
+	ClearGimmickSignals(stage);//ギミック信号の初期化
+}
 // （新規追加）
 
 
 void LoadSelectedStage(int selectStage, int& currentStage,
-                       Stage& stage, EnemyManager& em, ItemManager& im,
-                       /* stageDir等のパス情報 */ const std::string& stageBasePath)
+	Stage& stage, EnemyManager& em, ItemManager& im,
+	/* stageDir等のパス情報 */ const std::string& stageBasePath)
 {
-    StageClear(stage);
+	StageClear(stage);
 
-    switch (selectStage) {
-    case 0: StageInit_1(stage, em, im);     currentStage = 1;   break;
-    case 1: StageInit_debug(stage, em, im); currentStage = 99;  break;
-    case 2: StageInit_2(stage, em, im);     currentStage = 2;   break;
-    case 3: StageInit_3(stage, em, im);     currentStage = 3;   break;
-    // ...
-    }
+	switch (selectStage) {
+	case 0: StageInit_1(stage, em, im);     currentStage = 1;   break;
+	case 1: StageInit_debug(stage, em, im); currentStage = 99;  break;
+	case 2: StageInit_2(stage, em, im);     currentStage = 2;   break;
+	case 3: StageInit_3(stage, em, im);     currentStage = 3;   break;
+		// ...
+	}
 
-    im.saveItemsInit();
-    em.saveEnemiesInit();
-    em.RestorInitialEnemies();
-    im.RestorInitialItems();
+	im.saveItemsInit();
+	em.saveEnemiesInit();
+	em.RestorInitialEnemies();
+	im.RestorInitialItems();
 }

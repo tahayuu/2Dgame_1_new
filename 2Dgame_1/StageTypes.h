@@ -372,8 +372,11 @@ struct Stage {
 	// 0：SPACE/W/UP
 	// 1：Nのみ
 	int currentJumpMode = 0;
-
-
+	static constexpr int MAX_SAVEPOINT = 16;
+	savePoint savePoints[MAX_SAVEPOINT];
+	savePoint savePointsInit[MAX_SAVEPOINT];
+	bool isSaved;
+	int savePointCount = 0;
 
 };
 	
