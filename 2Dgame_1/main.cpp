@@ -55,7 +55,7 @@ int main() {
 	StageVisual sv;
 	OjisanVisual ojisan;
 
-	InitWindow(screenWidth, screenHeight, "step1_TeST");
+	InitWindow(screenWidth, screenHeight, "イージーなんていわせない");
 
 	namespace fs = std::filesystem;
 

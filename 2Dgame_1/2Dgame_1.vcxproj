@@ -74,6 +74,10 @@
     <IncludePath>C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files (x86)\Windows Kits\10\LIb\10.0.26100.0\um\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>false</VcpkgUseStatic>
+    <VcpkgUseMD>false</VcpkgUseMD>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -125,6 +129,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalOptions> /utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,10 +153,13 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions> /utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>/VERBOSE:LIB %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
