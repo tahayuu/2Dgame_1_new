@@ -346,7 +346,7 @@ allDialogTextへ追加
 	auto ResetPlayerToDefault = [&](float invincibleSec = -1.0f) {// プレイヤーを初期位置に戻す
 		//もしsavePointが有効ならそこに戻す
 	
-		Vector2 startPos = { 100.0f, 330.0f }; // デフォルト
+		Vector2 startPos = { 100.0f, 300.0f }; // デフォルト
 		if (currentStage == 4) {
 			startPos = { 50, 300 };
 		}
