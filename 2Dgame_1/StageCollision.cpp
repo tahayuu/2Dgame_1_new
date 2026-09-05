@@ -833,7 +833,8 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 
 		if (!CheckCollisionRecs(player, extendedRect)) continue;
 
-		if (kbw.twiceTouch) {
+		if (kbw.twiceTouch ) {//二度目の接触で吹っ飛ばす
+			
 			float playerCenterX = player.x + player.width * 0.5f;
 			float wallCenterX = kbw.rect.x + kbw.rect.width * 0.5f;
 			float dir = (playerCenterX < wallCenterX) ? -1.0f : 1.0f;
@@ -845,19 +846,19 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 			if (dir < 0.0f) {
 				player.x = kbw.rect.x - player.width - knockBackMargin;
 			}
-			else {
+			else {		
 				player.x = kbw.rect.x + kbw.rect.width + knockBackMargin;
-			}
 
 			stage.playerKnockedBack = true;
 			continue;
+			}
 		}
-		else if (!kbw.onTouch && !kbw.iswithdraw && !kbw.isRetrun && !kbw.twiceTouch) {
+		else if (!kbw.onTouch && !kbw.iswithdraw && !kbw.isRetrun && !kbw.twiceTouch ) {//初回接触時
 			kbw.onTouch = true;
 			kbw.timer = 0.0f;
 			ResolveSolidX(kbw.rect, player, velocity, prevPlayer);
 		}
-		else {
+		else {//二度目の接触時
 			ResolveSolidX(kbw.rect, player, velocity, prevPlayer);
 		}
 	}

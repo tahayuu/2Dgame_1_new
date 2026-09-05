@@ -391,12 +391,16 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 		if (kbw.isRetrun) {
 			kbw.stoptimer += dt;
 			if (kbw.stoptimer >= kbw.limitStop) {
+				kbw.twiceTouch = true;
 				kbw.rect.x -= kbw.knockBackVelocity.x * dt;
-				if (kbw.rect.x <= kbw.startX - 50.0f) {
-					kbw.twiceTouch = true;
+				if (kbw.rect.x <= kbw.startX - 100.0f) {
+				
+					
 					kbw.rect.x = kbw.startX;
 					kbw.isRetrun = false;
 					kbw.onTouch = false;
+					kbw.twiceTouch = false;
+				
 				}
 			}
 		}

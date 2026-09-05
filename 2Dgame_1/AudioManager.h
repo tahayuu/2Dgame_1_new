@@ -49,6 +49,22 @@ struct AudioManager {
     Sound punch{};
     Sound ojisanTalkSe{};
 
+
+    //オブジェクトのSE
+    Sound pullSe{};//すぽっ
+    Sound warpSe{};//ワープ音
+    Sound shrinkSe{};//ちじむ音
+    Sound childsLaughSe{};//子供の笑い声
+    Sound growSe{};// 伸びた音
+    Sound cheersSe{};//歓声
+    Sound fractureSe{};//骨折
+    Sound punchSe{};//パンチ音
+    Sound faintingSe{};//気絶音
+    Sound flyingAway{};//飛んでいく音
+
+
+
+
     float title1MaxVol = 0.30f;
     float title2MaxVol = 0.30f;
     float stageMaxVol = 0.35f;

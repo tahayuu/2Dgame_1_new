@@ -583,13 +583,13 @@ allDialogTextへ追加
 			EndDrawing();
 			continue;
 		}
-		//志望したらコメントブロックのタイマーを止める
+		//死亡したらコメントブロックのタイマーを止める
 		const bool keepCommentDuringDeath =
 			(gameState == GameState::DEADING_SCREEN  ||gameState == GameState::DEAD_SCREEN) &&
 			ojisan.showMessage &&
 			ojisan.messageFromCommentBlock;
 		// Ojisan の更新：タイトル画面以外で毎フレーム更新
-		if (gameState != GameState::START && !keepCommentDuringDeath) {
+		if (gameState != GameState::START && !keepCommentDuringDeath  ) {
 			ojisan.Update(dt);
 		}
 
@@ -1169,7 +1169,7 @@ allDialogTextへ追加
 				gameState == GameState::STAGE_CLEAR_DIALOG ||
 				pauseOverStageClearDialog ||
 				transitionShowsDialog;
-			const bool shouldDrawOjisan = (currentStage != 1) && !clearDialogVisible;
+			const bool shouldDrawOjisan = (currentStage != 1) && !clearDialogVisible && (currentStage!= 0);
 			if (shouldDrawOjisan) {
 				ojisan.Draw(screenWidth, screenHeight);
 			}
