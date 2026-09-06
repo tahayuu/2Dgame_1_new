@@ -98,6 +98,8 @@ enum class SpriteId {
 	nextUpdate,
 	nextdoor,
 	savepoint,
+	ojisan_hirateuti,
+	ojisan_hirateutiR,
 	COUNT//73
 };
 

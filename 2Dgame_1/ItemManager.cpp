@@ -36,14 +36,14 @@ void ItemManager::Spawn(ItemType Type, Vector2 pos,Vector2 initialVel, bool emer
 }          
 
 
-// 敵とプレイヤーの当たり判定
-void ItemManager::ItemCollisionAll(Item& item, const Rectangle& player, float dt, Vector2& velocity) {
+// 目的: プレイヤーとの接触判定を行い、回収時に効果を適用する。
+void ItemManager::ItemCollisionAll(Item& item, const Rectangle& player, float dt, Vector2& velocity, AudioManager& audio) {
 	for (auto& item : items) {
 		// 当たり判定は回収可能なアイテムにのみ適用
 		if ((item.isActive) && CheckCollisionRecs(item.rect, player)) {
 			
 			ApplyItemEffect(item.type, *this, item); 
-	
+			AudioPlaySfx(audio, SfxId::powerup);
 			item.isActive = false;
 		}
 	}

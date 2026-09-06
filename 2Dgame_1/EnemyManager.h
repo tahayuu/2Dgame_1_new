@@ -33,7 +33,7 @@ struct EnemyManager {
     // 目的: 敵1体を生成して管理配列へ追加する。
         void Spawn(EnemyType Type, Vector2 pos);
 	// 目的: 全敵との接触を更新し、プレイヤー接触情報を集約する。
-		void EnemyCollisionAll( const Rectangle& player, float dt,Vector2& velocity);
+		void EnemyCollisionAll( const Rectangle& player, float dt,Vector2& velocity,AudioManager& audio);
     // 目的: 全敵のAI更新と非アクティブ削除を行う。
         void UpdateAll(float dt, const Rectangle& player);
     // 目的: 管理中の全敵を描画する。

@@ -460,7 +460,7 @@ static bool JumpResolveSolidY(const Rectangle& solid, Rectangle& player, Vector2
 
 
 //透明ブロック：下から当たったら出現判定をする
-static void TrySpawnClearFromBelow(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity) {
+static void TrySpawnClearFromBelow(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity, AudioManager& audio) {
     for (int i = 0; i < stage.clearsCount; i++) {
         if (stage.clearBlocks[i].clearflag) continue; // 既に出現済みなら次へ
         Rectangle c = stage.clearBlocks[i].rect;
@@ -469,6 +469,7 @@ static void TrySpawnClearFromBelow(Stage& stage, const Rectangle& prev/*前フ�
         bool goingUp = (velocity.y < 0);            //上向きに動いているか？
         if (hitNow && wasBelow && goingUp) {//下からジャンプで突き上げた
             stage.clearBlocks[i].clearflag = true;
+			AudioPlaySfx(audio, SfxId::transparentSe);
             player.y = c.y + c.height;
             velocity.y = 0;
             return;
@@ -477,7 +478,7 @@ static void TrySpawnClearFromBelow(Stage& stage, const Rectangle& prev/*前フ�
 }
 
 //透明ブロック：横から当たったら出現判定
-static void TrySpawnClearFromSide(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity) {
+static void TrySpawnClearFromSide(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity, AudioManager& audio) {
 	for (int i = 0; i < stage.clearsXCount; i++) {
 		if (stage.clearBlocksX[i].clearflag) continue; // 既に出現済みなら次へ
 		Rectangle c = stage.clearBlocksX[i].rect;
@@ -488,6 +489,7 @@ static void TrySpawnClearFromSide(Stage& stage, const Rectangle& prev/*前フレ
 		bool movingLeft = (velocity.x < 0);            //左向きに動いているか？
 		if (hitNow && ((wasLeft && movingRight) || (wasRight && movingLeft))) {//横から突き上げた
 			stage.clearBlocksX[i].clearflag = true;
+			AudioPlaySfx(audio, SfxId::transparentSe2);
 			//押し戻し処理
 			if (wasLeft && movingRight) {
 				player.x = c.x - player.width;
@@ -502,7 +504,7 @@ static void TrySpawnClearFromSide(Stage& stage, const Rectangle& prev/*前フレ
 }
 
 //壊れるブロック：下から当たったら壊れる判定をする
-static void TryBreakFromBelow(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity) {
+static void TryBreakFromBelow(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity, AudioManager& audio) {
     for (int i = 0; i < stage.breakableBlockCount; i++) {
 		if (stage.breakableBlocks[i].isBroken)continue; // 既に壊れ済みなら次へ
 		Rectangle c = stage.breakableBlocks[i].rect;
@@ -511,6 +513,7 @@ static void TryBreakFromBelow(Stage& stage, const Rectangle& prev/*前フレー�
 		bool goingUp = (velocity.y < 0);            //上向きに動いているか？
 		if (hitNow && wasBelow && goingUp) {//下からジャンプで突き上げた
 			stage.breakableBlocks[i].isBroken = true;
+			AudioPlaySfx(audio, SfxId::se_naguru);
 			player.y = c.y + c.height;
 			velocity.y = 0;
 			return;
@@ -759,8 +762,8 @@ static void TryBreakFromBelowOnly(Stage& stage, const Rectangle& prev, Rectangle
 // 入力: stage、プレイヤー矩形/速度、前フレーム矩形。
 // 出力: player.x / velocity.x を補正。
 // 注意: 「前フレームで上にいたか」を使う処理が多く、着地誤判定を防いでいる。
-void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,Rectangle& prevPlayer) {
-	TrySpawnClearFromSide(stage, prevPlayer, player, velocity);
+void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,Rectangle& prevPlayer , AudioManager& audio) {
+	TrySpawnClearFromSide(stage, prevPlayer, player, velocity, audio);
 	//普通床（現在のレイヤーのみ衝突）
 	if (stage.currentLayer == 0) {
 		for (int i = 0; i < stage.platformCount; i++) {
@@ -854,6 +857,15 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 			}
 		}
 		else if (!kbw.onTouch && !kbw.iswithdraw && !kbw.isRetrun && !kbw.twiceTouch ) {//初回接触時
+			float playerCenterX = player.x + player.width * 0.5f;
+			float wallCenterX = kbw.rect.x + kbw.rect.width * 0.5f;
+			if (playerCenterX < wallCenterX) {
+				kbw.touchDirection = -1.0f;//左から接触
+			}
+			else {
+				kbw.touchDirection = 1.0f;//右から接
+			}
+
 			kbw.onTouch = true;
 			kbw.timer = 0.0f;
 			ResolveSolidX(kbw.rect, player, velocity, prevPlayer);
@@ -879,26 +891,28 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 
 		Vector2 bhCenter = { bh.rect.x + bh.rect.width / 2, bh.rect.y + bh.rect.height / 2 };
 
-		if (CheckCollisionRecs(player, bh.rect) && !bh.onEnter && !bh.isReturn) {
+		if (CheckCollisionRecs(player, bh.rect) && !bh.onEnter && !bh.isReturn) {//プレイヤーが砲台に入った瞬間の処理
+			AudioPlaySfx(audio, SfxId::radayLounc);
 			bh.onEnter = true;
 			bh.timer = 0.0f;
 			player.x = bhCenter.x - player.width / 2;
 			player.y = bhCenter.y - player.height / 2;
 			stage.playerInBattery = true;
 		}
-		else if (bh.onEnter) {
+		else if (bh.onEnter) {//プレイヤーが砲台に入った後の処理
 			player.x = bhCenter.x - player.width / 2;
 			player.y = bhCenter.y - player.height / 2;
 			stage.playerInBattery = true;
 			bh.isReturn = true;
 			bh.onEnter = false;
 		}
-		else if (bh.isReturn) {
+		else if (bh.isReturn) {//プレイヤーが砲台に入った後の処理
 			bh.timer += dt;
 			if (bh.timer >= bh.delay) {
 				player.y = bh.rect.y - player.height - 5.0f;
 				velocity.x = bh.BatteryVelocity.x;
 				velocity.y = bh.BatteryVelocity.y;
+				AudioPlaySfx(audio, SfxId::lounh);
 				stage.playerFired = true;
 				stage.playerInBattery = false;
 				bh.isReturn = false;
@@ -907,7 +921,7 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 			else {
 				player.x = bhCenter.x - player.width / 2;
 				player.y = bhCenter.y - player.height / 2;
-				stage.playerInBattery = true;
+				stage.playerInBattery = true;//プレイヤーが砲台に入った後の処理
 			}
 		}
 	}
@@ -973,6 +987,7 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		auto& sp = stage.switchPlatforms[i];
 		if (CheckCollisionRecs(player, sp.SwitchRect)) {
+			AudioPlaySfx(audio, SfxId::grow);
 		 sp.switchedOn = true;
 		}
 		else {
@@ -1019,7 +1034,7 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 // 入力: stage、前フレーム矩形、現在矩形、速度。
 // 出力: player.y / velocity.y を補正し、着地時 true を返す。
 // 注意: ジャンプ入力バッファや崩壊床トリガなど、ゲーム感触に直結する処理が集中。
-bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player, Vector2& velocity, Rectangle& prev, float dt) {
+bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player, Vector2& velocity, Rectangle& prev, float dt,AudioManager& audio) {
 	static float jumpBoostBuffer = 0.0f;
 	const float jumpBoostBufferTime = 0.4f;
 
@@ -1031,8 +1046,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 	bool jumpBoostBuffered = (jumpBoostBuffer > 0.0f);// ジャンプブーストが有効な状態か
 
-    TrySpawnClearFromBelow(stage, prevPlayer, player, velocity);
-    TryBreakFromBelow(stage, prevPlayer, player, velocity);
+    TrySpawnClearFromBelow(stage, prevPlayer, player, velocity, audio);
+    TryBreakFromBelow(stage, prevPlayer, player, velocity, audio);
 	TryBreakFromBelowOnly(stage, prevPlayer, player, velocity);
     TryActivateButtonBlock(stage, prevPlayer, player, velocity); 
 	TryActivateGravityBlock(stage, prevPlayer, player, velocity);
@@ -1113,6 +1128,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		bool goingUp = (velocity.y < 0.0f);
 
 		if (hitNow && wasBelow && goingUp) {
+			AudioPlaySfx(audio, SfxId::se_naguru);
 			ib.isActive = true;
 			ib.hasSpawned = false;
 			player.y = b.y + b.height;
@@ -1462,6 +1478,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 			if (landed) {
 				onGround = true;
 				sp.triggered = true;//割れ開始
+				AudioPlaySfx(audio, SfxId::shrink);
 			}
 		}
 		else {
@@ -1475,6 +1492,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		if(!stage.breakableBlocks[i].isBroken){
 			if(ResolveSolidYPlayer(stage.breakableBlocks[i].rect,player,velocity, prev, stage.gravityReversed)){
 				onGround=true;
+				
 			}
 		}
 	}
@@ -1504,6 +1522,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		auto& sp = stage.switchPlatforms[i];
 		if (CheckCollisionRecs(player, sp.SwitchRect)) {
+			
 			sp.switchedOn = true;
 		}
 		// 常に当たり判定を行う（switchedOnは床の動きにのみ影響）
@@ -1713,6 +1732,7 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 			stage.warpTriggered = -1;  // 毎フレーム初期化
 			for (int i = 0; i < stage.warpCount; i++) {
 				if (CheckCollisionRecs(player, stage.warps[i].rect) && IsKeyPressed(KEY_W)) {
+					AudioPlaySfx(audio, SfxId::warp);
 					stage.warpTriggered = i;  // ワープホールのインデックスを記録
 					break;  // 最初にマッチしたワープホールでループを抜ける
 				}

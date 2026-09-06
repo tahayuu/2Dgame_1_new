@@ -110,7 +110,7 @@ static bool CheckNealapYEnemy(const Rectangle& player, const Enemy& enemy, float
 	return overlapY;
 }
 
-static void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity, float Y, float X) {
+static void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity, float Y, float X, AudioManager& audio) {
 	if (!CheckOverlapXEnemy(player, enemy)) return;
 	bool overlapY = CheckOverlapYEnemy(player, enemy);
 
@@ -138,6 +138,7 @@ static void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt,
 
 	if (!isMostlyHorizontal) {
 		if (overlapY && isCloseAbove && isFallingEnough) {
+			AudioPlaySfx(audio,SfxId::hitting);
 			enemy.hp -= 1;
 			enemy.isStomped = true;
 			enemy.deathTimer = 0.0f;
@@ -216,22 +217,22 @@ void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
 
 // 目的: プレイヤー接触の結果を enemy 状態へ反映する。
 // 注意: 踏みつけ成功時は isStomped、側面接触時は isHit/touchedFromSide を立てる。
-void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity) {
+void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity, AudioManager& audio) {
 	if (!enemy.isActive) return;
 	enemy.timer += dt;
 	bool overlapX = CheckOverlapXEnemy(player, enemy);
 	switch (enemy.type)
 	{
 	case EnemyType::WALKER: {
-		EnemyCollisionErase(enemy, player, dt, velocity, 200, 100);
+		EnemyCollisionErase(enemy, player, dt, velocity, 200, 100, audio);
 		break;
 	}
 	case EnemyType::FLYER: {
-		EnemyCollisionErase(enemy, player, dt, velocity, 200, 100);
+		EnemyCollisionErase(enemy, player, dt, velocity, 200, 100, audio);
 		break;
 	}
 	case EnemyType::JUMPCOPY: {
-		EnemyCollisionErase(enemy, player, dt, velocity, 300, 150);
+		EnemyCollisionErase(enemy, player, dt, velocity, 300, 150, audio);
 		break;
 	}
 	}

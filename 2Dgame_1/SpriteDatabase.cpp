@@ -106,8 +106,9 @@ namespace {
 				{SpriteId::bord2,          "bord2",    "assets/images/stage/stage_1/signbord2.png"},//73
 				{SpriteId::nextUpdate,          "nextUpdate",    "assets/images/stage/stage_4/nextUpdate.png"},//73
 				{SpriteId::nextdoor,          "nextdoor",    "assets/images/stage/stage_4/nextdoor.png"},//73
-		{SpriteId::savepoint,                  "savepoint",  "assets/images/stage/stage_4/savepoint.png"}
-
+		{SpriteId::savepoint,                  "savepoint",  "assets/images/stage/stage_4/savepoint.png"},
+		{ SpriteId::ojisan_hirateuti,          "ojisan_hirateuti",    "assets/images/ojisan/ojisan_hirateuti.png" },
+		{ SpriteId::ojisan_hirateutiR,          "ojisan_hirateutiR",    "assets/images/ojisan/ojisan_hirateutiR.png" },
 
 	};
 };

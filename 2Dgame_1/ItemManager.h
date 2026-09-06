@@ -3,6 +3,7 @@
 #include "Item.h"
 #include <vector>
 #include "GameObjects.h" 
+#include "AudioManager.h"
 
 // ================================================================
 // ItemManager.h の役割
@@ -36,7 +37,7 @@ struct ItemManager {
 	void Spawn(ItemType Type, Vector2 pos, Vector2 initialVel = {0.0f,0.0f}, bool emerging = false);
 
 	// 目的: プレイヤー回収判定を行う。
-	void ItemCollisionAll(Item& item, const Rectangle& player, float dt, Vector2& velocity);
+	void ItemCollisionAll(Item& item, const Rectangle& player, float dt, Vector2& velocity, AudioManager& audio);
 	// 目的: アイテム移動・効果時間・無敵状態を更新する。
 	void UpdateAll(float dt, const Rectangle& player,Vector2& velocity, ItemBlock* itemBlock = nullptr);
 	// 目的: ワールド上の有効アイテムを描画する。

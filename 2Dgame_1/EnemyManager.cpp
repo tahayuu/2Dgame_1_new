@@ -26,7 +26,7 @@ void EnemyManager::Spawn(EnemyType Type, Vector2 pos){
 }
 //敵とプレイヤーの当たり判定
 // 目的: 各敵の接触判定を回し、プレイヤー接触情報を1つに集約する。
-void EnemyManager::EnemyCollisionAll(const Rectangle& player, float dt, Vector2& velocity) {
+void EnemyManager::EnemyCollisionAll(const Rectangle& player, float dt, Vector2& velocity, AudioManager& audio) {
 	playerTouched = false;
 	touchedEnemyFromSide = false;
 	touchedEnemyIndex = -1;
@@ -35,9 +35,10 @@ void EnemyManager::EnemyCollisionAll(const Rectangle& player, float dt, Vector2&
 	for (int i = 0; i < (int)enemies.size(); ++i) {
 		auto& e = enemies[i];
 
-		if (e.isActive) EnemyCollision(e, player, dt, velocity);
+		if (e.isActive) EnemyCollision(e, player, dt, velocity, audio);
 
 		if (e.PlayerTouch) {
+			AudioPlaySfx(audio, SfxId::childsLaugh);
 			playerTouched = true;
 			touchedEnemyDialogKey = e.dialogKey;
 			touchedEnemyIndex = i;

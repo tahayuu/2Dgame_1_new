@@ -148,6 +148,7 @@ struct KnockBackWall {
 	float stoptimer = 0.0f;
 	float limitStop = 0.1f;
 
+	int touchDirection = 0; // 1:右から触れた, -1:左から触れた
 
 	Vector2 getRectposition() const {
 		return {

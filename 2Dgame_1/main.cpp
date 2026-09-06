@@ -880,7 +880,7 @@ allDialogTextへ追加
 			// 画面パンチエフェクトの更新
 			ScreenPunchEffectUpdate(screenPunch, dt);
 			// ギミックは死亡中も動き続ける
-			StageUpdate(stage, dt, itemManager, camera, playerState);
+			StageUpdate(stage, dt, itemManager, camera, playerState, audio);
 			HazardUpdate(stage, playerState.rect, dt);
 			enemyManager.UpdateAll(dt, playerState.rect);
 			itemManager.UpdateAll(dt, playerState.rect, velocity);
@@ -903,7 +903,7 @@ allDialogTextへ追加
 			// 画面パンチエフェクトの更新
 			ScreenPunchEffectUpdate(screenPunch, dt);
 			// ギミックは死亡中も動き続ける
-			StageUpdate(stage, dt, itemManager, camera, playerState);
+			StageUpdate(stage, dt, itemManager, camera, playerState,audio);
 			HazardUpdate(stage, playerState.rect, dt);
 			enemyManager.UpdateAll(dt, playerState.rect);
 			itemManager.UpdateAll(dt, playerState.rect, velocity);

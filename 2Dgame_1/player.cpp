@@ -121,9 +121,9 @@ void PlayerStateUpdate(PlayerState& ps,
         stage.cranes[i].playerRect = ps.rect;
 
     // ── ステージ・アイテム更新 ──────────────────────
-    StageUpdate(stage, dt, im, cam, ps);
+    StageUpdate(stage, dt, im, cam, ps, audio);
     im.UpdateAll(dt, ps.rect, ps.velocity);
-    im.ItemCollisionAll(ps.item, ps.rect, dt, ps.velocity);
+    im.ItemCollisionAll(ps.item, ps.rect, dt, ps.velocity,audio);
     HazardUpdate(stage, ps.rect, dt);
 
     float moveSpeed = ps.baseMoveSpeed + im.GetSpeedBoost();
@@ -210,11 +210,11 @@ void PlayerStateUpdate(PlayerState& ps,
     ps.prevRect = ps.rect;
 
     ps.rect.x += ps.velocity.x * dt;
-    StageResolveX(stage, ps.rect, ps.velocity, dt, ps.prevRect);
+    StageResolveX(stage, ps.rect, ps.velocity, dt, ps.prevRect, audio);
 
     if (!stage.playerInBattery) {
         ps.rect.y += ps.velocity.y * dt;
-        ps.onGround = StageResolveY(stage, ps.prevRect, ps.rect, ps.velocity, ps.prevRect, dt);
+        ps.onGround = StageResolveY(stage, ps.prevRect, ps.rect, ps.velocity, ps.prevRect, dt, audio);
     }
 
     // ── ビジュアル更新 ──────────────────────────────
@@ -258,10 +258,11 @@ void PlayerStateUpdate(PlayerState& ps,
     }
 
     // ── 敵との当たり判定 ────────────────────────────
-    em.EnemyCollisionAll(ps.rect, dt, ps.velocity);
+    em.EnemyCollisionAll(ps.rect, dt, ps.velocity, audio);
     if (!isInvincible && em.playerTouched) {
         ps.pendingDeath = true;
         ps.lastDeathCause = DeathCause::ENEMY_WALKER;
+		
         return;
     }
     em.UpdateAll(dt, ps.rect);
@@ -311,9 +312,11 @@ void PlayerStateUpdate(PlayerState& ps,
         ps.pendingDeath = true; ps.lastDeathCause = DeathCause::TRAP;         return;
     }
     if (!isInvincible && StageHitRisingSpike(stage, ps.rect)) {
+        AudioPlaySfx(audio, SfxId::cut);
         ps.pendingDeath = true; ps.lastDeathCause = DeathCause::SPIKE_RISING; return;
     }
-    if (!isInvincible && StageHitHazard(stage, ps.rect)) {
+	if (!isInvincible && StageHitHazard(stage, ps.rect)) {// トゲ・針などの危険物に接触した場合
+		AudioPlaySfx(audio, SfxId::cut);
         ps.pendingDeath = true; ps.lastDeathCause = DeathCause::SPIKE;        return;
     }
 

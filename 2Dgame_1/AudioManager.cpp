@@ -77,6 +77,29 @@ bool AudioInit(AudioManager& a)
 	a.stageDecideSe = LoadSound("assets/SE/stageDecide.wav");
 	a.saveSe = LoadSound("assets/SE/savePoint.mp3");
 
+	//オブジェクトの効果音
+	a.pullSe = LoadSound("assets/SE/pullSe.mp3");
+	a.warpSe = LoadSound("assets/SE/warpSe.mp3");
+	a.shrinkSe = LoadSound("assets/SE/shrinkSe.mp3");
+	a.childsLaughSe = LoadSound("assets/SE/childsLaughSe.wav");
+	a.growSe = LoadSound("assets/SE/growSe.mp3");
+	a.cheersSe = LoadSound("assets/SE/cheersSe.wav");
+	a.fractureSe = LoadSound("assets/SE/fractureSe.mp3");
+	a.punch2 = LoadSound("assets/SE/punchSe.mp3");
+	a.fainting = LoadSound("assets/SE/faintingSe.wav");
+	a.flyingAway = LoadSound("assets/SE/flyingAway.wav");
+	a.hittingSe = LoadSound("assets/SE/hitting.mp3");
+	a.se_naguru = LoadSound("assets/SE/se_naguru2.mp3");
+	a.powerup = LoadSound("assets/SE/powerup.mp3");
+	a.lounh = LoadSound("assets/SE/lounh.mp3");
+	a.radayLounc = LoadSound("assets/SE/readyLounch.mp3");
+	a.transparentSe = LoadSound("assets/SE/transparentSe.mp3");
+	a.transparentSe2 = LoadSound("assets/SE/transparentSe2.mp3");
+	a.cutSe = LoadSound("assets/SE/cutSe.mp3");
+	a.cursolButtonSe = LoadSound("assets/SE/cursolButtonSe.mp3");
+	a.cursolFloorSe = LoadSound("assets/SE/cursolFloor.mp3");
+	a.crackRockSe = LoadSound("assets/SE/crackRock.mp3");
+
 	// ステージクリア会話でENTERを押したときの専用SE。
 	// ファイルが未配置の場合は、従来のstageDecideSeへフォールバックする。
 	const char* dialogEnterSePath = "assets/SE/dialogEnter.mp3";
@@ -248,11 +271,35 @@ void AudioPlaySfx(AudioManager& a, SfxId id)
 	case SfxId::Save: 
 		if (a.saveSeLoaded)PlaySound(a.saveSe);
 		break;
+
+
+	case SfxId::pull: PlaySound(a.pullSe); break;
+	case SfxId::warp: PlaySound(a.warpSe); break;
+	case SfxId::shrink: PlaySound(a.shrinkSe); break;
+	case SfxId::childsLaugh: PlaySound(a.childsLaughSe); break;
+	case SfxId::grow: PlaySound(a.growSe); break;
+	case SfxId::cheers: PlaySound(a.cheersSe); break;
+	case SfxId::fracture: PlaySound(a.fractureSe); break;
+	case SfxId::punch2: PlaySound(a.punch2); break;
+	case SfxId::fainting: PlaySound(a.fainting); break;
+	case SfxId::flyingAway: PlaySound(a.flyingAway); break;
+    case SfxId::hitting: PlaySound(a.hittingSe); break;
+	case SfxId::se_naguru: PlaySound(a.se_naguru); break;
+	case SfxId::powerup: PlaySound(a.powerup); break;
+	case SfxId::lounh: PlaySound(a.lounh); break;
+	case SfxId::radayLounc: PlaySound(a.radayLounc); break;
+	case SfxId::transparentSe: PlaySound(a.transparentSe); break;
+	case SfxId::transparentSe2: PlaySound(a.transparentSe2); break;
+	case SfxId::cut: PlaySound(a.cutSe); break;
+	case SfxId::cursolButton: PlaySound(a.cursolButtonSe); break;
+	case SfxId::cursolFloor: PlaySound(a.cursolFloorSe); break;
+	case SfxId::crackRock: PlaySound(a.crackRockSe); break;
 	default: break;
 	     
 	}
 	
 }
+
 
 void AudioStopSfx(AudioManager& a, SfxId id)
 {
@@ -295,10 +342,30 @@ void AudioShutdown(AudioManager& a)
 	UnloadSound(a.tabclickSe);
 	UnloadSound(a.punch);
 	if (a.ojisanTalkSeLoaded) UnloadSound(a.ojisanTalkSe);
-	//if (a.saveSeLoaded) UnloadSound(a.saveSe);
-
+	//オブジェクトの効果音
+	UnloadSound(a.pullSe);
+	UnloadSound(a.warpSe);
+	UnloadSound(a.shrinkSe);
+	UnloadSound(a.childsLaughSe);
+	UnloadSound(a.growSe);
+	UnloadSound(a.cheersSe);
+	UnloadSound(a.fractureSe);
+	UnloadSound(a.punch2);
+	UnloadSound(a.fainting);
+	UnloadSound(a.flyingAway);
+	UnloadSound(a.hittingSe);
+	UnloadSound(a.se_naguru);
+	UnloadSound(a.powerup);	
+	UnloadSound(a.lounh);
+	UnloadSound(a.radayLounc);
+	UnloadSound(a.transparentSe);
+	UnloadSound(a.transparentSe2);
+	UnloadSound(a.cutSe);
+	UnloadSound(a.cursolButtonSe);
+	UnloadSound(a.cursolFloorSe);
+	UnloadSound(a.crackRockSe);
 	CloseAudioDevice();
-
+	//
 	a.title1BgmLoaded = false;
 	a.stageClearBgmLoaded = false;
 	a.ojisanTalkSeLoaded = false;

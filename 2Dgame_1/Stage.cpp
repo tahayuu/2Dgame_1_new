@@ -22,7 +22,7 @@
 // ================================================================
 
 // 目的: カーソル追従床の追従処理を更新する。
-static void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera,PlayerState& ps) {
+static void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera,PlayerState& ps, AudioManager& audio) {
 	Vector2 mouseScreen = GetMousePosition(); // 画面座標
 	Vector2 mousePos = GetScreenToWorld2D(mouseScreen, camera); // ワールド座標に変換
 	bool mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
@@ -35,6 +35,7 @@ static void UpdateCursorPlatform(Stage& stage, float dt, Camera2D camera,PlayerS
 
 		if (mouseDown && mouseOnPlatform && !cp.isDragging) {
 			cp.isDragging = true;
+			AudioPlaySfx(audio, SfxId::cursolFloor);
 		}
 		if (!mouseDown) {
 			cp.isDragging = false;
@@ -135,7 +136,7 @@ static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom&
 
 
 // 目的: カーソル床スイッチのクリック検知と連動起動を処理する。
-static void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
+static void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera, AudioManager& audio) {
 	Vector2 mouseScreen = GetMousePosition(); // 画面座標
 	Vector2 mousePos = GetScreenToWorld2D(mouseScreen, camera); // ワールド座標に変換
 	bool mouseClicked = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
@@ -151,6 +152,7 @@ static void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
 		if (cb.oneShot && cb.triggered) continue;
 
 		if (mouseClicked && mouseOnBottom) {
+			AudioPlaySfx(audio, SfxId::cursolButton);
 			cb.triggered = true;
 			ActivateRollingBallsByCursorBottom(stage, cb);
 		}
@@ -159,7 +161,7 @@ static void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera) {
 }
 
 //一時床ギミックの更新
-static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera, bool allowMouseInput) {
+static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera, bool allowMouseInput, AudioManager& audio) {
 	Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
 	bool clicked = allowMouseInput && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);//マウスクリックが有効な場合のみ、クリック判定を行う
 
@@ -176,6 +178,7 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera, bool
 				tf.visible = true;
 				tf.timer = tf.showSec;
 			}
+			AudioPlaySfx(audio, SfxId::cursolButton);
 			sw.triggered = true;
 		}
 	}
@@ -208,7 +211,7 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera, bool
 // 入力: stage、経過時間dt、アイテム管理、カメラ。
 // 出力: 各ギミックの位置・状態フラグが更新される。
 // 注意: プレイヤー挙動に影響が大きいため、更新順変更時は要検証。
-void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D camera, PlayerState& ps) {
+void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D camera, PlayerState& ps,AudioManager& audio) {
 
 	const bool snapMouseConsumed =
 		UpdateSnapPuzzles(stage, camera, dt);
@@ -227,7 +230,7 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 		snapMouseConsumed ||
 		distanceMouseConsumed;
 	//一時床ギミックの更新
-	UpdateTempFloorGimmick(stage, dt, camera, !mouseConsumed);
+	UpdateTempFloorGimmick(stage, dt, camera, !mouseConsumed,audio);
 
 
 	//触れると壊れるブロック
@@ -236,6 +239,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 		if (tb.triggered && !tb.isBroken) {
 			tb.timer += dt;
 			if (tb.timer >= tb.breakDelay) {
+				AudioPlaySfx(audio, SfxId::crackRock);
+				
 				tb.isBroken = true;
 			}
 		}
@@ -246,6 +251,7 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 		if (!bb.triggered || bb.isBroken) continue;
 		bb.timer += dt;
 		if (bb.timer >= bb.breakDelay) {  // 各ブロック固有の breakDelay を使用
+			AudioPlaySfx(audio, SfxId::crackRock);
 			bb.isBroken = true;
 		}
 	}
@@ -257,18 +263,20 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 			fp.timer += dt;
 			if (fp.timer >= fp.fallDelay) {
 				fp.isfalling = true;
+				AudioPlaySfx(audio, SfxId::pull);
 			}
 		}
 
 		if (fp.isfalling) {
 			fp.rect.y += fp.fallSpeed * dt; //変化量 = 速度 × 時間
+		
 		}
 	}
 	if (!mouseConsumed) {
 		//カーソル追従床
-		UpdateCursorPlatform(stage, dt, camera, ps);
+		UpdateCursorPlatform(stage, dt, camera, ps,audio);
 		//カーソルクリックギミック
-		UpdateCursorBottom(stage, dt, camera);
+		UpdateCursorBottom(stage, dt, camera, audio);
 	}
 
 
@@ -377,35 +385,77 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 
 		// 状態2: 引っ込み中
 		if (kbw.iswithdraw) {
-			kbw.rect.x += kbw.knockBackVelocity.x * dt;
-			float targetX = kbw.startX + kbw.withdraw;  // ← 相対位置で計算
-			if (kbw.rect.x >= targetX) {
-				kbw.rect.x = targetX;
-				kbw.iswithdraw = false;
-				kbw.isRetrun = true;
-				kbw.stoptimer = 0.0f;
+
+			float speed = fabsf(kbw.knockBackVelocity.x);
+			// プレイヤーとは逆方向へ引っ込む
+			kbw.rect.x -= kbw.touchDirection * speed * dt;
+			float targetX =
+				kbw.startX - kbw.touchDirection * kbw.withdraw;
+			// 左から接触した場合
+			if (kbw.touchDirection == -1) {
+
+				if (kbw.rect.x >= targetX) {
+					kbw.rect.x = targetX;
+					kbw.iswithdraw = false;
+					kbw.isRetrun = true;
+					kbw.stoptimer = 0.0f;
+				}
+			}
+			// 右から接触した場合
+			else {
+
+				if (kbw.rect.x <= targetX) {
+					kbw.rect.x = targetX;
+					kbw.iswithdraw = false;
+					kbw.isRetrun = true;
+					kbw.stoptimer = 0.0f;
+				}
 			}
 		}
 
 		// 状態3: 戻り中
 		if (kbw.isRetrun) {
 			kbw.stoptimer += dt;
+
 			if (kbw.stoptimer >= kbw.limitStop) {
+
 				kbw.twiceTouch = true;
-				kbw.rect.x -= kbw.knockBackVelocity.x * dt;
-				if (kbw.rect.x <= kbw.startX - 100.0f) {
-				
-					
-					kbw.rect.x = kbw.startX;
-					kbw.isRetrun = false;
-					kbw.onTouch = false;
-					kbw.twiceTouch = false;
-				
+				AudioPlaySfx(audio, SfxId::punch2);
+				float speed = fabsf(kbw.knockBackVelocity.x);
+
+				// プレイヤーがいた方向へ戻っていく
+				kbw.rect.x += kbw.touchDirection * speed * dt;
+
+				// 飛び出す目標位置
+				float targetX =
+					kbw.startX + kbw.touchDirection * 100.0f;
+
+				// 左方向へ飛び出している
+				if (kbw.touchDirection == -1) {
+
+					if (kbw.rect.x <= targetX) {
+						kbw.rect.x = kbw.startX;
+						kbw.isRetrun = false;
+						kbw.onTouch = false;
+						kbw.twiceTouch = false;
+						kbw.touchDirection = 0;
+					}
+				}
+
+				// 右方向へ飛び出している
+				else {
+
+					if (kbw.rect.x >= targetX) {
+						kbw.rect.x = kbw.startX;
+						kbw.isRetrun = false;
+						kbw.onTouch = false;
+						kbw.twiceTouch = false;
+						kbw.touchDirection = 0;
+					}
 				}
 			}
 		}
 	}
-
 	//ジャンプ台
 	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
 		auto& jp = stage.jumpPlatfroms[i];
@@ -561,6 +611,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 			ur.timer += dt;
 			if (ur.timer >= ur.riseDelay) {
 				ur.isrising = true;
+				AudioPlaySfx(audio, SfxId::flyingAway);
+
 			}
 		}
 		if (ur.isrising) {

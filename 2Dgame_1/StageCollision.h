@@ -1,5 +1,6 @@
 #pragma once
 #include"raylib.h"
+#include"AudioManager.h"
 // 前方宣言
 struct Stage;
 
@@ -18,13 +19,13 @@ struct Stage;
 // 目的: 横方向(X)の衝突を解決する。
 // 入力: stage、現在player、速度、前フレームplayer。
 // 出力: player.x / velocity.x が補正される。
-void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity,float dt,Rectangle& prevPlayer);
+void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity,float dt,Rectangle& prevPlayer,AudioManager& audio);
 
 // Y方向（床・天井）の衝突解決（着地していればtrue）
 // 目的: 縦方向(Y)の衝突を解決する。
 // 入力: stage、前フレームplayer、現在player、速度。
 // 出力: player.y / velocity.y を補正し、着地したら true を返す。
-bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player, Vector2& velocity,Rectangle& prev,float dt);
+bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player, Vector2& velocity,Rectangle& prev,float dt,AudioManager& audio);
 
 
 // 目的: 動く床の移動量をプレイヤーへ伝搬する。

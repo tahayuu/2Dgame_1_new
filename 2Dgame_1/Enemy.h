@@ -1,6 +1,7 @@
 #pragma once
 #include "raylib.h"
 #include <string>
+#include "AudioManager.h"
 
 // ================================================================
 // Enemy.h の役割
@@ -49,7 +50,7 @@ struct Enemy{
 // 目的: 敵1体の初期パラメータを種別ごとに設定する。
 void EnemyInit(Enemy& enemy, EnemyType type, Vector2 position);
 // 目的: プレイヤーとの接触を判定し、側面衝突/踏みつけを振り分ける。
-void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt,Vector2& velocity);
+void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt,Vector2& velocity,AudioManager& audio);
 // 目的: 敵AIの移動と生存状態を更新する。
 void EnemyUpdate(Enemy& enemy, float dt, const Rectangle& player);
 // 目的: 敵の現在状態に応じた見た目を描画する。

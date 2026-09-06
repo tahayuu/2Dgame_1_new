@@ -21,7 +21,7 @@ void StageInit_debug(Stage& stage, EnemyManager& enemyManager,ItemManager& itemM
 
 // 更新
 // 目的: ギミック状態を1フレーム分更新する。
-void StageUpdate(Stage& stage, float dt,ItemManager& itemManager,Camera2D camera,PlayerState& ps);
+void StageUpdate(Stage& stage, float dt,ItemManager& itemManager,Camera2D camera,PlayerState& ps,AudioManager& audio);
 
 
 // リセット

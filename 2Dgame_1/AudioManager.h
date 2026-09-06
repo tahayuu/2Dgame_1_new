@@ -19,6 +19,27 @@ enum class SfxId {
     Punch,
     OjisanTalk,
     Save,
+    pull,//すぽっ
+    warp,//ワープ音
+    shrink,//ちじむ音
+    childsLaugh,//子供の笑い声
+    grow,// 伸びた音
+    cheers,//歓声
+    fracture,//骨折
+    punch2,//パンチ音
+    fainting,//気絶音
+    flyingAway,//飛んでいく音
+    hitting,
+    se_naguru,
+	powerup,
+    lounh,
+    radayLounc,
+    transparentSe,
+	transparentSe2,
+    cut,
+    cursolButton,
+    cursolFloor,
+    crackRock
 };
 
 struct AudioManager {
@@ -58,9 +79,20 @@ struct AudioManager {
     Sound growSe{};// 伸びた音
     Sound cheersSe{};//歓声
     Sound fractureSe{};//骨折
-    Sound punchSe{};//パンチ音
-    Sound faintingSe{};//気絶音
+    Sound punch2{};//パンチ音
+    Sound fainting{};//気絶音
     Sound flyingAway{};//飛んでいく音
+	Sound hittingSe{};//ぶつかる音
+	Sound se_naguru{};//殴る音
+	Sound powerup{};//パワーアップ音
+	Sound lounh{};//発射音
+	Sound radayLounc{};//発射音
+	Sound transparentSe{};//透明化音
+	Sound transparentSe2{};//透明化音2
+	Sound cutSe{};//切る音
+	Sound cursolButtonSe{};//カーソルボタン音
+	Sound cursolFloorSe{};//カーソル床音
+	Sound crackRockSe{};//岩が割れる音
 
 
 
