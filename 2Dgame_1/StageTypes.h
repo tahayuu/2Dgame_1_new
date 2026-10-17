@@ -5,6 +5,7 @@
 #include "StageTheme.h"
 #include "TiledMap.h"  
 #include "SpriteDatabase.h" 
+#include "GimmickGroup.h";
 
 // ================================================================
 // StageTypes.h の役割

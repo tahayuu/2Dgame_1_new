@@ -318,9 +318,9 @@ struct FallingPlatform {
 struct UpDownPlatform {
 	Rectangle rect;
 	bool isrising;
-	bool riseHeight; // 上昇高さ
-	bool riseSpeed;  // 上昇速度
-	bool fallSpeed;  // 下降速度
+	float riseHeight; // 上昇高さ
+	float riseSpeed;  // 上昇速度
+    float fallSpeed;  // 下降速度
 	float upperY;     // 上昇限界Y座標
 	float lowerY;     // 下降限界Y座標
 	float timer;       // 経過時間

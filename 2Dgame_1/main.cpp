@@ -420,6 +420,21 @@ allDialogTextへ追加
 		itemManager.RestorInitialItems();
 		};
 
+	// ================================================================
+    // 現在のステージでエディタを使用できるか
+    // Debug   : 全ステージ使用可能
+    // Release : エディタステージ(currentStage == 100)のみ使用可能
+   // ================================================================
+	auto CanUseStageEditor = [&]() ->bool {
+#ifdef _DEBUG
+		return true;
+#else
+		return currentStage == 100;
+#endif
+		};
+
+
+
 	auto EnterStageEditor = [&]() {
 		// プレイ中の画面パンチ演出を残したままエディタへ入らない。
 		ScreenPunchEffectReset(screenPunch);
@@ -694,6 +709,11 @@ allDialogTextへ追加
 
 		//プレイ画面
 		if (gameState == GameState::PLAYING) {
+			if(CanUseStageEditor() && (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1))) {
+				EnterStageEditor();
+				continue;
+			}	
+
 			const bool isInvincible = (editorExitInvTimer > 0.0f);
 			PlayerStateUpdate(playerState, stage, enemyManager, itemManager, ojisan, camera, dt, isInvincible, audio);
 			UpdateSavePoints(stage, playerState, audio);//セーブポイントの更新
