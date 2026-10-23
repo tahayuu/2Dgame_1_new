@@ -255,10 +255,7 @@ void StageInit_debug(Stage& stage,EnemyManager& enemyManager,ItemManager& itemMa
 	stage.layerDoorCount = 2;
 
 
-	stage.touchBreakBlocks[0] = { {300.0f, 600.0f, 80.0f, 50.0f}, false, false, 0.0f, 0.5f };
-	stage.touchBreakBlocks[1] = { {390.0f, 600.0f, 80.0f, 50.0f}, false, false, 0.0f, 0.7f };
-	stage.touchBreakBlocks[2] = { {480.0f, 600.0f, 80.0f, 50.0f}, false, false, 0.0f, 0.9f };
-	stage.touchBreakBlockCount = 3;
+
 
 	// 復活用
 	for (int i = 0; i < stage.buttonBlockCount; i++) {
@@ -313,9 +310,7 @@ void StageInit_debug(Stage& stage,EnemyManager& enemyManager,ItemManager& itemMa
 	for (int i = 0; i < stage.clearsCount; i++) {
 		stage.clearBlocks[i].clearflag = false;
 	}
-	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-		stage.touchBreakBlocksInit[i] = stage.touchBreakBlocks[i];
-	}
+
 	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
 		stage.bottomBreakBlocksInit[i] = stage.bottomBreakBlocks[i];
 	}

@@ -5,7 +5,7 @@
 #include "StageTheme.h"
 #include "TiledMap.h"  
 #include "SpriteDatabase.h" 
-#include "GimmickGroup.h";
+#include "GimmickGroup.h"
 
 // ================================================================
 // StageTypes.h の役割
@@ -49,9 +49,7 @@ struct Stage {
 	StageTheme theme;
 
 	//触れると壊れるブロック
-	TouchBreakBlock touchBreakBlocks[MAX_PLATFORMS];
-	TouchBreakBlock touchBreakBlocksInit[MAX_PLATFORMS];
-	int touchBreakBlockCount;
+	GimmickGroup<TouchBreakBlock, MAX_PLATFORMS> touchBreakBlocks;
 
 	//下から触れただけで壊れるブロック
 	BottomBreakBlock bottomBreakBlocks[MAX_HAZARDS];

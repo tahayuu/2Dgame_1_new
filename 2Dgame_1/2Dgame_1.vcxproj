@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -86,7 +86,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Player;$(ProjectDir)Stage;$(ProjectDir)StageInit;$(ProjectDir)Editor;$(ProjectDir)Enemy;$(ProjectDir)Item;$(ProjectDir)Ojisan;$(ProjectDir)Other;$(ProjectDir)Texture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,7 +107,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Player;$(ProjectDir)Stage;$(ProjectDir)StageInit;$(ProjectDir)Editor;$(ProjectDir)Enemy;$(ProjectDir)Item;$(ProjectDir)Ojisan;$(ProjectDir)Other;$(ProjectDir)Texture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,7 +126,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Player;$(ProjectDir)Stage;$(ProjectDir)StageInit;$(ProjectDir)Editor;$(ProjectDir)Enemy;$(ProjectDir)Item;$(ProjectDir)Ojisan;$(ProjectDir)Other;$(ProjectDir)Texture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalOptions> /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -151,7 +151,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalIncludeDirectories>%(AdditionalIncLudeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Player;$(ProjectDir)Stage;$(ProjectDir)StageInit;$(ProjectDir)Editor;$(ProjectDir)Enemy;$(ProjectDir)Item;$(ProjectDir)Ojisan;$(ProjectDir)Other;$(ProjectDir)Texture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions> /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -167,82 +167,83 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AudioManager.cpp" />
-    <ClCompile Include="CameraController.cpp" />
-    <ClCompile Include="ChengeStage.cpp" />
-    <ClCompile Include="DialogManager.cpp" />
-    <ClCompile Include="Enemy.cpp" />
-    <ClCompile Include="EnemyManager.cpp" />
-    <ClCompile Include="Item.cpp" />
-    <ClCompile Include="ItemManager.cpp" />
+    <ClCompile Include="Other\AudioManager.cpp" />
+    <ClCompile Include="Other\CameraController.cpp" />
+    <ClCompile Include="StageInit\ChengeStage.cpp" />
+    <ClCompile Include="Ojisan\DialogManager.cpp" />
+    <ClCompile Include="Enemy\Enemy.cpp" />
+    <ClCompile Include="Enemy\EnemyManager.cpp" />
+    <ClCompile Include="Item\Item.cpp" />
+    <ClCompile Include="Item\ItemManager.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="OjisanDialog.cpp" />
-    <ClCompile Include="OjisanVIsual.cpp" />
-    <ClCompile Include="player.cpp" />
-    <ClCompile Include="PlayerVisual.cpp" />
-    <ClCompile Include="ScreenPunchEffect.cpp" />
-    <ClCompile Include="SpriteDatabase.cpp" />
-    <ClCompile Include="Stage.cpp" />
-    <ClCompile Include="StageClearDialog.cpp" />
-    <ClCompile Include="StageCollision.cpp" />
-    <ClCompile Include="StageDraw.cpp" />
-    <ClCompile Include="StageEditor.cpp" />
-    <ClCompile Include="StageEditorDraw.cpp" />
-    <ClCompile Include="StageEditorIO.cpp" />
-    <ClCompile Include="StageEventChanger.cpp" />
-    <ClCompile Include="StageGimmickSignal.cpp" />
-    <ClCompile Include="StageHazard.cpp" />
-    <ClCompile Include="StageInit_3.cpp" />
-    <ClCompile Include="StageInit_1.cpp" />
-    <ClCompile Include="StageInit_2.cpp" />
-    <ClCompile Include="StageInit_4.cpp" />
-    <ClCompile Include="StageInit_choseStage.cpp" />
-    <ClCompile Include="StageInit_deback.cpp" />
-    <ClCompile Include="StageScreenPunch.cpp" />
-    <ClCompile Include="StageSnapPuzzle.cpp" />
-    <ClCompile Include="TitleTransition.cpp" />
-    <ClInclude Include="ScreenPunchEffect.h" />
-    <ClInclude Include="StageClearDialog.h" />
-    <ClInclude Include="StageScreenPunch.h" />
-    <ClInclude Include="StageSnapPuzzle.h" />
-    <ClCompile Include="StageTheme.cpp" />
-    <ClCompile Include="TitleScene.cpp" />
-    <ClInclude Include="TitleTransition.h" />
+    <ClCompile Include="Ojisan\OjisanDialog.cpp" />
+    <ClCompile Include="Ojisan\OjisanVIsual.cpp" />
+    <ClCompile Include="Player\player.cpp" />
+    <ClCompile Include="Player\PlayerVisual.cpp" />
+    <ClCompile Include="Other\ScreenPunchEffect.cpp" />
+    <ClCompile Include="Texture\SpriteDatabase.cpp" />
+    <ClCompile Include="Stage\Stage.cpp" />
+    <ClCompile Include="Ojisan\StageClearDialog.cpp" />
+    <ClCompile Include="Player\StageCollision.cpp" />
+    <ClCompile Include="Stage\StageDraw.cpp" />
+    <ClCompile Include="Editor\StageEditor.cpp" />
+    <ClCompile Include="Editor\StageEditorDraw.cpp" />
+    <ClCompile Include="Editor\StageEditorIO.cpp" />
+    <ClCompile Include="Other\StageEventChanger.cpp" />
+    <ClCompile Include="Other\StageGimmickSignal.cpp" />
+    <ClCompile Include="Stage\StageHazard.cpp" />
+    <ClCompile Include="StageInit\StageInit_3.cpp" />
+    <ClCompile Include="StageInit\StageInit_1.cpp" />
+    <ClCompile Include="StageInit\StageInit_2.cpp" />
+    <ClCompile Include="StageInit\StageInit_4.cpp" />
+    <ClCompile Include="StageInit\StageInit_choseStage.cpp" />
+    <ClCompile Include="StageInit\StageInit_deback.cpp" />
+    <ClCompile Include="Ojisan\StageScreenPunch.cpp" />
+    <ClCompile Include="Other\StageSnapPuzzle.cpp" />
+    <ClCompile Include="Other\TitleTransition.cpp" />
+    <ClInclude Include="Stage\GimmickGroup.h" />
+    <ClInclude Include="Other\ScreenPunchEffect.h" />
+    <ClInclude Include="Ojisan\StageClearDialog.h" />
+    <ClInclude Include="Ojisan\StageScreenPunch.h" />
+    <ClInclude Include="Other\StageSnapPuzzle.h" />
+    <ClCompile Include="Stage\StageTheme.cpp" />
+    <ClCompile Include="Other\TitleScene.cpp" />
+    <ClInclude Include="Other\TitleTransition.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AudioManager.h" />
-    <ClInclude Include="CameraController.h" />
-    <ClInclude Include="ChengeStage.h" />
-    <ClInclude Include="DialogManager.h" />
-    <ClInclude Include="Enemy.h" />
-    <ClInclude Include="EnemyManager.h" />
-    <ClInclude Include="GameEvents.h" />
-    <ClInclude Include="GameObjects.h" />
-    <ClInclude Include="GameState.h" />
-    <ClInclude Include="Item.h" />
-    <ClInclude Include="ItemManager.h" />
-    <ClInclude Include="OjisanDialog.h" />
-    <ClInclude Include="OjisanVisual.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="PlayerVisual.h" />
-    <ClInclude Include="SpriteDatabase.h" />
-    <ClInclude Include="Stage.h" />
-    <ClInclude Include="StageCollision.h" />
-    <ClInclude Include="StageDraw.h" />
-    <ClInclude Include="StageEditor.h" />
-    <ClInclude Include="StageEditorInternal.h" />
-    <ClInclude Include="StageEventChanger.h" />
-    <ClInclude Include="StageGimmickSignal.h" />
-    <ClInclude Include="StageHazard.h" />
-    <ClInclude Include="StageInit_3.h" />
-    <ClInclude Include="StageInit_1.h" />
-    <ClInclude Include="StageInit_2.h" />
-    <ClInclude Include="StageInit_2222.h" />
-    <ClInclude Include="StageInit_choseStage.h" />
-    <ClInclude Include="StageInit_4.h" />
-    <ClInclude Include="StageTheme.h" />
-    <ClInclude Include="StageTypes.h" />
-    <ClInclude Include="TitleScene.h" />
+    <ClInclude Include="Other\AudioManager.h" />
+    <ClInclude Include="Other\CameraController.h" />
+    <ClInclude Include="StageInit\ChengeStage.h" />
+    <ClInclude Include="Ojisan\DialogManager.h" />
+    <ClInclude Include="Enemy\Enemy.h" />
+    <ClInclude Include="Enemy\EnemyManager.h" />
+    <ClInclude Include="Ojisan\GameEvents.h" />
+    <ClInclude Include="Stage\GameObjects.h" />
+    <ClInclude Include="Other\GameState.h" />
+    <ClInclude Include="Item\Item.h" />
+    <ClInclude Include="Item\ItemManager.h" />
+    <ClInclude Include="Ojisan\OjisanDialog.h" />
+    <ClInclude Include="Ojisan\OjisanVisual.h" />
+    <ClInclude Include="Player\Player.h" />
+    <ClInclude Include="Player\PlayerVisual.h" />
+    <ClInclude Include="Texture\SpriteDatabase.h" />
+    <ClInclude Include="Stage\Stage.h" />
+    <ClInclude Include="Player\StageCollision.h" />
+    <ClInclude Include="Stage\StageDraw.h" />
+    <ClInclude Include="Editor\StageEditor.h" />
+    <ClInclude Include="Editor\StageEditorInternal.h" />
+    <ClInclude Include="Other\StageEventChanger.h" />
+    <ClInclude Include="Other\StageGimmickSignal.h" />
+    <ClInclude Include="Stage\StageHazard.h" />
+    <ClInclude Include="StageInit\StageInit_3.h" />
+    <ClInclude Include="StageInit\StageInit_1.h" />
+    <ClInclude Include="StageInit\StageInit_2.h" />
+    <ClInclude Include="StageInit\StageInit_2222.h" />
+    <ClInclude Include="StageInit\StageInit_choseStage.h" />
+    <ClInclude Include="StageInit\StageInit_4.h" />
+    <ClInclude Include="Stage\StageTheme.h" />
+    <ClInclude Include="Stage\StageTypes.h" />
+    <ClInclude Include="Other\TitleScene.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="ojisan_lines.text">
@@ -306,13 +307,13 @@
     <Font Include="..\x64\Debug\assets\images\font\YDWaosagi.otf" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="memo.txt" />
-    <Text Include="memo_Editor.txt" />
-    <Text Include="STAGE_CLEAR_DIALOG_SETUP.txt" />
+    <Text Include="Docs\memo.txt" />
+    <Text Include="Docs\memo_Editor.txt" />
+    <Text Include="Docs\STAGE_CLEAR_DIALOG_SETUP.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="create_transparent_douka.ps1" />
-    <None Include="create_transparent_douka.py" />
+    <None Include="Scripts\create_transparent_douka.ps1" />
+    <None Include="Scripts\create_transparent_douka.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

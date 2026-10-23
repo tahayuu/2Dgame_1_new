@@ -105,225 +105,228 @@
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="StageInit_1.cpp">
+    <ClCompile Include="StageInit\StageInit_1.cpp">
       <Filter>ソース ファイル\Stage.Init</Filter>
     </ClCompile>
-    <ClCompile Include="StageInit_2.cpp">
+    <ClCompile Include="StageInit\StageInit_2.cpp">
       <Filter>ソース ファイル\Stage.Init</Filter>
     </ClCompile>
-    <ClCompile Include="StageInit_deback.cpp">
+    <ClCompile Include="StageInit\StageInit_deback.cpp">
       <Filter>ソース ファイル\Stage.Init</Filter>
     </ClCompile>
-    <ClCompile Include="StageInit_choseStage.cpp">
+    <ClCompile Include="StageInit\StageInit_choseStage.cpp">
       <Filter>ソース ファイル\Stage.Init</Filter>
     </ClCompile>
-    <ClCompile Include="ChengeStage.cpp">
+    <ClCompile Include="StageInit\ChengeStage.cpp">
       <Filter>ソース ファイル\Stage.Init</Filter>
     </ClCompile>
-    <ClCompile Include="Enemy.cpp">
+    <ClCompile Include="Enemy\Enemy.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerVisual.cpp">
+    <ClCompile Include="Player\PlayerVisual.cpp">
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
-    <ClCompile Include="StageCollision.cpp">
+    <ClCompile Include="Player\StageCollision.cpp">
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
-    <ClCompile Include="StageInit_3.cpp">
+    <ClCompile Include="StageInit\StageInit_3.cpp">
       <Filter>ソース ファイル\Stage.Init</Filter>
     </ClCompile>
-    <ClCompile Include="Stage.cpp">
+    <ClCompile Include="Stage\Stage.cpp">
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="StageDraw.cpp">
+    <ClCompile Include="Stage\StageDraw.cpp">
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="StageHazard.cpp">
+    <ClCompile Include="Stage\StageHazard.cpp">
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="EnemyManager.cpp">
+    <ClCompile Include="Enemy\EnemyManager.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="Item.cpp">
+    <ClCompile Include="Item\Item.cpp">
       <Filter>ソース ファイル\Item</Filter>
     </ClCompile>
-    <ClCompile Include="ItemManager.cpp">
+    <ClCompile Include="Item\ItemManager.cpp">
       <Filter>ソース ファイル\Item</Filter>
     </ClCompile>
-    <ClCompile Include="OjisanVIsual.cpp">
+    <ClCompile Include="Ojisan\OjisanVIsual.cpp">
       <Filter>ソース ファイル\Ojisan</Filter>
     </ClCompile>
-    <ClCompile Include="DialogManager.cpp">
+    <ClCompile Include="Ojisan\DialogManager.cpp">
       <Filter>ソース ファイル\Ojisan</Filter>
     </ClCompile>
-    <ClCompile Include="OjisanDialog.cpp">
+    <ClCompile Include="Ojisan\OjisanDialog.cpp">
       <Filter>ソース ファイル\Ojisan</Filter>
     </ClCompile>
-    <ClCompile Include="StageInit_4.cpp">
+    <ClCompile Include="StageInit\StageInit_4.cpp">
       <Filter>ソース ファイル\Stage.Init</Filter>
     </ClCompile>
-    <ClCompile Include="CameraController.cpp">
+    <ClCompile Include="Other\CameraController.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
-    <ClCompile Include="StageTheme.cpp">
+    <ClCompile Include="Stage\StageTheme.cpp">
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="StageEditor.cpp">
+    <ClCompile Include="Editor\StageEditor.cpp">
       <Filter>ソース ファイル\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="StageEditorDraw.cpp">
+    <ClCompile Include="Editor\StageEditorDraw.cpp">
       <Filter>ソース ファイル\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="StageEditorIO.cpp">
+    <ClCompile Include="Editor\StageEditorIO.cpp">
       <Filter>ソース ファイル\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="AudioManager.cpp">
+    <ClCompile Include="Other\AudioManager.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
-    <ClCompile Include="TitleScene.cpp">
+    <ClCompile Include="Other\TitleScene.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
-    <ClCompile Include="player.cpp">
+    <ClCompile Include="Player\player.cpp">
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteDatabase.cpp">
+    <ClCompile Include="Texture\SpriteDatabase.cpp">
       <Filter>ソース ファイル\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="StageEventChanger.cpp">
+    <ClCompile Include="Other\StageEventChanger.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
-    <ClCompile Include="StageSnapPuzzle.cpp">
+    <ClCompile Include="Other\StageSnapPuzzle.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
-    <ClCompile Include="StageGimmickSignal.cpp">
+    <ClCompile Include="Other\StageGimmickSignal.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
-    <ClCompile Include="ScreenPunchEffect.cpp">
+    <ClCompile Include="Other\ScreenPunchEffect.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="StageScreenPunch.cpp">
+    <ClCompile Include="Ojisan\StageScreenPunch.cpp">
       <Filter>ソース ファイル\Ojisan</Filter>
     </ClCompile>
-    <ClCompile Include="StageClearDialog.cpp">
+    <ClCompile Include="Ojisan\StageClearDialog.cpp">
       <Filter>ソース ファイル\Ojisan</Filter>
     </ClCompile>
-    <ClCompile Include="TitleTransition.cpp">
+    <ClCompile Include="Other\TitleTransition.cpp">
       <Filter>ソース ファイル\Other</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StageInit_1.h">
+    <ClInclude Include="StageInit\StageInit_1.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
-    <ClInclude Include="StageInit_2.h">
+    <ClInclude Include="StageInit\StageInit_2.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
-    <ClInclude Include="StageInit_3.h">
+    <ClInclude Include="StageInit\StageInit_3.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
-    <ClInclude Include="StageInit_choseStage.h">
+    <ClInclude Include="StageInit\StageInit_choseStage.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
-    <ClInclude Include="StageInit_4.h">
+    <ClInclude Include="StageInit\StageInit_4.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
+    <ClInclude Include="Enemy\Enemy.h">
       <Filter>ヘッダー ファイル\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="StageCollision.h">
+    <ClInclude Include="Player\StageCollision.h">
       <Filter>ヘッダー ファイル\Player</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerVisual.h">
+    <ClInclude Include="Player\PlayerVisual.h">
       <Filter>ヘッダー ファイル\Player</Filter>
     </ClInclude>
-    <ClInclude Include="StageHazard.h">
+    <ClInclude Include="Stage\StageHazard.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="ChengeStage.h">
+    <ClInclude Include="StageInit\ChengeStage.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="GameObjects.h">
+    <ClInclude Include="Stage\GameObjects.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="Stage.h">
+    <ClInclude Include="Stage\Stage.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="StageDraw.h">
+    <ClInclude Include="Stage\StageDraw.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="StageTypes.h">
+    <ClInclude Include="Stage\StageTypes.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="EnemyManager.h">
+    <ClInclude Include="Enemy\EnemyManager.h">
       <Filter>ヘッダー ファイル\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Item.h">
+    <ClInclude Include="Item\Item.h">
       <Filter>ヘッダー ファイル\Item</Filter>
     </ClInclude>
-    <ClInclude Include="ItemManager.h">
+    <ClInclude Include="Item\ItemManager.h">
       <Filter>ヘッダー ファイル\Item</Filter>
     </ClInclude>
-    <ClInclude Include="OjisanVisual.h">
+    <ClInclude Include="Ojisan\OjisanVisual.h">
       <Filter>ヘッダー ファイル\Ojisan</Filter>
     </ClInclude>
-    <ClInclude Include="DialogManager.h">
+    <ClInclude Include="Ojisan\DialogManager.h">
       <Filter>ヘッダー ファイル\Ojisan</Filter>
     </ClInclude>
-    <ClInclude Include="GameEvents.h">
+    <ClInclude Include="Ojisan\GameEvents.h">
       <Filter>ヘッダー ファイル\Ojisan</Filter>
     </ClInclude>
-    <ClInclude Include="OjisanDialog.h">
+    <ClInclude Include="Ojisan\OjisanDialog.h">
       <Filter>ヘッダー ファイル\Ojisan</Filter>
     </ClInclude>
-    <ClInclude Include="StageInit_2222.h">
+    <ClInclude Include="StageInit\StageInit_2222.h">
       <Filter>ヘッダー ファイル\StageInit.h</Filter>
     </ClInclude>
-    <ClInclude Include="CameraController.h">
+    <ClInclude Include="Other\CameraController.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="StageTheme.h">
+    <ClInclude Include="Stage\StageTheme.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="StageEditor.h">
+    <ClInclude Include="Editor\StageEditor.h">
       <Filter>ヘッダー ファイル\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="StageEditorInternal.h">
+    <ClInclude Include="Editor\StageEditorInternal.h">
       <Filter>ヘッダー ファイル\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="AudioManager.h">
+    <ClInclude Include="Other\AudioManager.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="GameState.h">
+    <ClInclude Include="Other\GameState.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="TitleScene.h">
+    <ClInclude Include="Other\TitleScene.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
+    <ClInclude Include="Player\Player.h">
       <Filter>ヘッダー ファイル\Player</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteDatabase.h">
+    <ClInclude Include="Texture\SpriteDatabase.h">
       <Filter>ヘッダー ファイル\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="StageEventChanger.h">
+    <ClInclude Include="Other\StageEventChanger.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="StageGimmickSignal.h">
+    <ClInclude Include="Other\StageGimmickSignal.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="StageSnapPuzzle.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ScreenPunchEffect.h">
+    <ClInclude Include="Other\ScreenPunchEffect.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="StageScreenPunch.h">
+    <ClInclude Include="Ojisan\StageScreenPunch.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
-    <ClInclude Include="StageClearDialog.h">
+    <ClInclude Include="Ojisan\StageClearDialog.h">
       <Filter>ヘッダー ファイル\Ojisan</Filter>
     </ClInclude>
-    <ClInclude Include="TitleTransition.h">
+    <ClInclude Include="Other\TitleTransition.h">
+      <Filter>ヘッダー ファイル\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage\GimmickGroup.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Other\StageSnapPuzzle.h">
       <Filter>ヘッダー ファイル\Other</Filter>
     </ClInclude>
   </ItemGroup>
@@ -487,16 +490,16 @@
     </Font>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="memo.txt">
+    <Text Include="Docs\memo.txt">
       <Filter>assets\data</Filter>
     </Text>
-    <Text Include="memo_Editor.txt">
+    <Text Include="Docs\memo_Editor.txt">
       <Filter>assets\data</Filter>
     </Text>
-    <Text Include="STAGE_CLEAR_DIALOG_SETUP.txt" />
+    <Text Include="Docs\STAGE_CLEAR_DIALOG_SETUP.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="create_transparent_douka.py" />
-    <None Include="create_transparent_douka.ps1" />
+    <None Include="Scripts\create_transparent_douka.py" />
+    <None Include="Scripts\create_transparent_douka.ps1" />
   </ItemGroup>
 </Project>

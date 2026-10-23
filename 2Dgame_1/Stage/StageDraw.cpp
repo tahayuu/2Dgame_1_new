@@ -673,8 +673,8 @@ void StageDraw(
 	}
 
 	//触れると壊れるブロック
-	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-		const auto& tb = stage.touchBreakBlocks[i];
+	for (std::size_t i = 0; i < stage.touchBreakBlocks.Size(); i++) {
+		const auto& tb = stage.touchBreakBlocks.Get(i);
 		if (tb.isBroken) continue;
 
 		// 崩壊進行度（0.0〜1.0）
@@ -694,7 +694,7 @@ void StageDraw(
 			tb.rect.x + shakeX, tb.rect.y,
 			tb.rect.width, tb.rect.height
 		};
-		DrawTexturePro(stage.theme.touchBlock, drawRect, stage.touchBreakBlocks[i].rect, { 0, 0 }, 0, WHITE);
+		DrawTexturePro(stage.theme.touchBlock, drawRect, stage.touchBreakBlocks.Get(i).rect, { 0, 0 }, 0, WHITE);
 
 		// ひび割れ線
 		if (tb.triggered) {

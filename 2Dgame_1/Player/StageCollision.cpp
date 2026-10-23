@@ -1000,8 +1000,8 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 	//触れると壊れるブロック
-	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-		auto& tb = stage.touchBreakBlocks[i];
+	for (std::size_t i = 0; i < stage.touchBreakBlocks.Size(); i++) {
+		auto& tb = stage.touchBreakBlocks.Get(i);
 		if (tb.isBroken) continue;
 		if (ResolveSolidXPlayer(tb.rect, player, velocity, prevPlayer, stage.gravityReversed)) {
 			tb.triggered = true;
@@ -1055,8 +1055,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	bool onTop = false; //上に当たったら true にする
 
 	//触れると壊れるブロック
-	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-		auto& tb = stage.touchBreakBlocks[i];
+	for (std::size_t i = 0; i < stage.touchBreakBlocks.Size(); i++) {
+		auto& tb = stage.touchBreakBlocks.Get(i);
 		if (tb.isBroken) continue;
 		if (ResolveSolidYPlayer(tb.rect, player, velocity, prev, stage.gravityReversed)) {
 			onGround = true;

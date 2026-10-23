@@ -80,14 +80,21 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             break;
 
         case EditorObjectType::TOUCH_BREAK_BLOCK:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++; stage.touchBreakBlocks[i].rect = o.rect;
-                // 前回プレイ時の壊れた状態が残ったまま初期状態としてコピーされないよう、明示的にリセットする
-                stage.touchBreakBlocks[i].triggered = false;
-                stage.touchBreakBlocks[i].isBroken = false;
-                stage.touchBreakBlocks[i].timer = 0.0f;
-                stage.touchBreakBlocksInit[i] = stage.touchBreakBlocks[i];
-            }break;
+        {
+            TouchBreakBlock block{};
+
+            block.rect = o.rect;
+            block.triggered = false;
+            block.isBroken = false;
+            block.timer = 0.0f;
+
+            if (stage.touchBreakBlocks.Add(block)) {
+                ++c[t];
+            }
+
+            break;
+        }
+
         case EditorObjectType::BOTTOM_BREAK_BLOCK:
             if (c[t] < MAX_HAZARDS) {
                 int i = c[t]++; stage.bottomBreakBlocks[i].rect = o.rect;
@@ -697,7 +704,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     }
     // 配列カウントを Stage 構造体に反映
     stage.platformCount = c[0];  stage.backPlatformCount = c[1];
-    stage.hazardCount = c[2];    stage.touchBreakBlockCount = c[3];
+    stage.hazardCount = c[2]; 
     stage.bottomBreakBlockCount = c[4]; stage.breakableBlockCount = c[5];
     stage.elevatorCount = c[6];  stage.gravityBlockCount = c[7];
     stage.buttonBlockCount = c[8]; stage.itemBlockCount = c[9];
@@ -815,7 +822,16 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
             o.params[1] = static_cast<float>(s.hazardDisableSignalIds[i]);
             ed.objects.push_back(o);
         }
-    IMPORT_RECT_P(TOUCH_BREAK_BLOCK, s.touchBreakBlocks, s.touchBreakBlockCount)
+
+    for (std::size_t i = 0; i < s.touchBreakBlocks.Size(); ++i) {
+        PlacedObject o = {
+            EditorObjectType::TOUCH_BREAK_BLOCK,
+			s.touchBreakBlocks.Get(i).rect// 位置とサイズを復元
+        };
+
+		InitDefaultParams(o);// デフォルトパラメータを初期化
+		ed.objects.push_back(o);// 配置オブジェクトリストに追加
+    }
         IMPORT_RECT_P(BOTTOM_BREAK_BLOCK, s.bottomBreakBlocks, s.bottomBreakBlockCount)
         IMPORT_RECT_P(BREAKABLE_BLOCK, s.breakableBlocks, s.breakableBlockCount)
         IMPORT_RECT_P(ELEVATOR, s.elevators, s.elevatorCount)
@@ -1250,9 +1266,6 @@ bool EditorSaveCSV(const StageEditor& ed, const char* filename) {
     if (!ofs.is_open()) return false;
 
     // 通常オブジェクト用の見出し行を書き込む
-    // ★ spriteId,rotation,flipX,flipY を末尾に追加（既存の列はそのまま維持）
-    //   古いファイルにはこの4列が無いが、読み込み側で「無ければデフォルト値」に
-    //   するようにしてあるので、古いステージファイルも問題なく読み込める。
     ofs << "type,typeId,x,y,w,h,p0,p1,p2,p3,p4,p5,text,spriteId,rotation,flipX,flipY\n";
 
     // 配置済みの通常オブジェクトを1つずつ保存する
@@ -1271,7 +1284,7 @@ bool EditorSaveCSV(const StageEditor& ed, const char* filename) {
         // ダブルクォーテーションで囲んでCSVに書き込む
         ofs << ",\"" << o.text << "\"";
 
-        // ★ 見た目(Sprite)情報を保存する
+        // 見た目(Sprite)情報を保存する
         // spriteId は名前文字列で保存する（enumの並び順が将来変わっても壊れにくいように）
         ofs << "," << SpriteDatabase::GetSpriteName(o.spriteId)
             << "," << o.rotation

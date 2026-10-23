@@ -234,8 +234,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 
 
 	//触れると壊れるブロック
-	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-		auto& tb = stage.touchBreakBlocks[i];
+	for (std::size_t i = 0; i < stage.touchBreakBlocks.Size(); i++) {
+		auto& tb = stage.touchBreakBlocks.Get(i);
 		if (tb.triggered && !tb.isBroken) {
 			tb.timer += dt;
 			if (tb.timer >= tb.breakDelay) {
@@ -840,9 +840,7 @@ void UpdateSavePoints(Stage& stage, PlayerState& playerState, AudioManager& audi
 //ステージリセット
 // 目的: ステージ内の可変ギミックを初期状態へ戻す。
 void StageReset(Stage& stage) {
-	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-		stage.touchBreakBlocks[i] = stage.touchBreakBlocksInit[i];
-	}
+	stage.touchBreakBlocks.Reset();
 	for (int i = 0; i < stage.fallingCount; i++) {
 		stage.fallingPlatforms[i] = stage.fallingPlatformsInit[i];
 	}
@@ -888,9 +886,6 @@ void StageReset(Stage& stage) {
 	}
 	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
-	}
-	for (int i = 0; i < stage.touchBreakBlockCount; i++) {
-		stage.touchBreakBlocks[i] = stage.touchBreakBlocksInit[i];
 	}
 
 	for (int i = 0; i < stage.itemBlockCount; i++) {
@@ -960,7 +955,7 @@ void StageReset(Stage& stage) {
 // 目的: ステージ切替前にカウント類を安全に初期化する。
 void StageClear(Stage& stage) {
 	StageThemeUnload(stage.theme);
-	stage.touchBreakBlockCount = 0;
+	stage.touchBreakBlocks.Clear();
 	stage.springCount = 0;
 	stage.heldSpringIndex = -1;
 	stage.bottomBreakBlockCount = 0;
