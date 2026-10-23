@@ -95,7 +95,7 @@ if (IsKeyPressed(KEY_V)) {
 
 ```cpp
 if (IsKeyDown(KEY_RIGHT)) {
-    player.x += speed;
+    player.x += speed * dt;  // dt は1フレームの経過時間
 }
 ```
 
@@ -151,7 +151,7 @@ DrawTexture(...);
 
 ## メモ
 
-Ojisan は画面左下固定。
+Ojisan は画面右下固定（ただしステージ1などでは非表示）。
 つまり、ステージ上のキャラではなく UI 扱いで考える。
 
 なので、Ojisan はカメラの中ではなく、
@@ -833,3 +833,783 @@ UnloadFont(...);
 * 画像やフォントは毎フレーム読み込まない
 
 このへんが分かると、ゲーム全体のコードがかなり読みやすくなる。
+
+
+---
+
+# 11. データ駆動型（かなり大事）
+
+今のゲームでは、ここがかなり大事。
+
+データ駆動型とは、
+
+**「何をどこに置くか」「速度はいくつか」などの設定を、プログラム本体から分けてデータで管理する考え方。**
+
+つまり、
+
+* C++ → ギミックがどう動くのかを決める
+* CSV → ギミックをどこに置くのか、設定をいくつにするのかを決める
+
+という分担。
+
+## 以前の作り方
+
+例えば、動く床を作る場合。
+
+```cpp
+// これは仕組みを説明するための例
+stage.movePlatformsX[0].rect = { 300, 500, 120, 30 };
+stage.movePlatformsX[0].moveSpeed = 200;
+stage.movePlatformsX[0].moveDistance = 300;
+```
+
+床を右へずらしたい。
+速度を少し上げたい。
+
+そのたびにC++の数字を変更する必要がある。
+
+ステージ数やギミックが増えると、これが面倒になる。
+
+## 今の作り方
+
+今はステージエディタで配置・設定した情報を `PlacedObject` に入れて、CSVへ保存できる。
+
+ゲーム側ではCSVを読み取り、`Stage` のデータに変換して実行する。
+
+大まかな流れ。
+
+```text
+ステージエディタで配置する
+        ↓
+StageEditor.objects に PlacedObject を保存する
+        ↓
+EditorSaveCSV() でCSVに書き出す
+        ↓
+EditorLoadCSV() でCSVを読み込む
+        ↓
+EditorExportToStage() で実行用Stageへ変換する
+        ↓
+StageUpdate() で動かす
+StageResolveX() / StageResolveY() で衝突判定する
+StageDraw() などで描画する
+```
+
+※この順番は「保存済みCSVを読み込んでプレイする場合」の流れ。
+エディタからそのままプレイテストするときは、CSV保存後に直接 `EditorExportToStage()` する。
+
+## メリット
+
+* ステージの配置を変えるだけなら、C++の処理を変更しなくていい
+* ギミックの速度や距離を、エディタから調整できる
+* ステージのデータをファイルとして保存できる
+* 同じギミックのプログラムを複数のステージで使い回せる
+* 配置と動作を分けられるので、デバッグしやすくなる
+* ギミックのパラメータを繰り返し調整しやすい
+
+## ただし、ここは勘違いしない
+
+今のゲームは**ステージの配置やパラメータをデータ駆動にしている**。
+
+CSVを書くだけで、今まで存在しなかった新しい種類のギミックの動作まで作れるわけではない。
+
+新しい種類のギミックを追加するなら、基本的にはC++側に更新・当たり判定・描画などの実装が必要。
+
+「ステージをデータで作れる」ことと、「ゲームの全処理がデータだけで変えられる」ことは別。
+
+---
+
+# 12. PlacedObject と Stage の違い
+
+ここはちゃんと整理して覚える。
+
+**PlacedObject = 編集するためのデータ**
+**Stage = ゲームを実行するためのデータ**
+
+## PlacedObject
+
+`StageEditor.h` にある。
+
+```cpp
+struct PlacedObject {
+    EditorObjectType type;
+    Rectangle rect;
+    float params[MAX_OBJ_PARAMS] = {};
+    std::string text;
+    SpriteId spriteId = SpriteId::None;
+    float rotation = 0.0f;
+    bool flipX = false;
+    bool flipY = false;
+};
+```
+
+中身。
+
+* `type` → 何のギミックか
+* `rect` → x、y、幅、高さ
+* `params` → そのギミックの設定値
+* `text` → コメントなどの文字
+* `spriteId` → どの画像を表示するか
+* `rotation` → 見た目の回転
+* `flipX` / `flipY` → 画像を反転するか
+
+## StageEditor
+
+```cpp
+struct StageEditor {
+    std::vector<PlacedObject> objects;
+    // ほかにも編集モード、カメラ、選択状態などを持つ
+};
+```
+
+`ed.objects` は、エディタ上に配置したものの一覧。
+
+例えば。
+
+```text
+objects[0] = 普通の床
+objects[1] = 動く床
+objects[2] = トゲ
+objects[3] = セーブポイント
+```
+
+種類が違っても、エディタでは同じ `PlacedObject` で持てる。
+
+これが便利。
+
+## Stage
+
+`StageTypes.h` にある。
+
+ゲーム中は、種類ごとに必要なデータが違う。
+
+例えば。
+
+* 普通の床 → 位置とサイズがあればよい
+* 動く床 → 位置、速度、移動距離、タイマーなどが必要
+* 壊れる床 → 位置、壊れたか、経過時間などが必要
+
+なので、ゲーム側では `Stage` の中に種類ごとの配列やカウントなどを持つ。
+
+```cpp
+// StageTypes.h の一部
+Rectangle platforms[MAX_PLATFORMS];
+int platformCount;
+
+GimmickGroup<TouchBreakBlock, MAX_PLATFORMS> touchBreakBlocks;
+```
+
+## 覚え方
+
+* `PlacedObject` → 編集しやすい共通の形
+* `Stage` → 実際に動かしやすい種類別の形
+* `EditorExportToStage()` → 編集用から実行用に変換
+* `EditorImportFromStage()` → 実行用から編集用に戻す
+
+編集用と実行用を分けるのは、**使う目的が違うから**。
+
+---
+
+# 13. TYPE_PARAMS がかなり重要
+
+`StageEditor.cpp` にある `TYPE_PARAMS` は、ギミックの設定項目を決める表。
+
+`params[0]` から `params[5]` までは、全部のギミックで共通の入れ物。
+
+でも、中身の意味はギミックの種類によって違う。
+
+## 例えば氷床
+
+実際の定義。
+
+```cpp
+/* ICE_PLATFORM */
+{ 3, { {"friction",0.02f,false},
+       {"iceAccel",400,false},
+       {"maxSlide",500,false} } },
+```
+
+意味。
+
+* `params[0]` → 摩擦
+* `params[1]` → 加速度
+* `params[2]` → 最大滑り速度
+
+## 例えば横に動く床
+
+実際の定義。
+
+```cpp
+/* MOVE_PLATFORM_X */
+{ 3, { {"moveSpd",200,false},
+       {"moveDist",200,false},
+       {"delay",0,false} } },
+```
+
+意味。
+
+* `params[0]` → 移動速度
+* `params[1]` → 移動距離
+* `params[2]` → 動き始めるまでの遅延
+
+`params[0]` でも、氷床なら摩擦、動く床なら速度。
+
+だから `type` とセットで見る必要がある。
+
+## InitDefaultParams()
+
+`StageEditor.cpp` にある。
+
+```cpp
+void InitDefaultParams(PlacedObject& obj) {
+    const auto& info = TYPE_PARAMS[(int)obj.type];
+    for (int i = 0; i < MAX_OBJ_PARAMS; i++) {
+        obj.params[i] =
+            (i < info.count) ? info.defs[i].defaultValue : 0.0f;
+    }
+}
+```
+
+例えば動く床を新しく配置すると、初期値として速度200、距離200、遅延0が設定される。
+
+これをエディタのプロパティ画面で変更する。
+
+## メモ
+
+`TYPE_PARAMS`は設定項目の名前や初期値を定義するもの。
+
+それだけで動く床が移動するわけではない。
+
+実際の移動処理は `StageUpdate()` などのC++側にある。
+
+**「データの意味を定義する場所」と「データを使って動かす場所」は別。**
+
+---
+
+# 14. CSVからゲームが動くまで（具体例）
+
+ここは面接や作品講評会でも説明できるようにしておきたい。
+
+例として、横に動く床を1つ配置する。
+
+## 1. エディタで設定する
+
+```cpp
+// 配置データのイメージ
+PlacedObject obj{};
+obj.type = EditorObjectType::MOVE_PLATFORM_X;
+obj.rect = { 300, 500, 120, 30 };
+InitDefaultParams(obj);
+obj.params[0] = 200; // 速度
+obj.params[1] = 300; // 移動距離
+obj.params[2] = 0;   // 遅延
+```
+
+実際のエディタは `EditorUpdate()` でマウス・キー操作を受けて `ed.objects` を変更する。
+
+## 2. CSVに保存する
+
+`StageEditorIO.cpp` の `EditorSaveCSV()`。
+
+今のCSVの列。
+
+```text
+type,typeId,x,y,w,h,p0,p1,p2,p3,p4,p5,text,spriteId,rotation,flipX,flipY
+```
+
+さっきの動く床なら、次のような1行になる。
+
+```csv
+movePlatformsX,20,300,500,120,30,200,300,0,0,0,0,"",None,0,0,0
+```
+
+`typeId = 20` は、今の `EditorObjectType::MOVE_PLATFORM_X` の番号。
+
+`GetNameEN()` で名前も保存している。
+
+`[ENEMIES]` より下は敵のデータ用。
+`ed.placedEnemies` にある敵の種類、位置、パラメータを別の形で保存している。
+
+## 3. CSVを読み込む
+
+`EditorLoadCSV(StageEditor& ed, const char* filename)` が担当。
+
+やっていること。
+
+* ファイルを開く
+* オブジェクトの種類を判定する
+* 位置とサイズを読む
+* `p0` ～ `p5` を読む
+* テキストとスプライト情報を読む
+* `ed.objects` に追加する
+* `[ENEMIES]` 以降は敵として読み込む
+
+古いCSVにスプライト列がない場合も、デフォルト値で読み込めるよう工夫している。
+
+今のコードには `EditorSaveJSON()` もある。
+ただし読み込み処理として確認できるのは `EditorLoadCSV()` なので、
+JSONもCSVと同じようにゲームで読み込んでいるわけではない。
+
+## 4. Stageに変換する
+
+`EditorExportToStage()` が担当。
+
+実際のコードの一部。
+
+```cpp
+case EditorObjectType::MOVE_PLATFORM_X:
+    if (c[t] < MAX_MOVEPLATFORM) {
+        int i = c[t]++;
+        auto& m = stage.movePlatformsX[i];
+        m.rect = o.rect;
+        m.moveSpeed = o.params[0];
+        m.moveDistance = o.params[1];
+        m.timer = 0;
+        m.delay = o.params[2];
+        m.initialX = o.rect.x;
+        stage.moveplatformsXInit[i] = m;
+    }
+    break;
+```
+
+※説明に関係する行だけを抜き出している。実際は動作フラグの初期化もある。
+
+ここで、ただの `params[0]` が、意味の分かる `moveSpeed` に変わる。
+
+同じように、
+
+`params[1]` → `moveDistance`
+
+`params[2]` → `delay`
+
+となる。
+
+**この変換がデータ駆動型の中心。**
+
+## 5. ゲーム中に動かす
+
+変換後の `stage.movePlatformsX` を、ステージ更新や衝突処理などで使う。
+
+実際にどう移動するかはC++のプログラムが決める。
+CSVに書かれているのは「速度200」「距離300」といった設定値だけ。
+
+## メモ
+
+データだけで全部動いているわけではない。
+
+**C++で動きのルールを作り、CSVで個別のステージを作る。**
+
+これを説明できれば、なぜエディタとCSVを用意したのかが伝わる。
+
+---
+
+# 15. type と spriteId を分けている理由
+
+これも今のコードの特徴。
+
+* `type` → 当たり判定や動作を決める
+* `spriteId` → どんな見た目で描画するかを決める
+
+例えば同じ普通の床でも、別のスプライトを設定できる。
+
+逆に、見た目が似ていても、中身は普通の床と氷床で別の動作にできる。
+
+`PlacedObject` には両方が入っている。
+
+`EditorExportToStage()` では、
+
+* `type` に応じてステージ内の実行データを作る
+* `spriteId` や回転・反転は、主に描画用の `spriteInstances` などへ渡す
+
+という流れ。
+
+※ `DECOR_SPRITE` やパズル用の画像などは専用の管理先がある。
+全部が必ず `spriteInstances` に入るわけではない。
+
+## SpriteDatabase
+
+`SpriteDatabase.cpp` には、SpriteIdと画像ファイル名の対応表がある。
+
+```text
+SpriteId::IceBlock
+        ↓
+スプライト定義テーブル
+        ↓
+対応する画像ファイルのパス
+```
+
+画像を追加するときは `SpriteDatabase.h` の `SpriteId` と、
+`SpriteDatabase.cpp` の定義表の対応を確認する。
+
+## メモ
+
+**ゲームの動作と見た目を分けると、同じ仕組みを別の見た目で使い回しやすい。**
+
+これは見た目を変えたいだけなのに、衝突判定まで作り直すことを防ぐためにも大事。
+
+---
+
+# 16. エディタとゲームを行き来する処理
+
+今の `main.cpp` では、ステージ読み込み時に保存済みCSVが存在すれば、
+その配置データを読み込んで反映する処理がある。
+
+```cpp
+StageEditor tempEd;
+if (FileExists(csvPath.c_str()) &&
+    EditorLoadCSV(tempEd, csvPath.c_str())) {
+    EditorExportToStage(tempEd, stage, enemyManager);
+}
+```
+
+ステージ初期化関数 `StageInit_1()` ～ `StageInit_4()` などもある。
+
+つまり現在は、C++側の初期化と、CSVからの配置データ読み込みを組み合わせた構成。
+
+また、エディタでは `C` キーで保存してプレイテストへ移れる。
+
+```cpp
+EditorSaveCSV(stageEditor, (stageEditor.savePath + ".csv").c_str());
+EditorExportToStage(stageEditor, stage, enemyManager);
+StageReset(stage);
+```
+
+※ここも処理の一部。実際は敵やアイテム、プレイヤーの状態も初期化している。
+
+## EditorImportFromStage()
+
+逆に、実行中の `Stage` をエディタへ持ってきたい場合は、
+`EditorImportFromStage()` で編集用の `PlacedObject` へ戻す。
+
+```text
+編集 → Export → プレイ
+プレイ → Import → 編集
+```
+
+## 注意
+
+ImportとExportの片方だけ修正すると、
+「保存したのに再編集すると設定が違う」という問題が起こることがある。
+
+新しいギミックを追加したら、
+
+* エディタで設定できるか
+* CSVに保存できるか
+* CSVから復元できるか
+* Stageへ正しく変換されるか
+* Stageからエディタへ戻せるか
+
+をセットで確認する。
+
+---
+
+# 17. GimmickGroup とリファクタリング
+
+`GimmickGroup.h` にあるクラス。
+
+これも今のゲームで大事な設計。
+
+データ駆動型とは少し目的が違う。
+
+* データ駆動型 → ステージの設定を外部データで管理する
+* GimmickGroup → ゲーム実行中のギミックデータの管理方法を共通化する
+
+## 今までの管理
+
+```cpp
+BottomBreakBlock bottomBreakBlocks[MAX_HAZARDS];
+BottomBreakBlock bottomBreakBlocksInit[MAX_HAZARDS];
+int bottomBreakBlockCount = 0;
+```
+
+現在、初期状態、個数を別々に管理していた。
+
+同じような初期化処理が増えやすい。
+
+## GimmickGroup
+
+```cpp
+template<typename T, int N>
+class GimmickGroup {
+    // ギミックの現在の状態、初期状態、個数を管理する
+};
+```
+
+* `T` → 管理するギミックの型
+* `N` → 最大個数
+
+今のコードで使っている例。
+
+```cpp
+GimmickGroup<TouchBreakBlock, MAX_PLATFORMS> touchBreakBlocks;
+```
+
+これで、触れると壊れるブロックの管理をまとめている。
+
+## よく使う関数
+
+* `Add()` → ギミックを登録する。初期状態も保存する
+* `Get()` → ギミックを取得する
+* `Size()` → 登録個数を取得する
+* `Reset()` → 初期状態に戻す
+* `Clear()` → 登録個数を0にする
+* `SaveInitialState()` → 現在の状態を初期状態として保存し直す
+
+例。
+
+```cpp
+stage.touchBreakBlocks.Add(block);
+
+for (int i = 0; i < stage.touchBreakBlocks.Size(); i++) {
+    auto& tb = stage.touchBreakBlocks.Get(i);
+    // 状態を変更できる
+}
+
+stage.touchBreakBlocks.Reset();
+```
+
+`StageReset()` では、
+
+```cpp
+stage.touchBreakBlocks.Reset();
+```
+
+という1行で初期状態に戻せる。
+
+## メリット
+
+* 現在の配列、初期配列、個数をまとめられる
+* ギミックごとの似たリセット処理を減らせる
+* 登録上限を `Add()` でチェックできる
+* `private` にして配列管理を外側から隠せる
+* 異なるギミックにも同じテンプレートを再利用できる
+
+※現状では、すべてのギミックがGimmickGroupへ移行しているわけではない。
+
+## メモ
+
+これが**リファクタリング**。
+
+ゲームの動きを変えるのではなく、
+コードの中身を整理して、機能追加や修正をしやすくする。
+
+---
+
+# 18. 衝突判定と前フレームの位置
+
+このゲームで技術的に大事なところ。
+
+`player.cpp` の `PlayerStateUpdate()` では、まず前フレームの矩形を保存している。
+
+```cpp
+ps.prevRect = ps.rect;
+
+ps.rect.x += ps.velocity.x * dt;
+StageResolveX(stage, ps.rect, ps.velocity, dt, ps.prevRect, audio);
+
+if (!stage.playerInBattery) {
+    ps.rect.y += ps.velocity.y * dt;
+    ps.onGround = StageResolveY(
+        stage, ps.prevRect, ps.rect,
+        ps.velocity, ps.prevRect, dt, audio);
+}
+```
+
+## なぜ前フレームを見るのか
+
+今の位置だけを見ていると、
+床の角に着地したときに、横から壁にぶつかったと勘違いする場合がある。
+
+なので、
+
+* 前の位置では床より上にいたか
+* 今の位置では重なっているか
+* どちらの方向に移動していたか
+
+を使って判断する。
+
+## 動く床の場合
+
+動く床については `StageCollision.cpp` の
+
+* `ResolveSolidXForMovingSolid()`
+* `ResolveSolidYForMovingSolid()`
+
+などで、前フレームの床位置も利用している。
+
+上昇床では、床が移動した範囲を含む矩形を使う処理もある。
+
+## メモ
+
+**当たり判定は、重なっているかを見るだけでは足りない。**
+
+プレイヤーと床がどのように移動して重なったのかが大事。
+
+ただし、高速移動した場合のすり抜けを完全に防げるわけではない。
+今後は相対速度やSweep AABBなども検討したい。
+
+---
+
+# 19. ギミック同士の信号
+
+`StageGimmickSignal.cpp` にある処理。
+
+例えば、ドラッグできる距離トリガーピースが初期位置から離れたときに、
+対応する信号IDをONにできる。
+
+```cpp
+void RebuildGimmickSignals(Stage& stage) {
+    ClearGimmickSignals(stage);
+
+    for (int i = 0; i < stage.distanceTriggerPieceCount; i++) {
+        const DistanceTriggerPiece& trigger =
+            stage.distanceTriggerPieces[i];
+
+        if (!trigger.detached) continue;
+        if (trigger.outputSignalId <= 0 ||
+            trigger.outputSignalId >= Stage::MAX_GIMMICK_SIGNALS) continue;
+
+        stage.gimmickSignals[trigger.outputSignalId] = true;
+    }
+}
+```
+
+※実際のコードは信号IDのチェックを `IsValidSignalId()` に分けている。
+
+大まかな流れ。
+
+```text
+距離トリガーピースを動かす
+        ↓
+初期位置から十分に離れたか確認
+        ↓
+対応するsignalIdをONにする
+        ↓
+そのsignalIdを参照するギミックが反応する
+```
+
+`StageUpdate()` では、パズルや距離トリガーの処理のあとに `RebuildGimmickSignals()` を呼んでいる。
+
+## メリット
+
+ギミック同士が相手の内部状態を直接変更しなくても、
+同じ信号IDを使うことで連携できる。
+
+例えば、スイッチや看板、罠の切替などに応用できる。
+
+ただし今の実装は、毎フレーム信号をクリアしてから再計算している。
+イベントが発生した瞬間だけ通知する方式とは違う。
+
+---
+
+# 20. 死亡、セーブポイント、リセット
+
+プレイヤーが死亡しても、ギミックが壊れたままだと困る。
+
+だからゲームでは、初期状態に戻す処理も必要。
+
+## セーブポイント
+
+`Stage.cpp` の `UpdateSavePoints()` で接触を確認する。
+
+```cpp
+if (CheckCollisionRecs(playerState.rect, sp.rect)) {
+    if (!sp.issaved) {
+        sp.issaved = true;
+        AudioPlaySfx(audio, SfxId::Save);
+    }
+
+    playerState.savePoint = true;
+    playerState.savePointPos = sp.savePos;
+}
+```
+
+実際のコードは複数のセーブポイントをループで確認している。
+
+## リスタート
+
+`main.cpp` の `RestartGame` などから、
+
+```cpp
+StageReset(stage);
+HazardReset(stage);
+enemyManager.RestorInitialEnemies();
+itemManager.RestorInitialItems();
+```
+
+などが呼ばれる。
+
+ここでステージの状態、ハザード、敵、アイテムを戻す。
+
+## メモ
+
+ギミックが増えるほど、「どの状態を戻すか」が複雑になる。
+
+リセット処理の重複を減らすことも、GimmickGroupを作った理由につながる。
+
+---
+
+# 21. 今後の改善メモ
+
+現時点で改善したいこと。
+
+* ギミックを追加するときに修正するファイルを減らす
+* `StageReset()` などの重複処理を整理する
+* GimmickGroupをほかのギミックへ段階的に導入する
+* CSVの読み書きの検証を増やす
+* 文字列にカンマや `"` が入ったときのCSV処理を確認する
+* 衝突判定の高速移動や角接触のテストをする
+* デバッグ用に死亡位置、死亡原因、リトライ回数などを記録する
+* エディタで調整した値がCSV保存後も正しく残るか確認する
+
+## データ駆動型の弱点も知っておく
+
+設定をデータに分けると便利だけど、間違った値も入れられてしまう。
+
+例えば。
+
+* 移動速度がマイナスになっている
+* 最大配置数を超えている
+* 対応するギミックが存在しないIDを指定している
+* 古いCSVと新しいCSVで項目の意味が変わっている
+
+だから、今後は保存データのバージョン管理やパラメータのチェックも必要になる。
+
+また、今の `EditorExportToStage()` は種類ごとの `switch` が長い。
+
+データ駆動型にしたからといって、自動的にコードが短くなるわけではない。
+
+データの変換方法そのものも、今後のリファクタリング対象。
+
+---
+
+# 22. このプロジェクトの構造を一言で説明するなら
+
+ゲームエンジンを使わず、C++とraylibを使って2Dゲームを制作している。
+
+プレイヤーの操作、当たり判定、ギミックの更新などはC++側で実装。
+
+ステージの配置や設定値は、独自エディタとCSVを使って管理している。
+
+つまり、
+
+**「ゲームの動作はプログラム、ステージの中身はデータで管理する」**
+
+という作り。
+
+そして、GimmickGroupなどを使って重複する管理処理も減らしている途中。
+
+## 最後に覚えること
+
+* `EditorObjectType` → ギミックの種類
+* `PlacedObject` → エディタ上の配置情報
+* `TYPE_PARAMS` → タイプごとの設定名と初期値
+* `EditorSaveCSV()` → 編集データを保存
+* `EditorLoadCSV()` → 編集データを復元
+* `EditorExportToStage()` → ゲーム実行用データに変換
+* `EditorImportFromStage()` → エディタに戻す
+* `StageUpdate()` → ギミックを更新
+* `StageResolveX()` / `StageResolveY()` → 衝突を解決
+* `GimmickGroup` → 同じ種類のギミックをまとめて管理
+* `StageReset()` → ステージ内の状態を戻す
+
+このつながりが分かると、コード全体の役割がかなり理解しやすくなる。
