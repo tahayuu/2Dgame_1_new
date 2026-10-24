@@ -48,13 +48,54 @@ struct Stage {
 	//ステージテーマ（床テクスチャなど）
 	StageTheme theme;
 
+	// ================================================================
+	// GimmickGroup<T,N> 移行済みギミック（実体・初期状態・登録数を一元管理）
+	// ---------------------------------------------------------------
+	// Add()で実体とinitialObjectsへ同時保存し、Get()/Size()/Reset()/Clear()を提供。
+	// 見通しを良くするため、移行済みのものはここにまとめている。
+	// ================================================================
+	static constexpr int MAX_COMMENT_BLOCKS = 16;
+	static constexpr int MAX_TEMP_FLOORS = 16;
+	static constexpr int MAX_DECOR_ARROWS = 16;
+	static constexpr int MAX_SPIKE_BOUNCERS = 16;
+
 	//触れると壊れるブロック
 	GimmickGroup<TouchBreakBlock, MAX_PLATFORMS> touchBreakBlocks;
-
 	//下から触れただけで壊れるブロック
-	BottomBreakBlock bottomBreakBlocks[MAX_HAZARDS];
-	BottomBreakBlock bottomBreakBlocksInit[MAX_HAZARDS];
-	int bottomBreakBlockCount = 0;
+	GimmickGroup<BottomBreakBlock, MAX_HAZARDS> bottomBreakBlocks;
+	//重力反転ブロック
+	GimmickGroup<GravityBlock, MAX_PLATFORMS> gravityBlocks;
+	// ボタンブロック
+	GimmickGroup<ButtonBlock, MAX_PLATFORMS> buttonBlocks;
+	//アイテムブロック
+	GimmickGroup<ItemBlock, MAX_PLATFORMS> itemBlocks;
+	//カーソルによって動作するギミック
+	GimmickGroup<CursorBottom, MAX_PLATFORMS> cursorBottoms;
+	//磁石（引き寄せ）
+	GimmickGroup<Magnet, MAX_PLATFORMS> magnets;
+	//死ぬブロック
+	GimmickGroup<Rectangle, MAX_HAZARDS> deathBlocks;
+	//壊せるブロック
+	GimmickGroup<BreakableBlock, MAX_HAZARDS> breakableBlocks;
+	//コメントブロック
+	GimmickGroup<CommentBlock, MAX_COMMENT_BLOCKS> commentBlocks;
+	// 一時的に消える床
+	GimmickGroup<TempFloor, MAX_TEMP_FLOORS> tempFloors;
+	// 一時的に消える床のスイッチ
+	GimmickGroup<TempFloorSwitch, MAX_TEMP_FLOORS> tempFloorSwitches;
+	//デコレーション矢印
+	GimmickGroup<DecorArrow, MAX_DECOR_ARROWS> decorArrows;
+	//透明ブロック
+	GimmickGroup<ClearBlock, MAX_CLEAR> clearBlocks;
+	//X方向透明ブロック
+	GimmickGroup<ClearBlockX, MAX_CLEAR> clearBlocksX;
+	//落下文字
+	GimmickGroup<FallingText, MAX_FALLINGTEXT> fallingTexts;
+	//スパイク型トランポリン
+	GimmickGroup<SpikeBouncer, MAX_SPIKE_BOUNCERS> spikeBouncers;
+	//追尾するとげ
+	GimmickGroup<TrackingHazard, MAX_HAZARDS> trackingHazards;
+	// ================================================================
 
 	//エレベーター
 	static constexpr int MAX_ELEVATORS = 8;
@@ -63,22 +104,8 @@ struct Stage {
 	int elevatorCount;
 	bool playerInElevator = false; //プレイヤーがエレベーター内か
 
-	//重力反転ブロック
-	GravityBlock gravityBlocks[MAX_PLATFORMS];
-	GravityBlock gravityBlocksInit[MAX_PLATFORMS];
-	int gravityBlockCount;
 	bool gravityReversed = false; //重力反転中か
 	float gravityCooldown = 0.0f; //重力反転の再発動クールダウン
-
-	// ボタンブロック
-	ButtonBlock buttonBlocks[MAX_PLATFORMS];
-	ButtonBlock buttonBlocksInit[MAX_PLATFORMS];
-	int buttonBlockCount;
-
-	//アイテムブロック
-	ItemBlock itemBlocks[MAX_PLATFORMS];
-	ItemBlock itemBlocksInit[MAX_PLATFORMS];
-	int itemBlockCount;
 
 	//プレイヤーが持ち運べるばね
 	static constexpr int MAX_SPRINGS = 8;
@@ -114,16 +141,6 @@ struct Stage {
 	CursorPlatform cursorPlatforms[MAX_PLATFORMS];
 	CursorPlatform cursorplatformsInit[MAX_PLATFORMS];
 	int cursorPlatformCount;
-
-	//カーソルによって動作するギミック
-	CursorBottom cursorBottoms[MAX_PLATFORMS];
-	CursorBottom cursorBottomsInit[MAX_PLATFORMS];
-	int cursorBottomCount;
-
-	//磁石（引き寄せ）
-	Magnet magnets[MAX_PLATFORMS];
-	Magnet magnetsInit[MAX_PLATFORMS];
-	int magnetCount;
 
 	//移動上昇床
 	MoveUpPlatform moveUpPlatforms[MAX_PLATFORMS];
@@ -183,21 +200,9 @@ struct Stage {
 	MoveHazardRightX moveHazardsRight[MAX_MOVEHAZARD];
 	MoveHazardRightX moveHazardsRightInit[MAX_MOVEHAZARD];
 	int moveHazardRightCount;
-    //追尾するとげ 
-	TrackingHazard trackingHazards[MAX_HAZARDS];
-	TrackingHazard trackingHazardsInit[MAX_HAZARDS];
-	int trackingHazardCount;
+	//追尾するとげ 
 	//スパイク型トランポリン
-	static constexpr int MAX_SPIKE_BOUNCERS = 16;
-	SpikeBouncer spikeBouncers[MAX_SPIKE_BOUNCERS];
-	SpikeBouncer spikeBouncerInit[MAX_SPIKE_BOUNCERS];
-	int spikeBouncerCount = 0;
-	//死ぬブロック
-	Rectangle deathBlocks[MAX_HAZARDS];
-	Rectangle deathBlocksInit[MAX_HAZARDS];
-	int deathBlockCount;
-
-    //回転する鉄球
+	//回転する鉄球
 	RotatingBall rotatingBalls[MAX_HAZARDS];
 	RotatingBall rotatingBallsInit[MAX_HAZARDS];
 	int rotatingBallCount;
@@ -229,31 +234,11 @@ struct Stage {
 	UpDownPlatform upDouwnPlatformsInit[MAX_UPRISING];
 	int upDownCount;
 
-    //透明ブロック
-	ClearBlock clearBlocks[MAX_CLEAR];
-	ClearBlock clearBlocksInit[MAX_CLEAR];
-    int clearsCount;
-
-	//X方向透明ブロック
-	ClearBlockX clearBlocksX[MAX_CLEAR];
-	ClearBlockX clearBlocksXInit[MAX_CLEAR];
-	int clearsXCount;
-
 	//スイッチによって動く床
 	SwitchPlatform switchPlatforms[MAX_PLATFORMS];
 	SwitchPlatform switchplatformsInit[MAX_PLATFORMS];
 	int switchPlatformCount;
 
-
-    //落下文字
-	FallingText fallingTexts[MAX_FALLINGTEXT];
-	FallingText fallingTextsInit[MAX_FALLINGTEXT];
-    int fallingTextCount;
-    
-	//壊せるブロック
-	BreakableBlock breakableBlocks[MAX_HAZARDS];
-	BreakableBlock breakableBlocksInit[MAX_HAZARDS];
-	int breakableBlockCount;
 
 	//出口ドア
 	static constexpr int MAX_EXITDOORS = 10;
@@ -270,11 +255,6 @@ struct Stage {
 	// リスポーン地点（エディタで配置）
 	Vector2 respawnPoint = { 100.0f, 500.0f };
 	bool hasRespawnPoint = false;
-	//コメントブロック
-	static constexpr int MAX_COMMENT_BLOCKS = 16;
-	CommentBlock commentBlocks[MAX_COMMENT_BLOCKS];
-	CommentBlock commentBlocksInit[MAX_COMMENT_BLOCKS];
-	int commentBlockCount = 0;
 	CameraConfig cameraConfig;
 
 	// クレーン発射台
@@ -301,21 +281,6 @@ struct Stage {
 	float ojisanPunchApproachDuration[MAX_OJISAN_PUNCH_AREAS] = {};
 	int ojisanPunchAreaCount = 0;
 	
-	// 一時的に消える床
-	static constexpr int MAX_TEMP_FLOORS = 16;
-	TempFloor tempFloors[MAX_TEMP_FLOORS];
-	TempFloor tempFloorsInit[MAX_TEMP_FLOORS];
-	int tempFloorCount = 0;
-
-	// 一時的に消える床のスイッチ
-	TempFloorSwitch tempFloorSwitches[MAX_TEMP_FLOORS];
-	TempFloorSwitch tempFloorSwitchesInit[MAX_TEMP_FLOORS];
-	int tempFloorSwitchCount = 0;
-
-	static constexpr int MAX_DECOR_ARROWS = 16;
-	DecorArrow decorArrows[MAX_DECOR_ARROWS];
-	int decorArrowCount = 0;
-
 	static constexpr int MAX_DRAG_PIECES = 32;
 	static constexpr int MAX_SNAP_SLOTS = 32;
 

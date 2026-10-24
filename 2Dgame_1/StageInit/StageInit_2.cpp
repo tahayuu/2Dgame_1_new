@@ -35,12 +35,15 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	//stage.platforms[10] = { 3200, 600, 150, 200 };
 
 	//アイテムブロック
-	stage.itemBlocks[0] = { {1250.0f,200.0f,50.0f,50.0f}, false, ItemType::debuffPotion, false };
-	stage.itemBlocks[1] = { {2750.0f,400.0f,60.0f,60.0f},false };
-	stage.itemBlocks[2] = { {4550.0f,330.0f,50.0f,50.0f},false,ItemType::excessJumpPotion };
+	stage.itemBlocks.Clear();
+	stage.itemBlocks.Add({ {1250.0f,200.0f,50.0f,50.0f}, false, ItemType::debuffPotion, false });
+	stage.itemBlocks.Add({ {2750.0f,400.0f,60.0f,60.0f},false });
+	stage.itemBlocks.Add({ {4550.0f,330.0f,50.0f,50.0f},false,ItemType::excessJumpPotion });
+	stage.itemBlocks.Add({ {0.0f,0.0f,0.0f,0.0f},false }); // 4個目のダミー
 	//壊せるブロック
-	stage.breakableBlocks[0] = { {1200.0f,200.0f,50.0f,50.0f},false };
-	stage.breakableBlocks[1] = { {1300.0f,200.0f,50.0f,50.0f},false };
+	stage.breakableBlocks.Clear();
+	stage.breakableBlocks.Add({ {1200.0f,200.0f,50.0f,50.0f},false });
+	stage.breakableBlocks.Add({ {1300.0f,200.0f,50.0f,50.0f},false });
 
 	//敵キャラ配置
 	enemyManager.Spawn(EnemyType::WALKER, { 700.0f, 550.0f });
@@ -54,28 +57,31 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 
 	enemyManager.Spawn(EnemyType::WALKER, { 2600.0f, 550.0f });
 	//透明ブロック（横）
-	stage.clearBlocksX[0] = { 4050,450,50,50 };
-	stage.clearBlocksX[1] = { 4050,500,50,50 };
-	stage.clearBlocksX[2] = { 4050,550,50,50 };
-	stage.clearBlocksX[3] = { 4050,400,50,50 };
+	stage.clearBlocksX.Clear();
+	stage.clearBlocksX.Add({ {4050,450,50,50} });
+	stage.clearBlocksX.Add({ {4050,500,50,50} });
+	stage.clearBlocksX.Add({ {4050,550,50,50} });
+	stage.clearBlocksX.Add({ {4050,400,50,50} });
 	//stage.clearBlocksX[4] = { 4050,350,50,50 };
 
 	// 落下文字
-	stage.fallingTexts[0] = { false,false,false,0.0f,0.0f,300,48,{5800.0f, 200.0f ,130,60},
-		{2300,200},1600.0f,6,400.0f,"NEXT",{5800,200} };
+	stage.fallingTexts.Clear();
+	stage.fallingTexts.Add({ false,false,false,0.0f,0.0f,300,48,{5800.0f, 200.0f ,130,60},
+		{2300,200},1600.0f,6,400.0f,"NEXT",{5800,200} });
 
 	//透明ブロック
-	stage.clearBlocks[0] = { 600, 410,60,60 };
-	stage.clearBlocks[1] = { 2500, 400,60,60 };
-	stage.clearBlocks[2] = { 2560, 400,60,60 };
-	stage.clearBlocks[3] = { 2620, 400,60,60 };
-	stage.clearBlocks[4] = { 2680, 400,80,60 };
-	stage.clearBlocks[5] = { 2530, 200,50,50 };
-	stage.clearBlocks[10] = { 3600,150,100,50 };
-	stage.clearBlocks[6] = { 3700,150,100,50 };
-	stage.clearBlocks[7] = { 3800,150,50,50 };
-	stage.clearBlocks[8] = { 3850,50,200,20 };
-	stage.clearBlocks[9] = { 4050,150,300,50 };
+	stage.clearBlocks.Clear();
+	stage.clearBlocks.Add({ {600, 410,60,60} });
+	stage.clearBlocks.Add({ {2500, 400,60,60} });
+	stage.clearBlocks.Add({ {2560, 400,60,60} });
+	stage.clearBlocks.Add({ {2620, 400,60,60} });
+	stage.clearBlocks.Add({ {2680, 400,80,60} });
+	stage.clearBlocks.Add({ {2530, 200,50,50} });
+	stage.clearBlocks.Add({ {3700,150,100,50} });
+	stage.clearBlocks.Add({ {3800,150,50,50} });
+	stage.clearBlocks.Add({ {3850,50,200,20} });
+	stage.clearBlocks.Add({ {4050,150,300,50} });
+	stage.clearBlocks.Add({ {3600,150,100,50} });
 	//動くトゲ
 	stage.moveHazardsExtY[0] = { { 1500,470,90,30 },false,false,400.0f,470.0f,1000.0f,-1 };
 	//下に下がるとげw
@@ -128,7 +134,6 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 
 	//カウント設定
 	stage.stageWidth = 6400.0f;      // ← 追加：ゴール判定の右端
-	stage.clearsXCount = 6;
 	stage.batteryHumanCount = 3;
 	stage.knockBackWallCount = 6;
 	stage.fallingCount = 3;
@@ -139,15 +144,12 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.hazardCount = 4;
 	stage.movePlatformCountX = 1;
 	stage.upDownCount = 1;
-	stage.itemBlockCount = 4;
-	stage.breakableBlockCount = 2;
-	stage.clearsCount = 10;
+	// itemBlockCount は削除（GimmickGroup::Size()を使用）
 	stage.moveDownHazardExtYCount = 2;
 	stage.moveHazardRightCount = 1;
 	stage.splitPlatformCount = 1;
 	stage.jumpPlatfromCount = 2;
 	stage.switchPlatformCount = 2;  // 3→2（初期化されているのは[0][1]だけ）
-	stage.fallingTextCount = 1;
 
 	for (int i = 0; i < stage.splitPlatformCount; i++) {
 		auto& sp = stage.splitPlatforms[i];
@@ -166,9 +168,6 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	for (int i = 0; i < stage.moveExtYCount; i++) {
 		stage.moveHazardsExtYInit[i] = stage.moveHazardsExtY[i];
 	}
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		stage.fallingTextsInit[i] = stage.fallingTexts[i];
-	}
 	for (int i = 0; i < stage.moveCount; i++) {
 		stage.moveHazardsInit[i] = stage.moveHazards[i];
 	}
@@ -184,12 +183,7 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	for (int i = 0; i < stage.moveCount; i++) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
-	for (int i = 0; i < stage.breakableBlockCount; i++) {
-		stage.breakableBlocksInit[i] = stage.breakableBlocks[i];
-	}
-	for (int i = 0; i < stage.itemBlockCount; i++) {
-		stage.itemBlocksInit[i] = stage.itemBlocks[i];
-	}
+	// itemBlocksInit コピーは削除（GimmickGroup::Add()が自動保存）
 	for (int i = 0; i < stage.upDownCount; i++) {
 		stage.upDouwnPlatformsInit[i] = stage.upDouwnPlatforms[i];
 	}
@@ -199,23 +193,14 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	for(int i= 0; i < stage.moveHazardRightCount; i++) {
 		stage.moveHazardsRightInit[i] = stage.moveHazardsRight[i];
 	}	
-	for (int i = 0; i < stage.clearsCount; i++) {
-		stage.clearBlocksInit[i] = stage.clearBlocks[i];
-	}
 	for (int i = 0; i < stage.knockBackWallCount; i++) {
 		stage.knockBackWallsInit[i] = stage.knockBackWalls[i];
 	}
 	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
 		stage.jumpPlatfromsInit[i] = stage.jumpPlatfroms[i];
 	}
-	for (int i = 0; i < stage.clearsXCount; i++) {
-		stage.clearBlocksXInit[i] = stage.clearBlocksX[i];
-	}
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		stage.switchplatformsInit[i] = stage.switchPlatforms[i];
-	}
-	for(int i = 0;i<stage.fallingTextCount;i++){
-		stage.fallingTextsInit[i] = stage.fallingTexts[i];
 	}
 }
 

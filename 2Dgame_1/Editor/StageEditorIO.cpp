@@ -96,30 +96,34 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
         }
 
         case EditorObjectType::BOTTOM_BREAK_BLOCK:
-            if (c[t] < MAX_HAZARDS) {
-                int i = c[t]++; stage.bottomBreakBlocks[i].rect = o.rect;
-                // 前回プレイ時の壊れた状態が残ったまま初期状態としてコピーされないよう、明示的にリセットする
-                stage.bottomBreakBlocks[i].triggered = false;
-                stage.bottomBreakBlocks[i].isBroken = false;
-                stage.bottomBreakBlocks[i].timer = 0.0f;
-                stage.bottomBreakBlocksInit[i] = stage.bottomBreakBlocks[i];
-            }break;
+        {
+            BottomBreakBlock block{};
+            block.rect = o.rect;
+            if (stage.bottomBreakBlocks.Add(block)) ++c[t];
+            break;
+        }
         case EditorObjectType::BREAKABLE_BLOCK:
-            if (c[t] < MAX_HAZARDS) {
-                int i = c[t]++; stage.breakableBlocks[i].rect = o.rect;
-                stage.breakableBlocks[i].isBroken = false;
-                stage.breakableBlocksInit[i] = stage.breakableBlocks[i];
-            }break;
+        {
+            BreakableBlock block{};
+            block.rect = o.rect;
+            block.isBroken = false;
+            if (stage.breakableBlocks.Add(block)) ++c[t];
+        }break;
         case EditorObjectType::GRAVITY_BLOCK:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++; stage.gravityBlocks[i].rect = o.rect;
-                stage.gravityBlocksInit[i] = stage.gravityBlocks[i];
-            }break;
+        {
+            GravityBlock block{};
+            block.rect = o.rect;
+            if (stage.gravityBlocks.Add(block)) ++c[t];
+        }break;
         case EditorObjectType::ITEM_BLOCK:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++; stage.itemBlocks[i].rect = o.rect;
-                stage.itemBlocksInit[i] = stage.itemBlocks[i];
-            }break;
+        {
+            ItemBlock block{};
+            block.rect = o.rect;
+            // spawnType はデフォルト値のまま（元の実装でもEditorからは未設定）
+            block.isActive = false;
+            block.hasSpawned = false;
+            if (stage.itemBlocks.Add(block)) ++c[t];
+        }break;
         case EditorObjectType::ICE_PLATFORM:
             if (c[t] < MAX_PLATFORMS) {
                 int i = c[t]++; auto& p = stage.icePlatforms[i];
@@ -143,23 +147,23 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
                 stage.cursorplatformsInit[i] = p;
             }break;
         case EditorObjectType::MAGNET:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++; auto& m = stage.magnets[i];
-                m.rect = o.rect; m.Force = o.params[0]; m.maxDistance = o.params[1]; m.isActive = true;
-                stage.magnetsInit[i] = m;
-            }break;
+        {
+            Magnet m{};
+            m.rect = o.rect; m.Force = o.params[0]; m.maxDistance = o.params[1]; m.isActive = true;
+            if (stage.magnets.Add(m)) ++c[t];
+        }break;
         case EditorObjectType::CLEAR_BLOCK:
-            if (c[t] < MAX_CLEAR) {
-                int i = c[t]++; stage.clearBlocks[i].rect = o.rect;
-                stage.clearBlocks[i].clearflag = false;
-                stage.clearBlocksInit[i] = stage.clearBlocks[i];
-            }break;
+        {
+            ClearBlock cb{};
+            cb.rect = o.rect; cb.clearflag = false;
+            if (stage.clearBlocks.Add(cb)) ++c[t];
+        }break;
         case EditorObjectType::CLEAR_BLOCK_X:
-            if (c[t] < MAX_CLEAR) {
-                int i = c[t]++; stage.clearBlocksX[i].rect = o.rect;
-                stage.clearBlocksX[i].clearflag = false;
-                stage.clearBlocksXInit[i] = stage.clearBlocksX[i];
-            }break;
+        {
+            ClearBlockX cbx{};
+            cbx.rect = o.rect; cbx.clearflag = false;
+            if (stage.clearBlocksX.Add(cbx)) ++c[t];
+        }break;
         case EditorObjectType::ELEVATOR:
             if (c[t] < Stage::MAX_ELEVATORS) {
                 int i = c[t]++; auto& e = stage.elevators[i];
@@ -265,14 +269,14 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             // 旧機能。moveHazardsRight に統合されたため、読み込みはスキップ（互換性のためcaseのみ残す）
             break;
         case EditorObjectType::TRACKING_HAZARD:
-            if (c[t] < MAX_HAZARDS) {
-                int i = c[t]++; auto& h = stage.trackingHazards[i];
-                // p0=speed, p1=trackingRange, p2=maxDistance, p3=returnToStart(0/1)
-                h.rect = o.rect; h.startPos = { o.rect.x,o.rect.y };
-                h.speed = o.params[0]; h.trackingRange = o.params[1]; h.maxDistance = o.params[2];
-                h.isTracking = false; h.returnToStart = (o.params[3] != 0.0f);
-                stage.trackingHazardsInit[i] = h;
-            }break;
+        {
+            TrackingHazard h{};
+            // p0=speed, p1=trackingRange, p2=maxDistance, p3=returnToStart(0/1)
+            h.rect = o.rect; h.startPos = { o.rect.x,o.rect.y };
+            h.speed = o.params[0]; h.trackingRange = o.params[1]; h.maxDistance = o.params[2];
+            h.isTracking = false; h.returnToStart = (o.params[3] != 0.0f);
+            if (stage.trackingHazards.Add(h)) ++c[t];
+        }break;
         case EditorObjectType::ROTATING_BALL:
             if (c[t] < MAX_HAZARDS) {
                 int i = c[t]++; auto& b = stage.rotatingBalls[i];
@@ -357,30 +361,27 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             // カーソルクリック用ボタン(CURSOR_BOTTOM)として出力する
             if (switchBtnSeen >= switchPlatformTotal) {
                 int ct = (int)EditorObjectType::CURSOR_BOTTOM;
-                if (c[ct] < MAX_PLATFORMS) {
-                    int i = c[ct]++;
-                    auto& cb = stage.cursorBottoms[i];
-                    cb.rect = o.rect;
-                    cb.targetRollingBall = -1;
-                    cb.oneShot = true;
-                    cb.maxDistance = 0.0f;
-                    cb.isActive = false;
-                    cb.triggered = false;
-                    stage.cursorBottomsInit[i] = cb;
-                }
+                CursorBottom cb{};
+                cb.rect = o.rect;
+                cb.targetRollingBall = -1;
+                cb.oneShot = true;
+                cb.maxDistance = 0.0f;
+                cb.isActive = false;
+                cb.triggered = false;
+                if (stage.cursorBottoms.Add(cb)) ++c[ct];
             }
             switchBtnSeen++;
             break;
         case EditorObjectType::FALLING_TEXT:
-            if (c[t] < MAX_FALLINGTEXT) {
-                int i = c[t]++;
-                stage.fallingTexts[i].rect = o.rect;
-                stage.fallingTexts[i].fallDelay = o.params[0];
-                stage.fallingTexts[i].gravity = o.params[1];
-                stage.fallingTexts[i].tolerance = o.params[2];
-                stage.fallingTexts[i].fontSize = (int)o.params[3];
-                stage.fallingTextsInit[i] = stage.fallingTexts[i];
-            }break;
+        {
+            FallingText ft{};
+            ft.rect = o.rect;
+            ft.fallDelay = o.params[0];
+            ft.gravity = o.params[1];
+            ft.tolerance = o.params[2];
+            ft.fontSize = (int)o.params[3];
+            if (stage.fallingTexts.Add(ft)) ++c[t];
+        }break;
         case EditorObjectType::EXIT_DOOR:
             if (c[t] < Stage::MAX_EXITDOORS) {
                 int i = c[t]++;
@@ -403,8 +404,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             stage.hasRespawnPoint = true;
             break;
         case EditorObjectType::COMMENT_BLOCK:
-            if (c[t] < Stage::MAX_COMMENT_BLOCKS) {
-                int i = c[t]++; auto& cb = stage.commentBlocks[i];
+            {
+                CommentBlock cb{};
                 cb.rect = o.rect;
                 // コメントブロックと DialogManager の接続点。
                 // text が "@キー名" の形式なら、固定文ではなく辞書(ojisan_lines.text)から取得する。
@@ -421,15 +422,12 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
                 cb.duration = o.params[0];
                 cb.triggered = false;
                 cb.cooldown = 0.0f;
-                stage.commentBlocksInit[i] = cb;
+                if (stage.commentBlocks.Add(cb)) ++c[t];
             }break;
 
         case EditorObjectType::DEATH_BLOCK:
-            if (c[t] < MAX_HAZARDS) {
-                int i = c[t]++;
-                stage.deathBlocks[i] = o.rect;
-                stage.deathBlocksInit[i] = o.rect;
-            }break;
+            if (stage.deathBlocks.Add(o.rect)) ++c[t];
+            break;
 
         case EditorObjectType::OJISAN_PUNCH_AREA:
             if (c[t] < Stage::MAX_OJISAN_PUNCH_AREAS) {
@@ -444,26 +442,25 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             } break;
 
         case EditorObjectType::CURSOR_BOTTOM:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++;
-                auto& cb = stage.cursorBottoms[i];
-                cb.rect = o.rect;
-                // p0=targetRollingBall, p1=oneShot(0/1), p2=maxDistance
-                cb.targetRollingBall = (int)o.params[0];
-                cb.oneShot = (o.params[1] != 0.0f);
-                cb.maxDistance = o.params[2];
-                cb.isActive = false;
-                cb.triggered = false;
-                stage.cursorBottomsInit[i] = cb;
-            }break;
+        {
+            CursorBottom cb{};
+            cb.rect = o.rect;
+            // p0=targetRollingBall, p1=oneShot(0/1), p2=maxDistance
+            cb.targetRollingBall = (int)o.params[0];
+            cb.oneShot = (o.params[1] != 0.0f);
+            cb.maxDistance = o.params[2];
+            cb.isActive = false;
+            cb.triggered = false;
+            if (stage.cursorBottoms.Add(cb)) ++c[t];
+        }break;
         case EditorObjectType::SPIKE_BOUNCER:
-            if (c[t] < Stage::MAX_SPIKE_BOUNCERS) {
-                int i = c[t]++; auto& sb = stage.spikeBouncers[i];
-                sb.rect = o.rect;
-                sb.bounceVelosity = { o.params[0], o.params[1] };
-                sb.startY = o.rect.y;
-                stage.spikeBouncerInit[i] = sb;
-            }break;
+        {
+            SpikeBouncer sb{};
+            sb.rect = o.rect;
+            sb.bounceVelosity = { o.params[0], o.params[1] };
+            sb.startY = o.rect.y;
+            if (stage.spikeBouncers.Add(sb)) ++c[t];
+        }break;
 
         case EditorObjectType::SPRING:
             if (c[t] < Stage::MAX_SPRINGS) {
@@ -504,34 +501,33 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             }break;
 
         case EditorObjectType::TEMP_FLOOR:
-            if (c[t] < Stage::MAX_TEMP_FLOORS) {
-                int i = c[t]++;
-                auto& tf = stage.tempFloors[i];
+            {
+                TempFloor tf{};
                 tf.rect = o.rect;
                 tf.showSec = (o.params[0] > 0.0f) ? o.params[0] : 2.0f;
                 tf.timer = 0.0f;
                 tf.visible = false;
-                stage.tempFloorsInit[i] = tf;
+                if (stage.tempFloors.Add(tf)) ++c[t];
             } break;
 
         case EditorObjectType::TEMP_FLOOR_SWITCH:
-            if (c[t] < Stage::MAX_TEMP_FLOORS) {
-                int i = c[t]++;
-                auto& sw = stage.tempFloorSwitches[i];
+            {
+                TempFloorSwitch sw{};
                 sw.rect = o.rect;
                 sw.targetFloor = (int)o.params[0];
                 sw.oneShot = (o.params[1] != 0.0f);
                 sw.triggered = false;
                 sw.hover = false;
-                stage.tempFloorSwitchesInit[i] = sw;
+                if (stage.tempFloorSwitches.Add(sw)) ++c[t];
             } break;
 
         case EditorObjectType::DECOR_ARROW:
-            if (c[t] < Stage::MAX_DECOR_ARROWS) {
-                int i = c[t]++;
-                stage.decorArrows[i].rect = o.rect;
-                stage.decorArrows[i].angleDeg = o.params[0];
-            }
+        {
+            DecorArrow arrow{};
+            arrow.rect = o.rect;
+            arrow.angleDeg = o.params[0];
+            if (stage.decorArrows.Add(arrow)) ++c[t];
+        }
             break;
 
         case EditorObjectType::DECOR_SPRITE:
@@ -702,40 +698,30 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             si.flipY = o.flipY;
         }
     }
-    // 配列カウントを Stage 構造体に反映
+    // 配列カウントを Stage 構造体に反映（GimmickGroup化済みのため count 反映は不要）
     stage.platformCount = c[0];  stage.backPlatformCount = c[1];
     stage.hazardCount = c[2]; 
-    stage.bottomBreakBlockCount = c[4]; stage.breakableBlockCount = c[5];
-    stage.elevatorCount = c[6];  stage.gravityBlockCount = c[7];
-    stage.buttonBlockCount = c[8]; stage.itemBlockCount = c[9];
+    stage.elevatorCount = c[6];
     stage.icePlatformCount = c[10]; stage.moveDownPlatformCount = c[11]
         ;
     stage.moveUpPlatformCount = c[12]; stage.jumpPlatfromCount = c[13];
     stage.batteryHumanCount = c[14]; stage.cursorPlatformCount = c[15];
-    stage.magnetCount = c[16];   stage.knockBackWallCount = c[17];
+    stage.knockBackWallCount = c[17];
     stage.splitPlatformCount = c[18]; stage.circlePlatformCount = c[19];
     stage.movePlatformCountX = c[20]; stage.moveCount = c[21];
     stage.moveExtYCount = c[22]; stage.moveDownHazardExtYCount = c[23];
     stage.moveHazardRightCount = c[24];
-    stage.trackingHazardCount = c[26]; stage.rotatingBallCount = c[27];
+    stage.rotatingBallCount = c[27];
     stage.moveRotatingBallCount = c[28]; stage.rollingBallCount = c[29];
     stage.fallingCount = c[30];  stage.upRisingCount = c[31];
-    stage.upDownCount = c[32];   stage.clearsCount = c[33];
-    stage.clearsXCount = c[34];  stage.switchPlatformCount = c[35];
-    stage.fallingTextCount = c[36]; stage.exitDoorCount = c[37];
+    stage.upDownCount = c[32];   stage.switchPlatformCount = c[35];
+    stage.exitDoorCount = c[37];
     stage.layerDoorCount = c[38];
-    stage.commentBlockCount = c[41];
-    stage.cursorBottomCount = c[42];
-    stage.deathBlockCount = c[43];
-    stage.spikeBouncerCount = c[44];
     stage.springCount = c[45];
     stage.craneLaunchPadCount = c[46];
     stage.craneCount = c[47];
     stage.ojisanPunchAreaCount = c[48];
     stage.warpCount = c[49];
-    stage.tempFloorCount = c[(int)EditorObjectType::TEMP_FLOOR];              // 51
-    stage.tempFloorSwitchCount = c[(int)EditorObjectType::TEMP_FLOOR_SWITCH]; // 52
-    stage.decorArrowCount = c[(int)EditorObjectType::DECOR_ARROW];
     stage.movePlatformCountYXY = c[(int)EditorObjectType::MOVEPLATFORMYXY];
     stage.dragPieceCount = c[(int)EditorObjectType::DRAG_PIECE];
     stage.snapSlotCount = c[(int)EditorObjectType::SNAP_SLOT];
@@ -832,16 +818,44 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 		InitDefaultParams(o);// デフォルトパラメータを初期化
 		ed.objects.push_back(o);// 配置オブジェクトリストに追加
     }
-        IMPORT_RECT_P(BOTTOM_BREAK_BLOCK, s.bottomBreakBlocks, s.bottomBreakBlockCount)
-        IMPORT_RECT_P(BREAKABLE_BLOCK, s.breakableBlocks, s.breakableBlockCount)
+        for (std::size_t i = 0; i < s.bottomBreakBlocks.Size(); ++i) {
+            PlacedObject o = { EditorObjectType::BOTTOM_BREAK_BLOCK, s.bottomBreakBlocks.Get(i).rect };
+            InitDefaultParams(o);
+            ed.objects.push_back(o);
+        }
+        for (std::size_t i = 0; i < s.breakableBlocks.Size(); ++i) {
+            PlacedObject o = { EditorObjectType::BREAKABLE_BLOCK, s.breakableBlocks.Get(i).rect };
+            InitDefaultParams(o);
+            ed.objects.push_back(o);
+        }
         IMPORT_RECT_P(ELEVATOR, s.elevators, s.elevatorCount)
-        IMPORT_RECT_P(GRAVITY_BLOCK, s.gravityBlocks, s.gravityBlockCount)
-        IMPORT_RECT_P(ITEM_BLOCK, s.itemBlocks, s.itemBlockCount)
+        for (std::size_t i = 0; i < s.gravityBlocks.Size(); ++i) {
+            PlacedObject o = { EditorObjectType::GRAVITY_BLOCK, s.gravityBlocks.Get(i).rect };
+            InitDefaultParams(o);
+            ed.objects.push_back(o);
+        }
+        for (std::size_t i = 0; i < s.itemBlocks.Size(); ++i) {
+            PlacedObject o = { EditorObjectType::ITEM_BLOCK, s.itemBlocks.Get(i).rect };
+            InitDefaultParams(o);
+            ed.objects.push_back(o);
+        }
         IMPORT_RECT_P(MOVE_DOWN_PLATFORM, s.moveDownPlatforms, s.moveDownPlatformCount)
         IMPORT_RECT_P(MOVE_UP_PLATFORM, s.moveUpPlatforms, s.moveUpPlatformCount)
-        IMPORT_RECT_P(CLEAR_BLOCK, s.clearBlocks, s.clearsCount)
-        IMPORT_RECT_P(CLEAR_BLOCK_X, s.clearBlocksX, s.clearsXCount)
-        IMPORT_RAW_P(DEATH_BLOCK, s.deathBlocks, s.deathBlockCount)
+        for (std::size_t i = 0; i < s.clearBlocks.Size(); ++i) {
+            PlacedObject o = { EditorObjectType::CLEAR_BLOCK, s.clearBlocks.Get(i).rect };
+            InitDefaultParams(o);
+            ed.objects.push_back(o);
+        }
+        for (std::size_t i = 0; i < s.clearBlocksX.Size(); ++i) {
+            PlacedObject o = { EditorObjectType::CLEAR_BLOCK_X, s.clearBlocksX.Get(i).rect };
+            InitDefaultParams(o);
+            ed.objects.push_back(o);
+        }
+        for (std::size_t i = 0; i < s.deathBlocks.Size(); ++i) {
+            PlacedObject o = { EditorObjectType::DEATH_BLOCK, s.deathBlocks.Get(i) };
+            InitDefaultParams(o);
+            ed.objects.push_back(o);
+        }
 
         // おじさんパンチは描画順パラメータ付きなので個別に復元する。
         for (int i = 0; i < s.ojisanPunchAreaCount; i++) {
@@ -857,10 +871,11 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
 
 
         // 以下、パラメータ付きのオブジェクトは個別に処理
-        for (int i = 0; i < s.spikeBouncerCount; i++) {
-            PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, s.spikeBouncers[i].rect };
-            o.params[0] = s.spikeBouncers[i].bounceVelosity.x;
-            o.params[1] = s.spikeBouncers[i].bounceVelosity.y;
+        for (std::size_t i = 0; i < s.spikeBouncers.Size(); i++) {
+            const auto& sb = s.spikeBouncers.Get(i);
+            PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, sb.rect };
+            o.params[0] = sb.bounceVelosity.x;
+            o.params[1] = sb.bounceVelosity.y;
             ed.objects.push_back(o);
         }
     for (int i = 0; i < s.icePlatformCount; i++) {
@@ -890,9 +905,10 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.params[0] = s.cursorPlatforms[i].followSpeed; o.params[1] = s.cursorPlatforms[i].maxDistance;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.magnetCount; i++) {
-        PlacedObject o = { EditorObjectType::MAGNET,s.magnets[i].rect };
-        o.params[0] = s.magnets[i].Force; o.params[1] = s.magnets[i].maxDistance;
+    for (std::size_t i = 0; i < s.magnets.Size(); i++) {
+        const auto& m = s.magnets.Get(i);
+        PlacedObject o = { EditorObjectType::MAGNET, m.rect };
+        o.params[0] = m.Force; o.params[1] = m.maxDistance;
         ed.objects.push_back(o);
     }
     for (int i = 0; i < s.knockBackWallCount; i++) {
@@ -904,17 +920,19 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.params[4] = s.knockBackWalls[i].limitStop;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.cursorBottomCount; i++) {
-        PlacedObject o = { EditorObjectType::CURSOR_BOTTOM, s.cursorBottoms[i].rect };
-        o.params[0] = (float)s.cursorBottoms[i].targetRollingBall;
-        o.params[1] = s.cursorBottoms[i].oneShot ? 1.0f : 0.0f;
-        o.params[2] = s.cursorBottoms[i].maxDistance;
+    for (std::size_t i = 0; i < s.cursorBottoms.Size(); i++) {
+        const auto& cb = s.cursorBottoms.Get(i);
+        PlacedObject o = { EditorObjectType::CURSOR_BOTTOM, cb.rect };
+        o.params[0] = (float)cb.targetRollingBall;
+        o.params[1] = cb.oneShot ? 1.0f : 0.0f;
+        o.params[2] = cb.maxDistance;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.spikeBouncerCount; i++) {
-        PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, s.spikeBouncers[i].rect };
-        o.params[0] = s.spikeBouncers[i].bounceVelosity.x;
-        o.params[1] = s.spikeBouncers[i].bounceVelosity.y;
+    for (std::size_t i = 0; i < s.spikeBouncers.Size(); i++) {
+        const auto& sb = s.spikeBouncers.Get(i);
+        PlacedObject o = { EditorObjectType::SPIKE_BOUNCER, sb.rect };
+        o.params[0] = sb.bounceVelosity.x;
+        o.params[1] = sb.bounceVelosity.y;
         ed.objects.push_back(o);
     }
     for (int i = 0; i < s.splitPlatformCount; i++) {
@@ -970,12 +988,13 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         ed.objects.push_back(o);
     }
     // moveHazardsExtX は廃止済み（moveHazardsRight に統合）。旧データは書き出さない。
-    for (int i = 0; i < s.trackingHazardCount; i++) {
-        PlacedObject o = { EditorObjectType::TRACKING_HAZARD,s.trackingHazards[i].rect };
-        o.params[0] = s.trackingHazards[i].speed;
-        o.params[1] = s.trackingHazards[i].trackingRange;
-        o.params[2] = s.trackingHazards[i].maxDistance;
-        o.params[3] = s.trackingHazards[i].returnToStart ? 1.0f : 0.0f;
+    for (std::size_t i = 0; i < s.trackingHazards.Size(); i++) {
+        const auto& th = s.trackingHazards.Get(i);
+        PlacedObject o = { EditorObjectType::TRACKING_HAZARD, th.rect };
+        o.params[0] = th.speed;
+        o.params[1] = th.trackingRange;
+        o.params[2] = th.maxDistance;
+        o.params[3] = th.returnToStart ? 1.0f : 0.0f;
         ed.objects.push_back(o);
     }
     // ★ ROTATING_BALL: armLen を params[2] から適用
@@ -1041,12 +1060,13 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         InitDefaultParams(btn);
         ed.objects.push_back(btn);
     }
-    for (int i = 0; i < s.fallingTextCount; i++) {
-        PlacedObject o = { EditorObjectType::FALLING_TEXT, s.fallingTexts[i].rect };
-        o.params[0] = s.fallingTexts[i].fallDelay;
-        o.params[1] = s.fallingTexts[i].gravity;
-        o.params[2] = s.fallingTexts[i].tolerance;
-        o.params[3] = (float)s.fallingTexts[i].fontSize;
+    for (std::size_t i = 0; i < s.fallingTexts.Size(); i++) {
+        const auto& ft = s.fallingTexts.Get(i);
+        PlacedObject o = { EditorObjectType::FALLING_TEXT, ft.rect };
+        o.params[0] = ft.fallDelay;
+        o.params[1] = ft.gravity;
+        o.params[2] = ft.tolerance;
+        o.params[3] = (float)ft.fontSize;
         ed.objects.push_back(o);
     }
     for (int i = 0; i < s.exitDoorCount; i++) {
@@ -1087,20 +1107,23 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         ed.objects.push_back(o);
     }
     // TEMP_FLOOR と TEMP_FLOアーSWITCH を復元
-    for (int i = 0; i < s.tempFloorCount; i++) {
-        PlacedObject o = { EditorObjectType::TEMP_FLOOR, s.tempFloors[i].rect };
-        o.params[0] = s.tempFloors[i].showSec;
+    for (std::size_t i = 0; i < s.tempFloors.Size(); i++) {
+        const auto& floor = s.tempFloors.Get(i);
+        PlacedObject o = { EditorObjectType::TEMP_FLOOR, floor.rect };
+        o.params[0] = floor.showSec;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.tempFloorSwitchCount; i++) {
-        PlacedObject o = { EditorObjectType::TEMP_FLOOR_SWITCH, s.tempFloorSwitches[i].rect };
-        o.params[0] = (float)s.tempFloorSwitches[i].targetFloor;
-        o.params[1] = s.tempFloorSwitches[i].oneShot ? 1.0f : 0.0f;
+    for (std::size_t i = 0; i < s.tempFloorSwitches.Size(); i++) {
+        const auto& sw = s.tempFloorSwitches.Get(i);
+        PlacedObject o = { EditorObjectType::TEMP_FLOOR_SWITCH, sw.rect };
+        o.params[0] = (float)sw.targetFloor;
+        o.params[1] = sw.oneShot ? 1.0f : 0.0f;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.decorArrowCount; i++) {
-        PlacedObject o = { EditorObjectType::DECOR_ARROW, s.decorArrows[i].rect };
-        o.params[0] = s.decorArrows[i].angleDeg;
+    for (std::size_t i = 0; i < s.decorArrows.Size(); i++) {
+        const auto& arrow = s.decorArrows.Get(i);
+        PlacedObject o = { EditorObjectType::DECOR_ARROW, arrow.rect };
+        o.params[0] = arrow.angleDeg;
         ed.objects.push_back(o);
     }
     for (int i = 0; i < s.decoSpriteCount; i++) {

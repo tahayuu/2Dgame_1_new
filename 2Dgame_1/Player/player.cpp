@@ -303,8 +303,8 @@ void PlayerStateUpdate(PlayerState& ps,
 
     // ── 死亡判定（デスブロック・トゲ） ──────────────
     bool hitDeathBlock = false;
-    for (int i = 0; i < stage.deathBlockCount; i++) {
-        if (CheckCollisionRecs(ps.rect, stage.deathBlocks[i])) {
+    for (std::size_t i = 0; i < stage.deathBlocks.Size(); i++) {
+        if (CheckCollisionRecs(ps.rect, stage.deathBlocks.Get(i))) {
             hitDeathBlock = true; break;
         }
     }
@@ -321,8 +321,8 @@ void PlayerStateUpdate(PlayerState& ps,
     }
 
     // ── コメントブロック ────────────────────────────
-    for (int i = 0; i < stage.commentBlockCount; i++) {
-        auto& cb = stage.commentBlocks[i];
+    for (std::size_t i = 0; i < stage.commentBlocks.Size(); i++) {
+        auto& cb = stage.commentBlocks.Get(i);
         if (cb.cooldown > 0.0f) { cb.cooldown -= dt; continue; }
         if (!cb.triggered && CheckCollisionRecs(ps.rect, cb.rect)) {
             cb.triggered = true;

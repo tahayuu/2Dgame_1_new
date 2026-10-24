@@ -461,14 +461,15 @@ static bool JumpResolveSolidY(const Rectangle& solid, Rectangle& player, Vector2
 
 //透明ブロック：下から当たったら出現判定をする
 static void TrySpawnClearFromBelow(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity, AudioManager& audio) {
-    for (int i = 0; i < stage.clearsCount; i++) {
-        if (stage.clearBlocks[i].clearflag) continue; // 既に出現済みなら次へ
-        Rectangle c = stage.clearBlocks[i].rect;
+    for (std::size_t i = 0; i < stage.clearBlocks.Size(); i++) {
+        auto& cb = stage.clearBlocks.Get(i);
+        if (cb.clearflag) continue; // 既に出現済みなら次へ
+        Rectangle c = cb.rect;
         bool hitNow = CheckCollisionRecs(player, c);//今プレイヤーと重なっているのか
         bool wasBelow = (prev.y >= c.y + c.height); //前のフレームではブロックの下にいたか？
         bool goingUp = (velocity.y < 0);            //上向きに動いているか？
         if (hitNow && wasBelow && goingUp) {//下からジャンプで突き上げた
-            stage.clearBlocks[i].clearflag = true;
+            cb.clearflag = true;
 			AudioPlaySfx(audio, SfxId::transparentSe);
             player.y = c.y + c.height;
             velocity.y = 0;
@@ -479,16 +480,17 @@ static void TrySpawnClearFromBelow(Stage& stage, const Rectangle& prev/*前フ�
 
 //透明ブロック：横から当たったら出現判定
 static void TrySpawnClearFromSide(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity, AudioManager& audio) {
-	for (int i = 0; i < stage.clearsXCount; i++) {
-		if (stage.clearBlocksX[i].clearflag) continue; // 既に出現済みなら次へ
-		Rectangle c = stage.clearBlocksX[i].rect;
+	for (std::size_t i = 0; i < stage.clearBlocksX.Size(); i++) {
+		auto& cbx = stage.clearBlocksX.Get(i);
+		if (cbx.clearflag) continue; // 既に出現済みなら次へ
+		Rectangle c = cbx.rect;
 		bool hitNow = CheckCollisionRecs(player, c);//今プレイヤーと重なっているのか
 		bool wasLeft = (prev.x + prev.width <= c.x); //前のフレームではブロックの左にいたか？
 		bool wasRight = (prev.x >= c.x + c.width); //前のフレームではブロックの右にいたか？
 		bool movingRight = (velocity.x > 0);            //右向きに動いているか？
 		bool movingLeft = (velocity.x < 0);            //左向きに動いているか？
 		if (hitNow && ((wasLeft && movingRight) || (wasRight && movingLeft))) {//横から突き上げた
-			stage.clearBlocksX[i].clearflag = true;
+			cbx.clearflag = true;
 			AudioPlaySfx(audio, SfxId::transparentSe2);
 			//押し戻し処理
 			if (wasLeft && movingRight) {
@@ -505,26 +507,27 @@ static void TrySpawnClearFromSide(Stage& stage, const Rectangle& prev/*前フレ
 
 //壊れるブロック：下から当たったら壊れる判定をする
 static void TryBreakFromBelow(Stage& stage, const Rectangle& prev/*前フレームのプレイヤーの位置*/, Rectangle& player, Vector2& velocity, AudioManager& audio) {
-    for (int i = 0; i < stage.breakableBlockCount; i++) {
-		if (stage.breakableBlocks[i].isBroken)continue; // 既に壊れ済みなら次へ
-		Rectangle c = stage.breakableBlocks[i].rect;
+	for (std::size_t i = 0; i < stage.breakableBlocks.Size(); i++) {
+		auto& bb = stage.breakableBlocks.Get(i);
+		if (bb.isBroken)continue; // 既に壊れ済みなら次へ
+		Rectangle c = bb.rect;
 		bool hitNow = CheckCollisionRecs(player, c);//今プレイヤーと重なっているのか
 		bool wasBelow = (prev.y >= c.y + c.height); //前のフレームではブロックの下にいたか？
 		bool goingUp = (velocity.y < 0);            //上向きに動いているか？
 		if (hitNow && wasBelow && goingUp) {//下からジャンプで突き上げた
-			stage.breakableBlocks[i].isBroken = true;
+			bb.isBroken = true;
 			AudioPlaySfx(audio, SfxId::se_naguru);
 			player.y = c.y + c.height;
 			velocity.y = 0;
 			return;
 		}
-    }
+	}
 }
 
 //ボタンブロック：下から叩いたらブロック出現
 static void TryActivateButtonBlock(Stage& stage, const Rectangle& prev, Rectangle& player, Vector2& velocity) {
-    for (int i = 0; i < stage.buttonBlockCount; i++) {
-        auto& bb = stage.buttonBlocks[i];
+    for (std::size_t i = 0; i < stage.buttonBlocks.Size(); i++) {
+        auto& bb = stage.buttonBlocks.Get(i);
         if (bb.activated) continue;
         Rectangle b = bb.buttonRect;
         bool hitNow  = CheckCollisionRecs(player, b);
@@ -544,8 +547,8 @@ static void TryActivateButtonBlock(Stage& stage, const Rectangle& prev, Rectangl
 static void TryActivateGravityBlock(Stage& stage, const Rectangle& prev, Rectangle& player, Vector2& velocity) {
 	const float minActivateSpeed = 300.0f; // 上から叩く場合に必要な最低速度
 
-	for (int i = 0; i < stage.gravityBlockCount; i++) {
-		auto& gb = stage.gravityBlocks[i];
+	for (std::size_t i = 0; i < stage.gravityBlocks.Size(); i++) {
+		auto& gb = stage.gravityBlocks.Get(i);
 		Rectangle b = gb.rect;
 		bool hitNow = CheckCollisionRecs(player, b);
 		if (!hitNow) continue;
@@ -730,8 +733,8 @@ static Rectangle ScaleRectCenter(const Rectangle& r, float scale) {
 //下から触れただけで壊れるブロック
 //ブロック下面がプレイヤー上部と重なった時点で自動的にトリガー
 static void TryBreakFromBelowOnly(Stage& stage, const Rectangle& prev, Rectangle& player, Vector2& velocity) {
-	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
-		auto& bb = stage.bottomBreakBlocks[i];
+	for (std::size_t i = 0; i < stage.bottomBreakBlocks.Size(); i++) {
+		auto& bb = stage.bottomBreakBlocks.Get(i);
 		if (bb.isBroken || bb.triggered) continue;
 
 		Rectangle c = bb.rect;
@@ -791,18 +794,19 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 	//ボタンブロック
-	for (int i = 0; i < stage.buttonBlockCount; i++) {
-		ResolveSolidX(stage.buttonBlocks[i].buttonRect, player, velocity, prevPlayer);
-		if (stage.buttonBlocks[i].activated) {
-			for (const auto& br : stage.buttonBlocks[i].blockRects) {
+	for (std::size_t i = 0; i < stage.buttonBlocks.Size(); i++) {
+		const auto& bb = stage.buttonBlocks.Get(i);
+		ResolveSolidX(bb.buttonRect, player, velocity, prevPlayer);
+		if (bb.activated) {
+			for (const auto& br : bb.blockRects) {
 				ResolveSolidX(br, player, velocity, prevPlayer);
 			}
 		}
 	}
 
 	//アイテムブロック
-	for (int i = 0; i < stage.itemBlockCount; i++) {
-		ResolveSolidX(stage.itemBlocks[i].rect, player, velocity, prevPlayer);
+	for (std::size_t i = 0; i < stage.itemBlocks.Size(); i++) {
+		ResolveSolidX(stage.itemBlocks.Get(i).rect, player, velocity, prevPlayer);
 	}
 
 	//カーソル追従床
@@ -876,13 +880,13 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 	// スパイク型トランポリン（横方向の衝突）
-	for (int i = 0; i < stage.spikeBouncerCount; i++) {
-		ResolveSolidX(stage.spikeBouncers[i].rect, player, velocity, prevPlayer);
+	for (std::size_t i = 0; i < stage.spikeBouncers.Size(); i++) {
+		ResolveSolidX(stage.spikeBouncers.Get(i).rect, player, velocity, prevPlayer);
 	}
 
 	//重力反転ブロック
-	for (int i = 0; i < stage.gravityBlockCount; i++) {
-		ResolveSolidXPlayer(stage.gravityBlocks[i].rect, player, velocity, prevPlayer, stage.gravityReversed);
+	for (std::size_t i = 0; i < stage.gravityBlocks.Size(); i++) {
+		ResolveSolidXPlayer(stage.gravityBlocks.Get(i).rect, player, velocity, prevPlayer, stage.gravityReversed);
 	}
 
 	//人を発射する砲台
@@ -957,8 +961,8 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 	//落下文字
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		ResolveSolidX(stage.fallingTexts[i].GetRect(), player, velocity, prevPlayer);
+	for (std::size_t i = 0; i < stage.fallingTexts.Size(); i++) {
+		ResolveSolidX(stage.fallingTexts.Get(i).GetRect(), player, velocity, prevPlayer);
 	}
 
 	//移動床X
@@ -966,20 +970,23 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 		ResolveSolidX(stage.movePlatformsX[i].rect, player, velocity, prevPlayer);
 	}
 	//壊れるブロック
-	for (int i = 0; i < stage.breakableBlockCount; i++) {
-		if (!stage.breakableBlocks[i].isBroken) {
-			ResolveSolidX(stage.breakableBlocks[i].rect, player, velocity, prevPlayer);
+	for (std::size_t i = 0; i < stage.breakableBlocks.Size(); i++) {
+		const auto& bb = stage.breakableBlocks.Get(i);
+		if (!bb.isBroken) {
+			ResolveSolidX(bb.rect, player, velocity, prevPlayer);
 		}
 	}
 	//透明ブロック
-	for (int i = 0; i < stage.clearsCount; i++) {
-		if (stage.clearBlocks[i].clearflag) {
-			ResolveSolidX(stage.clearBlocks[i].rect, player, velocity, prevPlayer);
+	for (std::size_t i = 0; i < stage.clearBlocks.Size(); i++) {
+		const auto& cb = stage.clearBlocks.Get(i);
+		if (cb.clearflag) {
+			ResolveSolidX(cb.rect, player, velocity, prevPlayer);
 		}
 	}
-	for (int i = 0; i < stage.clearsXCount; i++) {
-		if (stage.clearBlocksX[i].clearflag) {
-			ResolveSolidX(stage.clearBlocksX[i].rect, player, velocity, prevPlayer);
+	for (std::size_t i = 0; i < stage.clearBlocksX.Size(); i++) {
+		const auto& cbx = stage.clearBlocksX.Get(i);
+		if (cbx.clearflag) {
+			ResolveSolidX(cbx.rect, player, velocity, prevPlayer);
 		}
 
 	}
@@ -1009,9 +1016,10 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 	//下から触れただけで壊れるブロック（X方向：横からは壊れず押し戻すのみ）
-	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
-		if (stage.bottomBreakBlocks[i].isBroken) continue;
-		ResolveSolidXPlayer(stage.bottomBreakBlocks[i].rect, player, velocity, prevPlayer, stage.gravityReversed);
+	for (std::size_t i = 0; i < stage.bottomBreakBlocks.Size(); i++) {
+		const auto& bb = stage.bottomBreakBlocks.Get(i);
+		if (bb.isBroken) continue;
+		ResolveSolidXPlayer(bb.rect, player, velocity, prevPlayer, stage.gravityReversed);
 	}
 
 	//わかれる床（X方向：普通のブロックと同じ衝突）
@@ -1099,19 +1107,20 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//重力反転ブロック
-	for (int i = 0; i < stage.gravityBlockCount; i++) {
-		if (ResolveSolidYPlayer(stage.gravityBlocks[i].rect, player, velocity, prev, stage.gravityReversed)) {
+	for (std::size_t i = 0; i < stage.gravityBlocks.Size(); i++) {
+		if (ResolveSolidYPlayer(stage.gravityBlocks.Get(i).rect, player, velocity, prev, stage.gravityReversed)) {
 			onGround = true;
 		}																								
 	}
 
 	// ボタンブロック本体 + 出現済みブロック
-	for (int i = 0; i < stage.buttonBlockCount; i++) {
-		if (ResolveSolidYPlayer(stage.buttonBlocks[i].buttonRect, player, velocity, prev, stage.gravityReversed)) {
+	for (std::size_t i = 0; i < stage.buttonBlocks.Size(); i++) {
+		const auto& bb = stage.buttonBlocks.Get(i);
+		if (ResolveSolidYPlayer(bb.buttonRect, player, velocity, prev, stage.gravityReversed)) {
 			onGround = true;
 		}
-		if (stage.buttonBlocks[i].activated) {
-			for (const auto& br : stage.buttonBlocks[i].blockRects) {
+		if (bb.activated) {
+			for (const auto& br : bb.blockRects) {
 				if (ResolveSolidYPlayer(br, player, velocity, prev, stage.gravityReversed)) {
 					onGround = true;
 				}
@@ -1119,8 +1128,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		}
 	}
 	//アイテムブロック
-	for (int i = 0; i < stage.itemBlockCount; i++) {
-		auto& ib = stage.itemBlocks[i];
+	for (std::size_t i = 0; i < stage.itemBlocks.Size(); i++) {
+		auto& ib = stage.itemBlocks.Get(i);
 		Rectangle b = ib.rect;
 
 		bool hitNow = CheckCollisionRecs(player, b);
@@ -1207,8 +1216,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//スパイク型トランポリン
-	for (int i = 0; i < stage.spikeBouncerCount; i++) {
-		auto& sb = stage.spikeBouncers[i];
+	for (std::size_t i = 0; i < stage.spikeBouncers.Size(); i++) {
+		auto& sb = stage.spikeBouncers.Get(i);
 		if (CheckCollisionRecs(player, sb.rect) && velocity.y > 0) {
 			player.y = sb.rect.y - player.height;
 			velocity.y = sb.bounceVelosity.y;
@@ -1216,8 +1225,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 			onGround = true;
 		}
 	}
-	for (int i = 0; i < stage.spikeBouncerCount; i++) {
-		ResolveSolidX(stage.spikeBouncers[i].rect, player, velocity, prevPlayer);
+	for (std::size_t i = 0; i < stage.spikeBouncers.Size(); i++) {
+		ResolveSolidX(stage.spikeBouncers.Get(i).rect, player, velocity, prevPlayer);
 	}
 
 	//プレイヤーが持つばね
@@ -1325,8 +1334,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	// --- 落下文字（プレイヤーとの衝突） ---
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		auto& ft = stage.fallingTexts[i];
+	for (std::size_t i = 0; i < stage.fallingTexts.Size(); i++) {
+		auto& ft = stage.fallingTexts.Get(i);
 		Rectangle r = ft.GetRect();
 
 		if (!CheckCollisionRecs(player, r)) {
@@ -1488,18 +1497,19 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//壊れるブロック
-	for (int i = 0; i < stage.breakableBlockCount; i++) {
-		if(!stage.breakableBlocks[i].isBroken){
-			if(ResolveSolidYPlayer(stage.breakableBlocks[i].rect,player,velocity, prev, stage.gravityReversed)){
+	for (std::size_t i = 0; i < stage.breakableBlocks.Size(); i++) {
+		const auto& bb = stage.breakableBlocks.Get(i);
+		if(!bb.isBroken){
+			if(ResolveSolidYPlayer(bb.rect,player,velocity, prev, stage.gravityReversed)){
 				onGround=true;
-				
+
 			}
 		}
 	}
 
 	//下から触れただけで壊れるブロック（Y方向：上からの着地・横は壊れず当たり判定あり、下から触れたら TryBreakFromBelowOnly 処理済み）
-	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
-		auto& bb = stage.bottomBreakBlocks[i];
+	for (std::size_t i = 0; i < stage.bottomBreakBlocks.Size(); i++) {
+		auto& bb = stage.bottomBreakBlocks.Get(i);
 		if (bb.isBroken) continue;
 		if (ResolveSolidYPlayer(bb.rect, player, velocity, prev, stage.gravityReversed)) {
 			onGround = true;
@@ -1507,14 +1517,16 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//透明ブロック
-	for (int i = 0; i < stage.clearsCount; i++) {
-		if (stage.clearBlocks[i].clearflag) {
-			if (ResolveSolidYPlayer(stage.clearBlocks[i].rect, player, velocity, prev, stage.gravityReversed)) onGround = true;
+	for (std::size_t i = 0; i < stage.clearBlocks.Size(); i++) {
+		const auto& cb = stage.clearBlocks.Get(i);
+		if (cb.clearflag) {
+			if (ResolveSolidYPlayer(cb.rect, player, velocity, prev, stage.gravityReversed)) onGround = true;
 		}
 	}
-	for (int i = 0; i < stage.clearsXCount; i++) {
-		if (stage.clearBlocksX[i].clearflag) {
-			if (ResolveSolidYPlayer(stage.clearBlocksX[i].rect, player, velocity, prev, stage.gravityReversed)) onGround = true;
+	for (std::size_t i = 0; i < stage.clearBlocksX.Size(); i++) {
+		const auto& cbx = stage.clearBlocksX.Get(i);
+		if (cbx.clearflag) {
+			if (ResolveSolidYPlayer(cbx.rect, player, velocity, prev, stage.gravityReversed)) onGround = true;
 		}
 	}
 
@@ -1534,8 +1546,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		ResolveSolidX(stage.switchPlatforms[i].rect, player, velocity, prev);
 	}
 
-	for (int i = 0; i < stage.tempFloorCount; i++) {
-		const auto& tf = stage.tempFloors[i];
+	for (std::size_t i = 0; i < stage.tempFloors.Size(); i++) {
+		const auto& tf = stage.tempFloors.Get(i);
 		if (!tf.visible) continue;
 		if (ResolveSolidYPlayer(tf.rect, player, velocity, prev, stage.gravityReversed)) {// Y方向（縦）の当たり判定
 			onGround = true;
@@ -1582,8 +1594,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	};
 
 	//落下文字（文字側の床判定）
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		auto& ft = stage.fallingTexts[i];
+	for (std::size_t i = 0; i < stage.fallingTexts.Size(); i++) {
+		auto& ft = stage.fallingTexts.Get(i);
 		if (!ft.isFalling) continue;
 
 		// 手前床
@@ -1679,8 +1691,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		rb.onGround = landed;
 
 		// 壊せるブロックとの当たり判定（鉄球で破壊）
-		for (int b = 0; b < stage.breakableBlockCount; b++) {
-			auto& bb = stage.breakableBlocks[b];
+		for (std::size_t b = 0; b < stage.breakableBlocks.Size(); b++) {
+			auto& bb = stage.breakableBlocks.Get(b);
 			if (bb.isBroken) continue;
 
 			if (CheckCollisionCircleRec(rb.center, rb.radius, bb.rect)) {

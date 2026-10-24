@@ -141,8 +141,8 @@ static void UpdateCursorBottom(Stage& stage, float dt, Camera2D camera, AudioMan
 	Vector2 mousePos = GetScreenToWorld2D(mouseScreen, camera); // ワールド座標に変換
 	bool mouseClicked = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
-	for (int i = 0; i < stage.cursorBottomCount; i++) {
-		auto& cb = stage.cursorBottoms[i];
+	for (std::size_t i = 0; i < stage.cursorBottoms.Size(); i++) {
+		auto& cb = stage.cursorBottoms.Get(i);
 		bool mouseOnBottom = CheckCollisionPointRec(mousePos, cb.rect);
 
 		// 見た目用ホバー状態
@@ -165,16 +165,16 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera, bool
 	Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
 	bool clicked = allowMouseInput && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);//マウスクリックが有効な場合のみ、クリック判定を行う
 
-	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
-		auto& sw = stage.tempFloorSwitches[i];
+	for (std::size_t i = 0; i < stage.tempFloorSwitches.Size(); i++) {
+		auto& sw = stage.tempFloorSwitches.Get(i);
 		sw.hover = allowMouseInput && CheckCollisionPointRec(mouseWorld, sw.rect);
 
 
 		if (sw.triggered && sw.oneShot) continue;
 
 		if (clicked && sw.hover) {
-			for (int f = 0; f < stage.tempFloorCount; f++) {
-				auto& tf = stage.tempFloors[f];
+			for (std::size_t f = 0; f < stage.tempFloors.Size(); f++) {
+				auto& tf = stage.tempFloors.Get(f);
 				tf.visible = true;
 				tf.timer = tf.showSec;
 			}
@@ -184,8 +184,8 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera, bool
 	}
 
 	bool anyVisible = false;//少なくとも一つの床が表示されているか
-	for (int i = 0; i < stage.tempFloorCount; i++) {
-		auto& tf = stage.tempFloors[i];
+	for (std::size_t i = 0; i < stage.tempFloors.Size(); i++) {
+		auto& tf = stage.tempFloors.Get(i);
 		if (!tf.visible) continue;
 
 		tf.timer -= dt;
@@ -198,8 +198,8 @@ static void UpdateTempFloorGimmick(Stage& stage, float dt, Camera2D camera, bool
 		}
 	}
 	if (!anyVisible) {
-		for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
-			auto& sw = stage.tempFloorSwitches[i];
+		for (std::size_t i = 0; i < stage.tempFloorSwitches.Size(); i++) {
+			auto& sw = stage.tempFloorSwitches.Get(i);
 			sw.triggered = false;
 
 		}
@@ -246,8 +246,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 		}
 	}
 
-	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
-		auto& bb = stage.bottomBreakBlocks[i];
+	for (std::size_t i = 0; i < stage.bottomBreakBlocks.Size(); i++) {
+		auto& bb = stage.bottomBreakBlocks.Get(i);
 		if (!bb.triggered || bb.isBroken) continue;
 		bb.timer += dt;
 		if (bb.timer >= bb.breakDelay) {  // 各ブロック固有の breakDelay を使用
@@ -583,8 +583,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	// 落下文字の更新
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		auto& ft = stage.fallingTexts[i];
+	for (std::size_t i = 0; i < stage.fallingTexts.Size(); i++) {
+		auto& ft = stage.fallingTexts.Get(i);
 
 		// 感知済みで落下前ならタイマーを進める
 		if (ft.sensed && !ft.isFalling) {
@@ -670,8 +670,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//アイテム出現ブロック
-	for (int i = 0; i < stage.itemBlockCount; i++) {
-		auto& ib = stage.itemBlocks[i];
+	for (std::size_t i = 0; i < stage.itemBlocks.Size(); i++) {
+		auto& ib = stage.itemBlocks.Get(i);
 		//アイテムが出現していて、まだ出現していない場合
 		if (ib.isActive && !ib.hasSpawned) {
 			ib.isActive = false;
@@ -768,8 +768,8 @@ void UpdateMagnet(Stage& stage, Rectangle& player, Vector2& velocity, float dt, 
 	Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
 	bool mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
 
-	for (int i = 0; i < stage.magnetCount; i++) {
-		auto& mg = stage.magnets[i];
+	for (std::size_t i = 0; i < stage.magnets.Size(); i++) {
+		auto& mg = stage.magnets.Get(i);
 
 
 
@@ -856,9 +856,7 @@ void StageReset(Stage& stage) {
 	}
 	stage.gravityCooldown = 0.0f;
 	stage.gravityReversed = false;
-	for (int i = 0; i < stage.gravityBlockCount; i++) {
-		stage.gravityBlocks[i] = stage.gravityBlocksInit[i];
-	}
+	stage.gravityBlocks.Reset();
 	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
 		stage.movePlatformsYXY[i] = stage.movePlatformsYXYInit[i];
 	}
@@ -888,27 +886,17 @@ void StageReset(Stage& stage) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 
-	for (int i = 0; i < stage.itemBlockCount; i++) {
-		stage.itemBlocks[i] = stage.itemBlocksInit[i];
-	}
+	stage.itemBlocks.Reset();
 	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
 		stage.jumpPlatfroms[i] = stage.jumpPlatfromsInit[i];
 	}
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		stage.switchPlatforms[i] = stage.switchplatformsInit[i];
 	}
-	for (int i = 0; i < stage.breakableBlockCount; i++) {
-		stage.breakableBlocks[i] = stage.breakableBlocksInit[i];
-	}
-	for (int i = 0; i < stage.clearsXCount; i++) {
-		stage.clearBlocksX[i] = stage.clearBlocksXInit[i];
-	}
-	for (int i = 0; i < stage.buttonBlockCount; i++) {
-		stage.buttonBlocks[i] = stage.buttonBlocksInit[i];
-	}
-	for (int i = 0; i < stage.deathBlockCount; i++) {
-		stage.deathBlocks[i] = stage.deathBlocksInit[i];
-	}
+	stage.breakableBlocks.Reset();
+	stage.clearBlocksX.Reset();
+	stage.buttonBlocks.Reset();
+	stage.deathBlocks.Reset();
 	for (int i = 0; i < stage.springCount; i++) {
 		stage.springs[i] = stage.springsInit[i];
 	}
@@ -916,19 +904,10 @@ void StageReset(Stage& stage) {
 	for (int i = 0; i < stage.elevatorCount; i++) {
 		stage.elevators[i] = stage.elevatorsInit[i];
 	}
-	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
-		stage.bottomBreakBlocks[i] = stage.bottomBreakBlocksInit[i];
-	}
-	for (int i = 0; i < stage.commentBlockCount; i++) {
-		stage.commentBlocks[i] = stage.commentBlocksInit[i];
-	}
+	stage.bottomBreakBlocks.Reset();
+	stage.commentBlocks.Reset();
 
-	for (int i = 0; i < stage.cursorBottomCount; i++) {
-		stage.cursorBottoms[i] = stage.cursorBottomsInit[i];
-	}
-	for (int i = 0; i < stage.deathBlockCount; i++) {
-		stage.deathBlocks[i] = stage.deathBlocksInit[i];
-	}
+	stage.cursorBottoms.Reset();
 	stage.currentLayer = 0;
 	for (int i = 0; i < stage.craneCount; i++) {
 		stage.cranes[i] = stage.cranesInit[i];
@@ -936,12 +915,8 @@ void StageReset(Stage& stage) {
 	for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
 		stage.ojisanPunchTriggered[i] = false;
 	}
-	for (int i = 0; i < stage.tempFloorCount; i++) {
-		stage.tempFloors[i] = stage.tempFloorsInit[i];
-	}
-	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
-		stage.tempFloorSwitches[i] = stage.tempFloorSwitchesInit[i];
-	}
+	stage.tempFloors.Reset();
+	stage.tempFloorSwitches.Reset();
 	ResetSnapPuzzles(stage);
 	ResetDistanceTriggerPieces(stage);
 
@@ -958,58 +933,58 @@ void StageClear(Stage& stage) {
 	stage.touchBreakBlocks.Clear();
 	stage.springCount = 0;
 	stage.heldSpringIndex = -1;
-	stage.bottomBreakBlockCount = 0;
+	stage.bottomBreakBlocks.Clear();
 	stage.backPlatformCount = 0;
 	stage.currentLayer = 0;
 	stage.layerDoorCount = 0;
 	stage.elevatorCount = 0;
 
 	stage.cameraConfig = CameraConfig();
-	stage.gravityBlockCount = 0;
+	stage.gravityBlocks.Clear();
 	stage.gravityReversed = false;
 	stage.gravityCooldown = 0.0f;
 	stage.platformCount = 0;
-	stage.buttonBlockCount = 0;
+	stage.buttonBlocks.Clear();
 	stage.hazardCount = 0;
 	stage.moveCount = 0;
 	stage.moveExtYCount = 0;
 	stage.fallingCount = 0;
 	stage.upRisingCount = 0;
 	stage.upDownCount = 0;
-	stage.clearsCount = 0;
-	stage.clearsXCount = 0;
+	stage.clearBlocks.Clear();
+	stage.clearBlocksX.Clear();
 	stage.splitPlatformCount = 0;
-	stage.itemBlockCount = 0;
-	stage.breakableBlockCount = 0;
+	stage.itemBlocks.Clear();
+	stage.breakableBlocks.Clear();
 	stage.knockBackWallCount = 0;
 	stage.batteryHumanCount = 0;
 	stage.jumpPlatfromCount = 0;
 	stage.switchPlatformCount = 0;
 	stage.icePlatformCount = 0;
 	stage.cursorPlatformCount = 0;
-	stage.magnetCount = 0;
+	stage.magnets.Clear();
 	stage.moveUpPlatformCount = 0;
 	stage.moveDownPlatformCount = 0;
 	stage.circlePlatformCount = 0;
 	stage.movePlatformCountX = 0;
 	stage.moveHazardRightCount = 0;
 	stage.moveDownHazardExtYCount = 0;
-	stage.trackingHazardCount = 0;
+	stage.trackingHazards.Clear();
 	stage.rotatingBallCount = 0;
 	stage.moveRotatingBallCount = 0;
 	stage.rollingBallCount = 0;
 	stage.movePlatformCountYXY = 0;
-	stage.fallingTextCount = 0;
+	stage.fallingTexts.Clear();
 	stage.exitDoorCount = 0;
 	stage.warpCount = 0;
 	stage.hasRespawnPoint = false;
 	stage.respawnPoint = { 100.0f, 500.0f };  // ← 追加
-	stage.commentBlockCount = 0;
+	stage.commentBlocks.Clear();
 	stage.cursorPlatformCount = 0;
-	stage.cursorBottomCount = 0;
-	stage.magnetCount = 0;
-	stage.deathBlockCount = 0;
-	stage.spikeBouncerCount = 0;
+	stage.cursorBottoms.Clear();
+	stage.magnets.Clear();
+	stage.deathBlocks.Clear();
+	stage.spikeBouncers.Clear();
 	stage.craneCount = 0;
 	stage.ojisanPunchAreaCount = 0;
 	for (int i = 0; i < Stage::MAX_OJISAN_PUNCH_AREAS; i++) {
@@ -1017,9 +992,9 @@ void StageClear(Stage& stage) {
 		stage.ojisanPunchDrawFront[i] = false;
 		stage.ojisanPunchApproachDuration[i] = 0.85f;
 	}
-	stage.tempFloorCount = 0;
-	stage.tempFloorSwitchCount = 0;
-	stage.decorArrowCount = 0;
+	stage.tempFloors.Clear();
+	stage.tempFloorSwitches.Clear();
+	stage.decorArrows.Clear();
 	stage.decoSpriteCount = 0;
 	stage.dragPieceCount = 0;
 	stage.snapSlotCount = 0;

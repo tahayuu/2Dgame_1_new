@@ -31,12 +31,15 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.platforms[8] = { 5200, 550, 1200, 400 };
 
 	//アイテムブロック
-	stage.itemBlocks[0] = { {1250.0f,200.0f,50.0f,50.0f}, false, ItemType::speedPotion, false };
-	stage.itemBlocks[1] = { {2750.0f,400.0f,50.0f,50.0f},false };
-	stage.itemBlocks[2] = { {4550.0f,330.0f,50.0f,50.0f},false };
+	stage.itemBlocks.Clear();
+	stage.itemBlocks.Add({ {1250.0f,200.0f,50.0f,50.0f}, false, ItemType::speedPotion, false });
+	stage.itemBlocks.Add({ {2750.0f,400.0f,50.0f,50.0f},false });
+	stage.itemBlocks.Add({ {4550.0f,330.0f,50.0f,50.0f},false });
+	stage.itemBlocks.Add({ {0.0f,0.0f,0.0f,0.0f},false }); // 4個目のダミー（AddでSize()が4になる）
 	//壊せるブロック
-	stage.breakableBlocks[0] = { {1200.0f,200.0f,50.0f,50.0f},false };
-	stage.breakableBlocks[1] = { {1300.0f,200.0f,50.0f,50.0f},false };
+	stage.breakableBlocks.Clear();
+	stage.breakableBlocks.Add({ {1200.0f,200.0f,50.0f,50.0f},false });
+	stage.breakableBlocks.Add({ {1300.0f,200.0f,50.0f,50.0f},false });
 
 	//敵キャラ配置
 	enemyManager.Spawn(EnemyType::WALKER, { 700.0f, 550.0f });
@@ -44,13 +47,11 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	enemyManager.Spawn(EnemyType::WALKER, { 1900.0f, 550.0f });
 	enemyManager.Spawn(EnemyType::WALKER, { 2600.0f, 550.0f });
 
-	//トゲ
 	stage.hazards[0] = { 1500, 470, 90, 30 };
 	stage.hazardCount = 4;
 	stage.movePlatformCountX = 1;
 	stage.upDownCount = 1;
-	stage.itemBlockCount = 4;
-	stage.breakableBlockCount = 2;
+	// itemBlockCount は削除（GimmickGroup::Size()を使用）
 	//カウント設定
 	stage.platformCount = 10;
 
@@ -64,9 +65,6 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	//復活用	
 	for (int i = 0; i < stage.moveExtYCount; i++) {
 		stage.moveHazardsExtYInit[i] = stage.moveHazardsExtY[i];
-	}
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		stage.fallingTextsInit[i] = stage.fallingTexts[i];
 	}
 	for (int i = 0; i < stage.moveCount; i++) {
 		stage.moveHazardsInit[i] = stage.moveHazards[i];
@@ -83,12 +81,7 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	for (int i = 0; i < stage.moveCount; i++) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
-	for (int i = 0; i < stage.breakableBlockCount; i++) {
-		stage.breakableBlocksInit[i] = stage.breakableBlocks[i];
-	}
-	for (int i = 0; i < stage.itemBlockCount; i++) {
-		stage.itemBlocksInit[i]=stage.itemBlocks[i];
-	}
+	// itemBlocksInit コピーは削除（GimmickGroup::Add()が自動保存）
 	for (int i = 0; i < stage.upDownCount; i++) {
 		stage.upDouwnPlatformsInit[i] = stage.upDouwnPlatforms[i];
 	}

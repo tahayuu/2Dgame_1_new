@@ -3,7 +3,7 @@
 #include<cstddef>
 #include<stdexcept>
 
-template<typename T, int N>//typename Tによって型を固定せずクラスを定義できるようになる
+template<typename T, std::size_t N>//typename Tによって型を固定せずクラスを定義できるようになる
 //templateを使うことですべて同じGimmickGroupクラスを使えるようになる
 
 class GimmickGroup {
@@ -11,7 +11,7 @@ private:
 	//データを自分で所有
 	std::array<T, N> objects{};
 	std::array<T, N> initialObjects{};
-	size_t count = 0;
+	std::size_t count = 0;
 	//size_t は負の整数を扱わない型で、配列のサイズやインデックスに適している
 
 public:
@@ -43,7 +43,7 @@ public:
 	//配列をprivateにしているため、外部から直接アクセスできないようにする
 	//Get関数によって、外部からギミックを取得することができるようにする
 	T& Get(std::size_t index) {
-		if (index < 0 || index >= count) {
+		if (index >= count) {
 			throw std::out_of_range("Index out of range");
 		}
 		return objects[index];
@@ -74,7 +74,15 @@ public:
 	例えば描画処理では、基本的にギミックの状態を変更する必要がない
 	そこで const な参照を利用することで、意図しない状態変更を防ぐ*/
 
-	int Size() const {//管理しているギミックの個数を返す関数
+	//初期状態のギミックを取得する関数（描画などで初期rectが必要な場合に使う）
+	const T& GetInitial(std::size_t index) const {
+		if (index >= count) {
+			throw std::out_of_range("GimmickGroup GetInitial index");
+		}
+		return initialObjects[index];
+	}
+
+	std::size_t Size() const {//管理しているギミックの個数を返す関数
 		return count;
 	}
 

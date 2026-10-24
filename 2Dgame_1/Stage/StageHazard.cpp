@@ -233,8 +233,8 @@ static void MoveHazarardX(Stage& stage, const Rectangle& player, float dt) {
 
 //追尾するとげ
 static void TrackingHazardMove(Stage& stage, const Rectangle& player, float dt) {
-	for (int i = 0; i < stage.trackingHazardCount; i++) {
-		auto& th = stage.trackingHazards[i];
+	for (std::size_t i = 0; i < stage.trackingHazards.Size(); i++) {
+		auto& th = stage.trackingHazards.Get(i);
 		Vector2 playerCenter = { player.x + player.width / 2,
 								player.y + player.height / 2 };
 		Vector2 thCenter = { th.rect.x + th.rect.width / 2,
@@ -292,8 +292,8 @@ static void TrackingHazardMove(Stage& stage, const Rectangle& player, float dt) 
 }
 
 static void StageSenseFallingTexts(Stage& stage, const Rectangle& player, float dt) {
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		auto& ft = stage.fallingTexts[i];
+	for (std::size_t i = 0; i < stage.fallingTexts.Size(); i++) {
+		auto& ft = stage.fallingTexts.Get(i);
 
 		// 既に感知済みならスキップ
 		if (ft.sensed) continue;
@@ -365,8 +365,8 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 		}
 	}
 
-	for (int i = 0; i < stage.deathBlockCount; i++) {
-		if (CheckCollisionRecs(player, stage.deathBlocks[i])) {
+	for (std::size_t i = 0; i < stage.deathBlocks.Size(); i++) {
+		if (CheckCollisionRecs(player, stage.deathBlocks.Get(i))) {
 			return true;
 		}
 	}
@@ -388,16 +388,16 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 	}
 
 	//追尾するとげをみる
-	for (int i = 0; i < stage.trackingHazardCount; i++) {
-		const auto& th = stage.trackingHazards[i];
+	for (std::size_t i = 0; i < stage.trackingHazards.Size(); i++) {
+		const auto& th = stage.trackingHazards.Get(i);
 		if (CheckCollisionRecs(player, th.rect))
 			return true;
-		
+
 	}
 
 	//落下文字をみる
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		const auto& ft = stage.fallingTexts[i];
+	for (std::size_t i = 0; i < stage.fallingTexts.Size(); i++) {
+		const auto& ft = stage.fallingTexts.Get(i);
 		if (CheckCollisionRecs(player, ft.GetRect()))			
 		{
 			return true;
@@ -441,8 +441,8 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 
 //透明ブロックに当たったか
 bool clearCheck(const Stage& stage, const Rectangle& player) {
-	for (int i = 0; i < stage.clearsCount; i++) {
-		if (CheckCollisionRecs(player, stage.clearBlocks[i].rect)) {
+	for (std::size_t i = 0; i < stage.clearBlocks.Size(); i++) {
+		if (CheckCollisionRecs(player, stage.clearBlocks.Get(i).rect)) {
 			return true;
 		}
 	}
@@ -461,19 +461,14 @@ void HazardUpdate(Stage& stage, const Rectangle& player, float dt) {
 }
 
 void HazardReset(Stage& stage) {
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		stage.fallingTexts[i] = stage.fallingTextsInit[i];
-	}
+	stage.fallingTexts.Reset();
 	for (int i = 0; i < stage.moveCount; i++) {
 		stage.moveHazards[i] = stage.moveHazardsInit[i];
 	}
 	for (int i = 0; i < stage.moveExtYCount; i++) {
 		stage.moveHazardsExtY[i] = stage.moveHazardsExtYInit[i];
 	}
-	for (int i = 0; i < stage.trackingHazardCount; i++)
-	{
-		stage.trackingHazards[i] = stage.trackingHazardsInit[i];
-	}
+	stage.trackingHazards.Reset();
 	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) {
 		stage.moveDownHazardsExtY[i] = stage.moveDownHazardsExtYInit[i];
 	}

@@ -8,6 +8,8 @@
 ## Project Overview
 - 2Dgame_1プロジェクトはC++/raylibで書かれた2Dゲーム。ステージエディタ機能があり、EditorObjectType（当たり判定・ギミック種別）とPlacedObject（配置オブジェクト）という設計パターンを使用。
 - コードコメントは日本語で、初心者にもわかりやすいよう詳細なコメントを書くスタイルを好む。
+- ギミックのリファクタリングを1種類ずつ段階的に進め、既存仕様を変えず変更は最小限、既存コメントは維持し、日本語で変更理由・効果・意図・差分・確認方法を説明する。
+- 未移行ギミックを複数（5個）まとめて進める要望があるため、効率的にリファクタリングを行うことを検討する。
 
 ## Game Mechanics
 - Implement player death upon enemy side collision (respawn); player should survive when landing on an enemy from above.

@@ -65,7 +65,7 @@ static bool IsGimmickDrawnInline(const Stage& stage, const Rectangle& rect) {
 	for (int i = 0; i < stage.moveExtYCount; i++) if (IsSameRect(stage.moveHazardsExtYInit[i].rect, rect)) return true;
 	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) if (IsSameRect(stage.moveDownHazardsExtYInit[i].rect, rect)) return true;
 	for (int i = 0; i < stage.moveHazardRightCount; i++) if (IsSameRect(stage.moveHazardsRightInit[i].rect, rect)) return true;
-	for (int i = 0; i < stage.trackingHazardCount; i++) if (IsSameRect(stage.trackingHazardsInit[i].rect, rect)) return true;
+	for (std::size_t i = 0; i < stage.trackingHazards.Size(); i++) if (IsSameRect(stage.trackingHazards.GetInitial(i).rect, rect)) return true;
 	// エレベーター
 	for (int i = 0; i < stage.elevatorCount; i++) if (IsSameRect(stage.elevatorsInit[i].rect, rect)) return true;
 	// 落下床
@@ -252,8 +252,8 @@ void StageDraw(
 		DrawRectangleLinesEx(stage.icePlatforms[i].rect, 2, DARKBLUE);
 	}
 	//アイテムブロック
-	for (int i = 0; i < stage.itemBlockCount; i++) {
-		const auto& ib = stage.itemBlocks[i];
+	for (std::size_t i = 0; i < stage.itemBlocks.Size(); i++) {
+		const auto& ib = stage.itemBlocks.Get(i);
 		if (HasSpriteOverride(stage, ib.rect)) continue;
 		if (stage.theme.itemBlock.id != 0) {
 			Rectangle src = { 0, 0, (float)stage.theme.itemBlock.width, (float)stage.theme.itemBlock.height };
@@ -265,8 +265,8 @@ void StageDraw(
 	}
 
 	//カーソルボタン（クリックギミック）
-	for (int i = 0; i < stage.cursorBottomCount; i++) {
-		const auto& cb = stage.cursorBottoms[i];
+	for (std::size_t i = 0; i < stage.cursorBottoms.Size(); i++) {
+		const auto& cb = stage.cursorBottoms.Get(i);
 		if (HasSpriteOverride(stage, cb.rect)) continue;// spriteOverrideがあれば描画しない
 		// ボタンの状態に応じて表示テクスチャを切り替える
 		// ・triggered = true（カーソルが当たっている状態でボタンを押した／作動中） → ActionButtn_On
@@ -351,8 +351,8 @@ void StageDraw(
 	}
 
 	//磁石（引き寄せ）
-	for (int i = 0; i < stage.magnetCount; i++) {
-		const auto& mg = stage.magnets[i];
+	for (std::size_t i = 0; i < stage.magnets.Size(); i++) {
+		const auto& mg = stage.magnets.Get(i);
 		if (HasSpriteOverride(stage, mg.rect)) continue;
 		const Texture2D& magTex = mg.triggerd ? stage.theme.magnetEffectTex : stage.theme.magnetTex;
 		if(magTex.id != 0) {
@@ -432,12 +432,12 @@ void StageDraw(
 		DrawMovingSpikeWithOverride(stage, mh.rect, stage.moveHazardsInit[i].rect, spikeW);
 	}
 	//追尾するとげ
-	for (int i = 0; i < stage.trackingHazardCount; i++) {
-		const auto& th = stage.trackingHazards[i];
-		DrawMovingSpikeWithOverride(stage, th.rect, stage.trackingHazardsInit[i].rect, spikeW);
+	for (std::size_t i = 0; i < stage.trackingHazards.Size(); i++) {
+		const auto& th = stage.trackingHazards.Get(i);
+		DrawMovingSpikeWithOverride(stage, th.rect, stage.trackingHazards.GetInitial(i).rect, spikeW);
 	}
-	for (int i = 0; i < stage.spikeBouncerCount; i++) {
-		const auto& mhY = stage.spikeBouncers[i];
+	for (std::size_t i = 0; i < stage.spikeBouncers.Size(); i++) {
+		const auto& mhY = stage.spikeBouncers.Get(i);
 		if (HasSpriteOverride(stage, mhY.rect)) continue;
 		DrawSpikes(mhY.rect, spikeW);
 	}
@@ -464,8 +464,8 @@ void StageDraw(
 	}
 	
 	// デコレーション矢印
-	for (int i = 0; i < stage.decorArrowCount; i++) {
-		const auto& a = stage.decorArrows[i];
+	for (std::size_t i = 0; i < stage.decorArrows.Size(); i++) {
+		const auto& a = stage.decorArrows.Get(i);
 		DrawArrowTexture(stage.theme.arrowTex, a.rect, a.angleDeg);
 	}
 	for (int i = 0; i < stage.decoSpriteCount; i++) {
@@ -536,8 +536,8 @@ void StageDraw(
 		}
 	}
 	//落下文字
-	for (int i = 0; i < stage.fallingTextCount; i++) {
-		const auto& ft = stage.fallingTexts[i];
+	for (std::size_t i = 0; i < stage.fallingTexts.Size(); i++) {
+		const auto& ft = stage.fallingTexts.Get(i);
 
 		// 描画は計測に使った同じフォントで（RecalcRect / Init で font が設定されている前提）
 		if (ft.font.texture.id != 0) {
@@ -569,8 +569,8 @@ void StageDraw(
 
 
 	//壊せるブロック
-	for (int i = 0; i < stage.breakableBlockCount; i++) {
-		const auto& nb = stage.breakableBlocks[i];
+	for (std::size_t i = 0; i < stage.breakableBlocks.Size(); i++) {
+		const auto& nb = stage.breakableBlocks.Get(i);
 		if (nb.isBroken) continue;
 		if (HasSpriteOverride(stage, nb.rect)) continue;
 
@@ -587,18 +587,20 @@ void StageDraw(
 
 
 	//透明
-	for (int i = 0; i < stage.clearsCount; i++) {
-		if (stage.clearBlocks[i].clearflag) {
+	for (std::size_t i = 0; i < stage.clearBlocks.Size(); i++) {
+		auto& cb = stage.clearBlocks.Get(i);
+		if (cb.clearflag) {
 			Rectangle src = { 0, 0, (float)stage.theme.normalBlock.width, (float)stage.theme.normalBlock.height };
-			DrawTexturePro(stage.theme.normalBlock, src, stage.clearBlocks[i].rect, { 0, 0 }, 0, WHITE);
+			DrawTexturePro(stage.theme.normalBlock, src, cb.rect, { 0, 0 }, 0, WHITE);
 		}
 	}
 
 	//透明
-	for (int i = 0; i < stage.clearsXCount; i++) {
-		if (stage.clearBlocksX[i].clearflag) {
+	for (std::size_t i = 0; i < stage.clearBlocksX.Size(); i++) {
+		auto& cbx = stage.clearBlocksX.Get(i);
+		if (cbx.clearflag) {
 			Rectangle src = { 0, 0, (float)stage.theme.normalBlock.width, (float)stage.theme.normalBlock.height };
-			DrawTexturePro(stage.theme.normalBlock, src, stage.clearBlocksX[i].rect, { 0, 0 }, 0, WHITE);
+			DrawTexturePro(stage.theme.normalBlock, src, cbx.rect, { 0, 0 }, 0, WHITE);
 		}
 
 	}
@@ -626,8 +628,8 @@ void StageDraw(
 	}
 
 	// ボタンブロック
-	for (int i = 0; i < stage.buttonBlockCount; i++) {
-		const auto& bb = stage.buttonBlocks[i];
+	for (std::size_t i = 0; i < stage.buttonBlocks.Size(); i++) {
+		const auto& bb = stage.buttonBlocks.Get(i);
 		Color btnColor = bb.activated ? GRAY : GOLD;
 		DrawRectangleRec(bb.buttonRect, btnColor);
 		DrawRectangleLinesEx(bb.buttonRect, 2, DARKGRAY);
@@ -659,8 +661,8 @@ void StageDraw(
 	}
 
 	//重力反転ブロック
-	for (int i = 0; i < stage.gravityBlockCount; i++) {
-		const auto& gb = stage.gravityBlocks[i];
+	for (std::size_t i = 0; i < stage.gravityBlocks.Size(); i++) {
+		const auto& gb = stage.gravityBlocks.Get(i);
 		if (HasSpriteOverride(stage, gb.rect)) continue;
 		DrawRectangleRec(gb.rect, PURPLE);
 		//矢印マーク（上下）を描画
@@ -706,8 +708,8 @@ void StageDraw(
 	}
 
 	//下から触れただけで壊れるブロック
-	for (int i = 0; i < stage.bottomBreakBlockCount; i++) {
-		const auto& bb = stage.bottomBreakBlocks[i];
+	for (std::size_t i = 0; i < stage.bottomBreakBlocks.Size(); i++) {
+		const auto& bb = stage.bottomBreakBlocks.Get(i);
 		if (bb.isBroken) continue;
 		if (HasSpriteOverride(stage, bb.rect)) continue;
 
@@ -726,7 +728,7 @@ void StageDraw(
 			bb.rect.x + shakeX, bb.rect.y,
 			bb.rect.width, bb.rect.height
 		};
-	DrawTexturePro(stage.theme.touchBlock, drawRect, stage.bottomBreakBlocks[i].rect, { 0, 0 }, 0, WHITE);
+	DrawTexturePro(stage.theme.touchBlock, drawRect, bb.rect, { 0, 0 }, 0, WHITE);
 
 		if (bb.triggered) {
 			float cx = drawRect.x + drawRect.width / 2;
@@ -801,15 +803,15 @@ void StageDraw(
 	}
 
 	// ===== 一時的に出現する床やスイッチの描画 =====
-	for (int i = 0; i < stage.tempFloorCount; i++) {
-		const auto& tf = stage.tempFloors[i];
+	for (std::size_t i = 0; i < stage.tempFloors.Size(); i++) {
+		const auto& tf = stage.tempFloors.Get(i);
 		if (!tf.visible) continue;
 		// エディタ上のスプライト上書きに関わらず、常にtempBlockTexを反映する
 		Rectangle src = { 0, 0, (float)stage.theme.tempBlockTex.width, (float)stage.theme.tempBlockTex.height };
 		DrawTexturePro(stage.theme.tempBlockTex, src, tf.rect, { 0, 0 }, 0, WHITE);
 	}
-	for (int i = 0; i < stage.tempFloorSwitchCount; i++) {
-		const auto& sw = stage.tempFloorSwitches[i];
+	for (std::size_t i = 0; i < stage.tempFloorSwitches.Size(); i++) {
+		const auto& sw = stage.tempFloorSwitches.Get(i);
 		if (HasSpriteOverride(stage, sw.rect)) continue;
 		const Texture2D& btnTex = sw.triggered ? stage.theme.actionButtonOn : stage.theme.actionButtonOff;
 		Rectangle src = { 0, 0, (float)btnTex.width, (float)btnTex.height };

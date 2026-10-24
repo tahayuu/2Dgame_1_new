@@ -306,8 +306,11 @@ allDialogTextへ追加
 	TitleTransition titleTransition;
 
 	int currentStage = 1;
-	stage.fallingTexts[0].Init({ 200.0f,220.0f }, jpFont);// フォント情報で幅/高さを設定
-	stage.fallingTextsInit[0] = stage.fallingTexts[0];
+	// GimmickGroup化に伴い、Add()されるまでGet(0)は範囲外例外になるため、
+	// 先に空のFallingTextを1つ確保してからフォント設定を行う（std::out_of_range対策）
+	stage.fallingTexts.Add(FallingText{});
+	stage.fallingTexts.Get(0).Init({ 200.0f,220.0f }, jpFont);// フォント情報で幅/高さを設定
+	stage.fallingTexts.SaveInitialState();
 
 	//プレイヤー
 	const int PLAYER_W = 60;
@@ -624,8 +627,8 @@ allDialogTextへ追加
 			if (cause != DeathCause::OJISAN_PUNCH) {
 				isOjisanPunchDeath = false;
 			}
-			for (int i = 0; i < stage.clearsCount; i++) {
-				stage.clearBlocks[i].clearflag = false;
+			for (std::size_t i = 0; i < stage.clearBlocks.Size(); i++) {
+				stage.clearBlocks.Get(i).clearflag = false;
 			}
 
 			if (ojisan.showMessage && ojisan.messageFromCommentBlock) {
