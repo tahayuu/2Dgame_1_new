@@ -34,7 +34,30 @@ public:
 	virtual void Reset();
 	virtual Rectangle GetRect() const { return rect; }
 
-	// 既存のStageInit/Editor/mainから直接参照されるため、段階移行中は公開を維持する。
+	// --------------------------------------------------------------
+	// 公開アクセサ
+	// ---------------------------------------------------------------
+	// 旧実装ではフィールドを直接publicにしてStageInit/Editor/mainから
+	// 参照・書き換えしていたが、カプセル化のため以下のアクセサ経由に変更する。
+	// 既存仕様(挙動)は変えず、書き換え方法だけをメソッド呼び出しに揃えている。
+	EnemyType GetType() const { return type; }
+	bool IsActive() const { return isActive; }
+	bool IsHit() const { return isHit; }
+	void SetHit(bool hit) { isHit = hit; }
+	const std::string& GetDialogKey() const { return dialogKey; }
+	void SetDialogKey(const std::string& key) { dialogKey = key; }
+	float GetSpeed() const { return speed; }
+	void SetSpeed(float value) { speed = value; }
+	float GetHp() const { return hp; }
+	void SetHp(float value) { hp = value; }
+	// Editor側で配置位置からパトロール範囲を計算して設定するために使う。
+	void SetPatrolRangeX(float minX, float maxX) { patrolMinX = minX; patrolMaxX = maxX; }
+	void SetPatrolRangeY(float minY, float maxY) { patrolMinY = minY; patrolMaxY = maxY; }
+
+protected:
+	// 内部実装(派生クラスやEnemy.cpp内の補助関数)からのみ参照するフィールド。
+	// EnemyManagerおよびEnemy.cpp内の各種ヘルパー関数は、Enemyと密結合な
+	// 実装詳細のためfriend指定で直接アクセスを許可している。
 	EnemyType type;
 	Rectangle rect;
 	Vector2 vel;
@@ -62,10 +85,22 @@ public:
 	bool isDying = false;
 	float deathTimer = 0.0f;  // 追加: 踏みつけ後の表示時間
 
-protected:
 	void InitializeCommon(EnemyType enemyType, Vector2 position);
 	virtual Vector2 GetCollisionBounce() const { return { 100.0f, 200.0f }; }
 	virtual bool RespondsToPlayerCollision() const { return true; }
+
+	// Enemy.cpp内の補助関数(当たり判定・描画・死亡処理)は、Enemyの
+	// 実装の一部として protected フィールドへ直接アクセスする。
+	friend class EnemyManager;
+	friend bool CheckOverlapXEnemy(const Rectangle& player, const Enemy& enemy);
+	friend bool CheckOverlapYEnemy(const Rectangle& player, const Enemy& enemy);
+	friend bool CheckNealapYEnemy(const Rectangle& player, const Enemy& enemy, float tolerance);
+	friend void EnemyCollisionErase(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity, float Y, float X, AudioManager& audio);
+	friend bool playerSence(const Rectangle& player, const Enemy& enemy, float rangeX);
+	friend bool UpdateStompDeath(Enemy& enemy, float dt);
+	friend void UpdateHpDeath(Enemy& enemy);
+	friend void EnemyDraw(const Enemy& enemy);
+	friend void EnemyReset(Enemy& enemy);
 };
 
 // 目的: WALKER固有の左右巡回AIを実装する。

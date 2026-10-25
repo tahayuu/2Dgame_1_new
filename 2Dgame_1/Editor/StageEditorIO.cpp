@@ -761,17 +761,15 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
 
         const auto& info = EdGetEnemyTypeInfo(pe.type);// 敵のタイプ情報を取得
 
-        if (info.count > 0)e.speed = pe.params[0];
+        if (info.count > 0)e.SetSpeed(pe.params[0]);
 
         // パトロール範囲を配置位置から計算
         float patrolDist = (info.count > 1) ? pe.params[1] : 200.0f;
-        e.patrolMinX = pe.pos.x - patrolDist;
-        e.patrolMaxX = pe.pos.x + patrolDist;
-        e.patrolMinY = pe.pos.y - patrolDist;
-        e.patrolMaxY = pe.pos.y + patrolDist;
+        e.SetPatrolRangeX(pe.pos.x - patrolDist, pe.pos.x + patrolDist);
+        e.SetPatrolRangeY(pe.pos.y - patrolDist, pe.pos.y + patrolDist);
 
         // params[2] = hp（WALKERはindex2）
-        if (info.count > 2) e.hp = pe.params[2];
+        if (info.count > 2) e.SetHp(pe.params[2]);
 
     }
     enemyManager.saveEnemiesInit();
