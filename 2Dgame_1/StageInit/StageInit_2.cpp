@@ -47,13 +47,13 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 
 	//敵キャラ配置
 	enemyManager.Spawn(EnemyType::WALKER, { 700.0f, 550.0f });
-	enemyManager.enemies.back().dialogKey = "death_enemy_walker_patrol";  // 巡回中の敵
+	enemyManager.enemies.back()->dialogKey = "death_enemy_walker_patrol";  // 巡回中の敵
 
 	enemyManager.Spawn(EnemyType::FLYER, { 1820.0f, 400.0f });
-	enemyManager.enemies.back().dialogKey = "death_enemy_flyer";          // 飛んでいる敵
+	enemyManager.enemies.back()->dialogKey = "death_enemy_flyer";          // 飛んでいる敵
 
 	enemyManager.Spawn(EnemyType::WALKER, { 1900.0f, 550.0f });
-	enemyManager.enemies.back().dialogKey = "death_enemy_walker_stage2";  // ステージ2の敵
+	enemyManager.enemies.back()->dialogKey = "death_enemy_walker_stage2";  // ステージ2の敵
 
 	enemyManager.Spawn(EnemyType::WALKER, { 2600.0f, 550.0f });
 	//透明ブロック（横）

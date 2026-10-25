@@ -2,6 +2,20 @@
 #include "Enemy.h"
 #include <vector>
 
+// ステージ開始時の敵設定を保存し、死亡・削除後の再生成に使う。
+struct EnemySpawnRecord {
+	EnemyType type;
+	Vector2 pos;
+	Vector2 vel;
+	float speed;
+	float hp;
+	float patrolMinX;
+	float patrolMaxX;
+	float patrolMinY;
+	float patrolMaxY;
+	std::string dialogKey;
+};
+
 // ================================================================
 // EnemyManager.h の役割
 // ---------------------------------------------------------------
@@ -10,8 +24,8 @@
 // ================================================================
 
 struct EnemyManager {
-    std::vector<Enemy> enemies;
-	std::vector<Enemy> enemiesInit; //初期配置用配列
+	std::vector<std::unique_ptr<Enemy>> enemies;
+	std::vector<EnemySpawnRecord> enemiesInit; //初期配置用設定記録
     //可変長配列
     //サイズ変更可能
 	//C++らしいコードを書くならこっちを使う

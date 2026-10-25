@@ -803,7 +803,7 @@ allDialogTextへ追加
 					enemyManager.touchedEnemyFromSide &&
 					enemyManager.touchedEnemyIndex >= 0 &&
 					enemyManager.touchedEnemyIndex < (int)enemyManager.enemies.size()) {
-					enemyManager.enemies[enemyManager.touchedEnemyIndex].isHit = true;
+					enemyManager.enemies[enemyManager.touchedEnemyIndex]->isHit = true;
 				}
 
 				RespawnPlayer();

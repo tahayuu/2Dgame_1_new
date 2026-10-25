@@ -66,20 +66,6 @@ void EnemyUnloadTextures() {
 	texturesLoaded = false;
 }
 
-// Enemy 型を使ってテクスチャ ID を取得する関数
-static Texture2D GetEnemyTexture(EnemyType type) {
-	switch (type) {
-	case EnemyType::WALKER:
-		return walkerTexture;
-	case EnemyType::FLYER:
-		return flyerTexture;
-	case EnemyType::JUMPCOPY:
-		return jumpcopyTexture;
-	default:
-		return Texture2D{};
-	}
-}
-
 //==========================
 // static
 //==========================
@@ -163,163 +149,18 @@ static bool playerSence(const Rectangle& player,const Enemy& enemy,float rangeX)
 	return fabsf(playerCenterX - enemyCenterX) <= rangeX;
 }
 
-//==========================
-// 公開関数の定義
-//==========================
-// 目的: 敵1体の初期状態を type に応じて設定する。
-// 入力: 敵タイプとスポーン位置。
-// 出力: enemy の移動範囲/初期HP/使用テクスチャが決まる。
-void EnemyInit(Enemy& enemy, EnemyType type, Vector2 spawnPos) {
-	enemy.type = type;
-	enemy.pos = spawnPos;
-	enemy.vel = { 0.0f,0.0f };
-	enemy.isActive = true;
-	enemy.speed = 100.0f;
-	enemy.hp = 1;
-	enemy.PlayerTouch = false;
-	enemy.isHit = false;
-	enemy.isStomped = false;
-	enemy.deathTimer = 0.0f;
-
-	enemy.rect = { spawnPos.x, spawnPos.y, ENEMY_HITBOX_W, ENEMY_HITBOX_H };
-	enemy.texture = GetEnemyTexture(type);
-	enemy.hitTexture = hitTexture;
-	enemy.stompTexture = stompTexture; // 追加
-
-	switch (type)
-	{
-	case EnemyType::WALKER:
-		enemy.vel = { 100, 100 };
-		enemy.hp = 1;
-		enemy.patrolMinX = spawnPos.x - 100.0f;
-		enemy.patrolMaxX = spawnPos.x + 100.0f;
-		break;
-
-	case EnemyType::FLYER:
-		enemy.vel = { 100.0f, 100.0f };
-		enemy.hp = 1;
-		enemy.patrolMinY = spawnPos.y - 100.0f;
-		enemy.patrolMaxY = spawnPos.y + 100.0f;
-		break;
-
-	case EnemyType::JUMPCOPY:
-		enemy.vel = { 100.0f, 100.0f };
-		enemy.hp = 1;
-		enemy.patrolMinX = spawnPos.x - 100.0f;
-		enemy.patrolMaxX = spawnPos.x + 100.0f;
-		enemy.patrolMinY = spawnPos.y;
-		break;
+// 目的: 踏みつけ後の死亡タイマーを共通更新し、移動を止めるか返す。
+static bool UpdateStompDeath(Enemy& enemy, float dt) {
+	if (!enemy.isStomped) return false;
+	enemy.deathTimer += dt;
+	if (enemy.deathTimer >= 0.15f) {
+		enemy.isActive = false;
 	}
-
-	enemy.rect.x = enemy.pos.x;
-	enemy.rect.y = enemy.pos.y;
+	return true;
 }
 
-// 目的: プレイヤー接触の結果を enemy 状態へ反映する。
-// 注意: 踏みつけ成功時は isStomped、側面接触時は isHit/touchedFromSide を立てる。
-void EnemyCollision(Enemy& enemy, const Rectangle& player, float dt, Vector2& velocity, AudioManager& audio) {
-	if (!enemy.isActive) return;
-	enemy.timer += dt;
-	bool overlapX = CheckOverlapXEnemy(player, enemy);
-	switch (enemy.type)
-	{
-	case EnemyType::WALKER: {
-		EnemyCollisionErase(enemy, player, dt, velocity, 200, 100, audio);
-		break;
-	}
-	case EnemyType::FLYER: {
-		EnemyCollisionErase(enemy, player, dt, velocity, 200, 100, audio);
-		break;
-	}
-	case EnemyType::JUMPCOPY: {
-		EnemyCollisionErase(enemy, player, dt, velocity, 300, 150, audio);
-		break;
-	}
-	}
-}
-
-// 目的: 敵AIの移動と死亡遷移を更新する。
-void EnemyUpdate(Enemy& enemy, float dt, const Rectangle& player){
-	if (!enemy.isActive) return;
-
-	if (enemy.isStomped) {
-		enemy.deathTimer += dt;
-		if (enemy.deathTimer >= 0.15f) {
-			enemy.isActive = false;
-		}
-		return;
-	}
-
-	// 既存の移動処理...
-	switch (enemy.type) {
-		case EnemyType::WALKER: {
-			if (enemy.rect.x <= enemy.patrolMinX) {
-				enemy.vel.x = enemy.speed;
-				enemy.facingRight = true;
-			}
-			else if (enemy.rect.x >= enemy.patrolMaxX) {
-				enemy.vel.x = -enemy.speed;
-				enemy.facingRight = false;
-			}
-			enemy.pos.x += enemy.vel.x * dt;
-			break;
-		}
-		case EnemyType::FLYER: {
-			if (enemy.rect.y <= enemy.patrolMinY) {
-				enemy.pos.y = enemy.patrolMinY;
-				enemy.vel.y = fabs(enemy.speed);
-			}
-			else if (enemy.rect.y >= enemy.patrolMaxY) {
-				enemy.pos.y = enemy.patrolMaxY;
-				enemy.vel.y = -fabs(enemy.speed);
-			}
-			enemy.pos.y += enemy.vel.y * dt;
-			break;
-		}
-		case EnemyType::JUMPCOPY: {
-			if (enemy.rect.x <= enemy.patrolMinX) {
-				enemy.vel.x = enemy.speed;
-				enemy.facingRight = true;
-			}
-			else if (enemy.rect.x >= enemy.patrolMaxX) {
-				enemy.vel.x = -enemy.speed;
-				enemy.facingRight = false;
-			}
-			enemy.pos.x += enemy.vel.x * dt;
-
-			const float gravity   = 1600.0f;
-			const float jumpSpeed = 830.0f;
-			const float groundY   = enemy.patrolMinY;
-			const float eps       = 0.5f;
-
-			const bool onGround = (enemy.pos.y >= groundY - eps);
-			if (onGround) {
-				enemy.pos.y = groundY;
-				if (enemy.vel.y > 0.0f) enemy.vel.y = 0.0f;
-			}
-
-			const bool nearPlayer = playerSence(player, enemy, 220.0f);
-			const bool playerJumpPressed = (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP));
-
-			if (nearPlayer && onGround && playerJumpPressed) {
-				enemy.vel.y = -jumpSpeed;
-			}
-
-			enemy.vel.y += gravity * dt;
-			enemy.pos.y += enemy.vel.y * dt;
-
-			if (enemy.pos.y > groundY) {
-				enemy.pos.y = groundY;
-				enemy.vel.y = 0.0f;
-			}
-			break;
-		}
-	}
-
-	enemy.rect.x = enemy.pos.x;
-	enemy.rect.y = enemy.pos.y;
-
-	// isHit の間は少し表示してから消す例
+// 目的: HPが0になった敵を、既存の被弾表示時間に従って非アクティブにする。
+static void UpdateHpDeath(Enemy& enemy) {
 	if (enemy.hp <= 0) {
 		if (enemy.isHit) {
 			if (enemy.timer >= 0.15f) {
@@ -332,6 +173,170 @@ void EnemyUpdate(Enemy& enemy, float dt, const Rectangle& player){
 	}
 }
 
+//==========================
+// 公開関数の定義
+//==========================
+// 目的: 各派生クラスが共通して使う初期状態を設定する。
+void Enemy::InitializeCommon(EnemyType enemyType, Vector2 spawnPos) {
+	type = enemyType;
+	pos = spawnPos;
+	vel = { 0.0f, 0.0f };
+	isActive = true;
+	speed = 100.0f;
+	hp = 1.0f;
+	PlayerTouch = false;
+	isHit = false;
+	isStomped = false;
+	touchedFromSide = false;
+	timer = 0.0f;
+	facingRight = true;
+	isDying = false;
+	deathTimer = 0.0f;
+	animTimer = 0.0f;
+	currentFrame = 0;
+	patrolMinX = spawnPos.x;
+	patrolMaxX = spawnPos.x;
+	patrolMinY = spawnPos.y;
+	patrolMaxY = spawnPos.y;
+	rect = { spawnPos.x, spawnPos.y, ENEMY_HITBOX_W, ENEMY_HITBOX_H };
+	this->hitTexture = ::hitTexture;
+	this->stompTexture = ::stompTexture;
+}
+
+void WalkerEnemy::Initialize(Vector2 position) {
+	InitializeCommon(EnemyType::WALKER, position);
+	vel = { 100.0f, 100.0f };
+	patrolMinX = position.x - 100.0f;
+	patrolMaxX = position.x + 100.0f;
+	texture = walkerTexture;
+	fallbackColor = RED;
+}
+
+void FlyerEnemy::Initialize(Vector2 position) {
+	InitializeCommon(EnemyType::FLYER, position);
+	vel = { 100.0f, 100.0f };
+	patrolMinY = position.y - 100.0f;
+	patrolMaxY = position.y + 100.0f;
+	texture = flyerTexture;
+	fallbackColor = BLUE;
+}
+
+void JumpCopyEnemy::Initialize(Vector2 position) {
+	InitializeCommon(EnemyType::JUMPCOPY, position);
+	vel = { 100.0f, 100.0f };
+	patrolMinX = position.x - 100.0f;
+	patrolMaxX = position.x + 100.0f;
+	patrolMinY = position.y;
+	texture = jumpcopyTexture;
+	fallbackColor = MAROON;
+}
+
+void ShooterEnemy::Initialize(Vector2 position) {
+	InitializeCommon(EnemyType::SHOOTER, position);
+	fallbackColor = GRAY;
+}
+
+// 目的: Walkerの左右巡回を更新し、共通の踏みつけ/死亡状態を維持する。
+void WalkerEnemy::Update(float dt, const Rectangle& player) {
+	(void)player;
+	if (!isActive) return;
+
+	if (UpdateStompDeath(*this, dt)) return;
+
+	if (rect.x <= patrolMinX) {
+		vel.x = speed;
+		facingRight = true;
+	}
+	else if (rect.x >= patrolMaxX) {
+		vel.x = -speed;
+		facingRight = false;
+	}
+	pos.x += vel.x * dt;
+
+	rect.x = pos.x;
+	rect.y = pos.y;
+	UpdateHpDeath(*this);
+}
+
+// 目的: Flyerの上下巡回と共通の死亡状態を更新する。
+void FlyerEnemy::Update(float dt, const Rectangle& player) {
+	(void)player;
+	if (!isActive) return;
+	if (UpdateStompDeath(*this, dt)) return;
+
+	if (rect.y <= patrolMinY) {
+		pos.y = patrolMinY;
+		vel.y = fabs(speed);
+	}
+	else if (rect.y >= patrolMaxY) {
+		pos.y = patrolMaxY;
+		vel.y = -fabs(speed);
+	}
+	pos.y += vel.y * dt;
+
+	rect.x = pos.x;
+	rect.y = pos.y;
+	UpdateHpDeath(*this);
+}
+
+// 目的: JumpCopyの巡回、重力、プレイヤー入力を使ったジャンプ模倣を更新する。
+void JumpCopyEnemy::Update(float dt, const Rectangle& player) {
+	if (!isActive) return;
+	if (UpdateStompDeath(*this, dt)) return;
+
+	if (rect.x <= patrolMinX) {
+		vel.x = speed;
+		facingRight = true;
+	}
+	else if (rect.x >= patrolMaxX) {
+		vel.x = -speed;
+		facingRight = false;
+	}
+	pos.x += vel.x * dt;
+
+	const float gravity = 1600.0f;
+	const float jumpSpeed = 830.0f;
+	const float groundY = patrolMinY;
+	const float eps = 0.5f;
+
+	const bool onGround = (pos.y >= groundY - eps);
+	if (onGround) {
+		pos.y = groundY;
+		if (vel.y > 0.0f) vel.y = 0.0f;
+	}
+
+	const bool nearPlayer = playerSence(player, *this, 220.0f);
+	const bool playerJumpPressed = (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP));
+
+	if (nearPlayer && onGround && playerJumpPressed) {
+		vel.y = -jumpSpeed;
+	}
+
+	vel.y += gravity * dt;
+	pos.y += vel.y * dt;
+
+	if (pos.y > groundY) {
+		pos.y = groundY;
+		vel.y = 0.0f;
+	}
+
+	rect.x = pos.x;
+	rect.y = pos.y;
+	UpdateHpDeath(*this);
+}
+
+// 目的: 現在未実装のShooter AIに新しい動作を加えず、共通死亡状態のみ更新する。
+void ShooterEnemy::Update(float dt, const Rectangle& player) {
+	(void)dt;
+	(void)player;
+	if (!isActive) return;
+	if (UpdateStompDeath(*this, dt)) return;
+
+	rect.x = pos.x;
+	rect.y = pos.y;
+	UpdateHpDeath(*this);
+}
+
 // 目的: enemy の状態に応じて通常/被弾/踏みつけテクスチャを描き分ける。
 void EnemyDraw(const Enemy& enemy) {
 	if (!enemy.isActive) return;
@@ -342,12 +347,7 @@ void EnemyDraw(const Enemy& enemy) {
 		enemy.texture;
 
 	if (tex.id == 0) {
-		switch (enemy.type) {
-		case EnemyType::WALKER:   DrawRectangleRec(enemy.rect, RED); break;
-		case EnemyType::FLYER:    DrawRectangleRec(enemy.rect, BLUE); break;
-		case EnemyType::JUMPCOPY: DrawRectangleRec(enemy.rect, MAROON); break;
-		default:                  DrawRectangleRec(enemy.rect, GRAY); break;
-		}
+		DrawRectangleRec(enemy.rect, enemy.fallbackColor);
 		return;
 	}
 
@@ -383,4 +383,47 @@ void EnemyReset(Enemy& enemy) {
     enemy.deathTimer = 0.0f;
     enemy.hp = 0;
     enemy.vel = { 0.0f, 0.0f };
+}
+
+// 目的: 全敵に共通する接触判定を行い、種別ごとの反発値だけを仮想特性から取得する。
+void Enemy::OnCollision(const Rectangle& player, float dt, Vector2& velocity, AudioManager& audio) {
+	if (!isActive) return;
+	timer += dt;
+	if (!RespondsToPlayerCollision()) return;
+
+	const Vector2 bounce = GetCollisionBounce();
+	EnemyCollisionErase(*this, player, dt, velocity, bounce.y, bounce.x, audio);
+}
+
+// 目的: 全敵に共通する描画処理を既存関数へ委譲する。
+void Enemy::Draw() const {
+	EnemyDraw(*this);
+}
+
+// 目的: 敵の稼働状態を既存のリセット仕様に従って初期化する。
+void Enemy::Reset() {
+	EnemyReset(*this);
+}
+
+// 目的: 敵種別に対応する具象クラスを生成し、クラスごとの初期値を設定する。
+std::unique_ptr<Enemy> CreateEnemy(EnemyType type, Vector2 position) {
+	std::unique_ptr<Enemy> enemy;
+	switch (type) {
+	case EnemyType::WALKER:
+		enemy = std::make_unique<WalkerEnemy>();
+		break;
+	case EnemyType::FLYER:
+		enemy = std::make_unique<FlyerEnemy>();
+		break;
+	case EnemyType::SHOOTER:
+		enemy = std::make_unique<ShooterEnemy>();
+		break;
+	case EnemyType::JUMPCOPY:
+		enemy = std::make_unique<JumpCopyEnemy>();
+		break;
+	default:
+		return nullptr;
+	}
+	enemy->Initialize(position);
+	return enemy;
 }

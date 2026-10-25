@@ -757,7 +757,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
 
     for (const auto& pe : ed.placedEnemies) {// placedEnemies を Stage に反映
         enemyManager.Spawn(pe.type, pe.pos);
-        auto& e = enemyManager.enemies.back();// 新しい敵を追加配列の後ろに追加
+        auto& e = *enemyManager.enemies.back();// 新しい敵を追加配列の後ろに追加
 
         const auto& info = EdGetEnemyTypeInfo(pe.type);// 敵のタイプ情報を取得
 
