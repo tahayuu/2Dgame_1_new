@@ -840,7 +840,23 @@ void UpdateSavePoints(Stage& stage, PlayerState& playerState, AudioManager& audi
 //ステージリセット
 // 目的: ステージ内の可変ギミックを初期状態へ戻す。
 void StageReset(Stage& stage) {
+	// ================================================================
+	// GimmickGroup<T,N> 移行済みギミックのリセットをまとめて実行
+	// ================================================================
 	stage.touchBreakBlocks.Reset();
+	stage.gravityBlocks.Reset();
+	stage.itemBlocks.Reset();
+	stage.breakableBlocks.Reset();
+	stage.clearBlocksX.Reset();
+	stage.buttonBlocks.Reset();
+	stage.deathBlocks.Reset();
+	stage.bottomBreakBlocks.Reset();
+	stage.commentBlocks.Reset();
+	stage.cursorBottoms.Reset();
+	stage.tempFloors.Reset();
+	stage.tempFloorSwitches.Reset();
+	// ================================================================
+
 	for (int i = 0; i < stage.fallingCount; i++) {
 		stage.fallingPlatforms[i] = stage.fallingPlatformsInit[i];
 	}
@@ -856,7 +872,7 @@ void StageReset(Stage& stage) {
 	}
 	stage.gravityCooldown = 0.0f;
 	stage.gravityReversed = false;
-	stage.gravityBlocks.Reset();
+
 	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
 		stage.movePlatformsYXY[i] = stage.movePlatformsYXYInit[i];
 	}
@@ -886,17 +902,12 @@ void StageReset(Stage& stage) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 
-	stage.itemBlocks.Reset();
 	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
 		stage.jumpPlatfroms[i] = stage.jumpPlatfromsInit[i];
 	}
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		stage.switchPlatforms[i] = stage.switchplatformsInit[i];
 	}
-	stage.breakableBlocks.Reset();
-	stage.clearBlocksX.Reset();
-	stage.buttonBlocks.Reset();
-	stage.deathBlocks.Reset();
 	for (int i = 0; i < stage.springCount; i++) {
 		stage.springs[i] = stage.springsInit[i];
 	}
@@ -904,10 +915,7 @@ void StageReset(Stage& stage) {
 	for (int i = 0; i < stage.elevatorCount; i++) {
 		stage.elevators[i] = stage.elevatorsInit[i];
 	}
-	stage.bottomBreakBlocks.Reset();
-	stage.commentBlocks.Reset();
 
-	stage.cursorBottoms.Reset();
 	stage.currentLayer = 0;
 	for (int i = 0; i < stage.craneCount; i++) {
 		stage.cranes[i] = stage.cranesInit[i];
@@ -915,8 +923,6 @@ void StageReset(Stage& stage) {
 	for (int i = 0; i < stage.ojisanPunchAreaCount; i++) {
 		stage.ojisanPunchTriggered[i] = false;
 	}
-	stage.tempFloors.Reset();
-	stage.tempFloorSwitches.Reset();
 	ResetSnapPuzzles(stage);
 	ResetDistanceTriggerPieces(stage);
 
@@ -930,61 +936,67 @@ void StageReset(Stage& stage) {
 // 目的: ステージ切替前にカウント類を安全に初期化する。
 void StageClear(Stage& stage) {
 	StageThemeUnload(stage.theme);
+	// ================================================================
+	// GimmickGroup<T,N> 移行済みギミックのクリアをまとめて実行
+	// ================================================================
 	stage.touchBreakBlocks.Clear();
+	stage.bottomBreakBlocks.Clear();
+	stage.gravityBlocks.Clear();
+	stage.buttonBlocks.Clear();
+	stage.clearBlocks.Clear();
+	stage.clearBlocksX.Clear();
+	stage.itemBlocks.Clear();
+	stage.breakableBlocks.Clear();
+	stage.magnets.Clear();
+	stage.trackingHazards.Clear();
+	stage.fallingTexts.Clear();
+	stage.commentBlocks.Clear();
+	stage.cursorBottoms.Clear();
+	stage.deathBlocks.Clear();
+	stage.spikeBouncers.Clear();
+	stage.tempFloors.Clear();
+	stage.tempFloorSwitches.Clear();
+	stage.decorArrows.Clear();
+	// ================================================================
+
 	stage.springCount = 0;
 	stage.heldSpringIndex = -1;
-	stage.bottomBreakBlocks.Clear();
 	stage.backPlatformCount = 0;
 	stage.currentLayer = 0;
 	stage.layerDoorCount = 0;
 	stage.elevatorCount = 0;
 
 	stage.cameraConfig = CameraConfig();
-	stage.gravityBlocks.Clear();
 	stage.gravityReversed = false;
 	stage.gravityCooldown = 0.0f;
 	stage.platformCount = 0;
-	stage.buttonBlocks.Clear();
 	stage.hazardCount = 0;
 	stage.moveCount = 0;
 	stage.moveExtYCount = 0;
 	stage.fallingCount = 0;
 	stage.upRisingCount = 0;
 	stage.upDownCount = 0;
-	stage.clearBlocks.Clear();
-	stage.clearBlocksX.Clear();
 	stage.splitPlatformCount = 0;
-	stage.itemBlocks.Clear();
-	stage.breakableBlocks.Clear();
 	stage.knockBackWallCount = 0;
 	stage.batteryHumanCount = 0;
 	stage.jumpPlatfromCount = 0;
 	stage.switchPlatformCount = 0;
 	stage.icePlatformCount = 0;
 	stage.cursorPlatformCount = 0;
-	stage.magnets.Clear();
 	stage.moveUpPlatformCount = 0;
 	stage.moveDownPlatformCount = 0;
 	stage.circlePlatformCount = 0;
 	stage.movePlatformCountX = 0;
 	stage.moveHazardRightCount = 0;
 	stage.moveDownHazardExtYCount = 0;
-	stage.trackingHazards.Clear();
 	stage.rotatingBallCount = 0;
 	stage.moveRotatingBallCount = 0;
 	stage.rollingBallCount = 0;
 	stage.movePlatformCountYXY = 0;
-	stage.fallingTexts.Clear();
 	stage.exitDoorCount = 0;
 	stage.warpCount = 0;
 	stage.hasRespawnPoint = false;
 	stage.respawnPoint = { 100.0f, 500.0f };  // ← 追加
-	stage.commentBlocks.Clear();
-	stage.cursorPlatformCount = 0;
-	stage.cursorBottoms.Clear();
-	stage.magnets.Clear();
-	stage.deathBlocks.Clear();
-	stage.spikeBouncers.Clear();
 	stage.craneCount = 0;
 	stage.ojisanPunchAreaCount = 0;
 	for (int i = 0; i < Stage::MAX_OJISAN_PUNCH_AREAS; i++) {
@@ -992,8 +1004,6 @@ void StageClear(Stage& stage) {
 		stage.ojisanPunchDrawFront[i] = false;
 		stage.ojisanPunchApproachDuration[i] = 0.85f;
 	}
-	stage.tempFloors.Clear();
-	stage.tempFloorSwitches.Clear();
 	stage.decorArrows.Clear();
 	stage.decoSpriteCount = 0;
 	stage.dragPieceCount = 0;
