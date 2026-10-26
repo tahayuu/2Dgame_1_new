@@ -35,6 +35,6 @@ decorSprites,54,2300,80,320,240,0,0,0,0,0,0,"",nextUpdate,0,0,0
 platforms,0,2140,300,500,80,0,0,0,0,0,0,"",MetalWall01,0,0,0
 platforms,0,2800,-20,180,760,0,0,0,0,0,0,"",ground1,0,0,0
 commentBlocks,41,2200,200,100,50,3,0,0,0,0,0,"アップデートをまつのじゃ",None,0,0,0
-exitDoors,37,950,400,150,200,5,0,0,0,0,0,"",None,0,0,0
+exitDoors,37,2800,-200,150,200,5,0,0,0,0,0,"",None,0,0,0
 [ENEMIES]
 enemyTypeId,posX,posY,p0,p1,p2,p3,p4,p5
