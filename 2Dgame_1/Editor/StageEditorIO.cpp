@@ -119,7 +119,13 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
         {
             ItemBlock block{};
             block.rect = o.rect;
-            // spawnType はデフォルト値のまま（元の実装でもEditorからは未設定）
+            // p0 に保存された ItemType を使用する。範囲外の値は通常ジャンプ薬に戻す。
+            int itemType = static_cast<int>(o.params[0]);
+            if (itemType < static_cast<int>(ItemType::jumpPotion) ||
+                itemType > static_cast<int>(ItemType::debuffPotion)) {
+                itemType = static_cast<int>(ItemType::jumpPotion);
+            }
+            block.spawnType = static_cast<ItemType>(itemType);
             block.isActive = false;
             block.hasSpawned = false;
             if (stage.itemBlocks.Add(block)) ++c[t];
@@ -833,8 +839,10 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
             ed.objects.push_back(o);
         }
         for (std::size_t i = 0; i < s.itemBlocks.Size(); ++i) {
-            PlacedObject o = { EditorObjectType::ITEM_BLOCK, s.itemBlocks.Get(i).rect };
+            const auto& block = s.itemBlocks.Get(i);
+            PlacedObject o = { EditorObjectType::ITEM_BLOCK, block.rect };
             InitDefaultParams(o);
+            o.params[0] = static_cast<float>(block.spawnType);
             ed.objects.push_back(o);
         }
         IMPORT_RECT_P(MOVE_DOWN_PLATFORM, s.moveDownPlatforms, s.moveDownPlatformCount)
