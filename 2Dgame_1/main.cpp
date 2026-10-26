@@ -571,9 +571,16 @@ allDialogTextへ追加
 
 			EditorUpdate(stageEditor, dt);
 
-			// F5: エディタ内容を適用してプレイテスト開始
-			if (!stageEditor.showHelp && IsKeyPressed(KEY_F5)) {
-				EditorSaveCSV(stageEditor, (stageEditor.savePath + ".csv").c_str());
+			// Ctrl+S は EditorUpdate 側で保存する。
+			// V / F1: 保存済みかどうかに関係なく、現在の編集内容をステージへ反映する。
+			// Ctrl+V（テキストの貼り付け）やパラメータ入力中は切り替えない。
+			const bool applyEditorWithV =
+				IsKeyPressed(KEY_V) &&
+				!IsKeyDown(KEY_LEFT_CONTROL) && !IsKeyDown(KEY_RIGHT_CONTROL);
+			const bool applyEditorToStage = applyEditorWithV || IsKeyPressed(KEY_F1);
+			if (!stageEditor.showHelp && !stageEditor.propEditingText &&
+				stageEditor.propEditingParam < 0 &&
+				applyEditorToStage && editorKeyBlockTimer <= 0.0f) {
 				EditorExportToStage(stageEditor, stage, enemyManager);
 				StageReset(stage);
 				HazardReset(stage);
@@ -586,7 +593,7 @@ allDialogTextへ追加
 				else if (currentStage == 4) {
 					ResetPlayerToDefault();
 					respawn = { 50.0f, 100.0f };
-				}// 4面はスタート位置を変更
+				}
 				else {
 					ResetPlayerToDefault();
 					respawn = { 100.0f, 500.0f };
@@ -594,20 +601,9 @@ allDialogTextへ追加
 				velocity = { 0.0f, 0.0f };
 				onGround = false;
 				editorExitInvTimer = editorExitInvDuration;
-				gameState = GameState::PLAYING;
-			}
-
-			if (!stageEditor.showHelp && (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1)) && editorKeyBlockTimer <= 0.0f) {
-				EditorSaveCSV(stageEditor, (stageEditor.savePath + ".csv").c_str());
 				stageEditor.active = false;
-				editorExitInvTimer = editorExitInvDuration;
-				if (stage.hasRespawnPoint) {
-					player = { stage.respawnPoint.x, stage.respawnPoint.y, (float)PLAYER_W, (float)PLAYER_H };
-					velocity = { 0.0f, 0.0f };
-					respawn = stage.respawnPoint;
-				}
 				gameState = GameState::PLAYING;
-				editorKeyBlockTimer = editorKeyBlockDuration; // キー入力を一時的にブロック
+				editorKeyBlockTimer = editorKeyBlockDuration;
 			}
 
 			BeginDrawing();

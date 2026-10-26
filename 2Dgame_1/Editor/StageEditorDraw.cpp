@@ -206,11 +206,11 @@ static void DrawEditorHelpOverlay(const StageEditor& ed) {
 
     DrawEditorHelpText(ed, u8"保存と画面切り替え", "SAVE AND PLAYTEST",
                        { rightX, panel.y + 353 }, 19, SKYBLUE);
-    DrawEditorHelpEntry(ed, rightX, panel.y + 388, "Ctrl + S", u8"CSV・JSONを保存", "Save CSV and JSON");
-    DrawEditorHelpEntry(ed, rightX, panel.y + 415, "Ctrl + L", u8"CSVから読み込み", "Load CSV");
-    DrawEditorHelpEntry(ed, rightX, panel.y + 442, "Ctrl + Z", u8"削除の取り消し", "Undo deletion");
-    DrawEditorHelpEntry(ed, rightX, panel.y + 469, "F5", u8"プレイテスト開始", "Start playtest");
-    DrawEditorHelpEntry(ed, rightX, panel.y + 496, "V / F1", u8"エディタを終了", "Exit editor");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 388, "Ctrl + S", u8"CSV・JSONに保存", "Save CSV and JSON");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 415, "V", u8"ステージに反映してテスト", "Apply changes and playtest");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 442, "F1", u8"Vと同じ操作", "Same as V");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 469, "Ctrl + L", u8"CSVから読み込み", "Load CSV");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 496, "Ctrl + Z", u8"削除の取り消し", "Undo deletion");
 
     DrawEditorHelpText(ed, u8"F2 または Esc でこの画面を閉じられます。",
                        "Press F2 or Esc to close this help.",
