@@ -130,6 +130,93 @@ void EditorDraw(const StageEditor& ed) {
         DrawRectangleLinesEx(ed.objects[ed.propSelectedIdx].rect, 3, YELLOW);
 }
 
+// ヘルプ専用の日本語対応フォントで描画する。
+// titlefont.ttf は漢字の収録数が少ないため、通常の uiFont は使用しない。
+static void DrawEditorHelpText(const StageEditor& ed, const char8_t* japanese,
+                               const char* english, Vector2 pos, int fontSize, Color color) {
+    if (ed.helpFont.texture.id != 0) {
+        DrawTextEx(ed.helpFont, reinterpret_cast<const char*>(japanese), pos,
+                   (float)fontSize, 1.0f, color);
+    } else {
+        DrawText(english, (int)pos.x, (int)pos.y, fontSize, color);
+    }
+}
+
+static void DrawEditorHelpEntry(const StageEditor& ed, float x, float y,
+                                const char* key, const char8_t* descriptionJP,
+                                const char* descriptionEN) {
+    DrawText(key, (int)x, (int)y + 3, 14, GOLD);
+    DrawEditorHelpText(ed, descriptionJP, descriptionEN, { x + 133.0f, y }, 15, LIGHTGRAY);
+}
+
+static void DrawEditorHelpOverlay(const StageEditor& ed) {
+    DrawRectangle(0, 0, ed.screenW, ed.screenH, { 5, 7, 14, 210 });
+
+    const Rectangle panel = GetEditorHelpPanelRect(ed);
+    DrawRectangleRounded(panel, 0.04f, 8, { 28, 30, 44, 255 });
+    DrawRectangleRoundedLinesEx(panel, 0.04f, 8, 2, Color{ 237, 183, 61, 255 });
+
+    const float leftX = panel.x + 28.0f;
+    const float rightX = panel.x + panel.width * 0.52f;
+    DrawEditorHelpText(ed, u8"エディタの使い方", "EDITOR HELP",
+                       { leftX, panel.y + 18.0f }, 27, YELLOW);
+    DrawEditorHelpText(ed, u8"使いたい操作を選んで、ショートカットを確認できます。",
+                       "Editor controls and shortcuts",
+                       { leftX, panel.y + 55.0f }, 14, LIGHTGRAY);
+
+    const Rectangle close = GetEditorHelpCloseRect(ed);
+    const bool hoverClose = CheckCollisionPointRec(GetMousePosition(), close);
+    DrawRectangleRounded(close, 0.22f, 4,
+                         hoverClose ? Color{ 125, 67, 65, 255 } : Color{ 78, 72, 83, 255 });
+    DrawEditorHelpText(ed, u8"閉じる", "Close", { close.x + 17, close.y + 8 }, 16, WHITE);
+
+    DrawLineEx({ panel.x + 22, panel.y + 83 },
+               { panel.x + panel.width - 22, panel.y + 83 }, 1, ColorAlpha(WHITE, 0.22f));
+    DrawLineEx({ panel.x + panel.width * 0.5f, panel.y + 103 },
+               { panel.x + panel.width * 0.5f, panel.y + panel.height - 32 },
+               1, ColorAlpha(WHITE, 0.13f));
+
+    DrawEditorHelpText(ed, u8"基本操作", "BASIC OPERATIONS",
+                       { leftX, panel.y + 98 }, 19, SKYBLUE);
+    DrawEditorHelpEntry(ed, leftX, panel.y + 134, "LClick", u8"ギミックを配置", "Place object");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 162, "RClick", u8"カーソル位置の物を削除", "Delete under cursor");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 190, "T", u8"カーソル位置の物を選択", "Select under cursor");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 218, "Drag", u8"選択中の物を移動", "Move selected object");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 246, "Delete", u8"選択中の物を削除", "Delete selection");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 274, "1-9 / Tab", u8"ギミックの種類を切替", "Change object type");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 302, "Middle drag", u8"画面を移動", "Pan the camera");
+
+    DrawEditorHelpText(ed, u8"画面と配置サイズ", "VIEW AND SIZE",
+                       { leftX, panel.y + 353 }, 19, SKYBLUE);
+    DrawEditorHelpEntry(ed, leftX, panel.y + 388, "Wheel", u8"拡大・縮小", "Zoom in / out");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 415, "R", u8"グリッド間隔を切替", "Change grid spacing");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 442, "Q / E", u8"配置時の幅を変更", "Decrease / increase width");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 469, "W / S", u8"配置時の高さを変更", "Increase / decrease height");
+    DrawEditorHelpEntry(ed, leftX, panel.y + 496, "- / =", u8"選択中の物のサイズを変更", "Resize selection");
+
+    DrawEditorHelpText(ed, u8"編集と見た目", "EDIT AND SPRITES",
+                       { rightX, panel.y + 98 }, 19, SKYBLUE);
+    DrawEditorHelpEntry(ed, rightX, panel.y + 134, "C", u8"選択中の物をコピー", "Copy selection");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 162, "P", u8"コピーした物を貼付", "Paste copied object");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 190, "[ / ]", u8"スプライトの切替", "Change sprite");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 218, "H / J", u8"左右・上下反転", "Flip horizontally / vertically");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 246, "K / L", u8"左右に90度回転", "Rotate left / right 90 degrees");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 274, "Panel", u8"値をクリックして編集", "Click a parameter to edit");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 302, "Enter", u8"パラメータを確定", "Confirm parameter value");
+
+    DrawEditorHelpText(ed, u8"保存と画面切り替え", "SAVE AND PLAYTEST",
+                       { rightX, panel.y + 353 }, 19, SKYBLUE);
+    DrawEditorHelpEntry(ed, rightX, panel.y + 388, "Ctrl + S", u8"CSV・JSONを保存", "Save CSV and JSON");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 415, "Ctrl + L", u8"CSVから読み込み", "Load CSV");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 442, "Ctrl + Z", u8"削除の取り消し", "Undo deletion");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 469, "F5", u8"プレイテスト開始", "Start playtest");
+    DrawEditorHelpEntry(ed, rightX, panel.y + 496, "V / F1", u8"エディタを終了", "Exit editor");
+
+    DrawEditorHelpText(ed, u8"F2 または Esc でこの画面を閉じられます。",
+                       "Press F2 or Esc to close this help.",
+                       { leftX, panel.y + panel.height - 27.0f }, 13, GRAY);
+}
+
 // ================================================================
 void EditorDrawUI(StageEditor& ed) {
     if (!ed.active) return;
@@ -138,50 +225,6 @@ void EditorDrawUI(StageEditor& ed) {
 
     DrawRectangle(0, 0, ed.screenW, (int)ed.TOOLBAR_H, { 30, 30, 42, 245 });
     DrawLineEx({ 0, ed.TOOLBAR_H }, { (float)ed.screenW, ed.TOOLBAR_H }, 2, ColorAlpha(WHITE, 0.25f));
-
-    const int panelX = 10, panelY = 6, panelW = 420, panelH = 105;
-    DrawRectangle(panelX, panelY, panelW, panelH, ColorAlpha(BLACK, 0.6f));
-    DrawRectangleLinesEx({ (float)panelX, (float)panelY, (float)panelW, (float)panelH },
-        1, ColorAlpha(WHITE, 0.3f));
-
-    int lineY = panelY + 5;
-    const int lineSpacing = 14;
-
-    if (hasFont) {
-        DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(u8"\u25A0 \u30A8\u30C7\u30A3\u30BF\u64CD\u4F5C"),
-            { (float)panelX + 5, (float)lineY }, 13, 1, YELLOW);
-        lineY += lineSpacing + 2;
-        // 配置: 左クリック  削除: 右クリック
-        DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(
-            u8"\u914D\u7F6E: \u5DE6\u30AF\u30EA\u30C3\u30AF  \u524A\u9664: \u53F3\u30AF\u30EA\u30C3\u30AF"),
-            { (float)panelX + 8, (float)lineY }, 11, 1, LIGHTGRAY);
-        lineY += lineSpacing;
-        // パラメータ編集: T  選択解除: Esc/Delete
-        DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(
-            u8"\u30D1\u30E9\u30E1\u30FC\u30BF\u7DE8\u96C6: T  \u9078\u629E\u89E3\u9664: Esc/Delete"),
-            { (float)panelX + 8, (float)lineY }, 11, 1, LIGHTGRAY);
-        lineY += lineSpacing;
-        DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(
-            u8"\u30BA\u30FC\u30E0: \u30DE\u30A6\u30B9\u30DB\u30A4\u30FC\u30EB(\u753B\u9762\u4E0A)"),
-            { (float)panelX + 8, (float)lineY }, 11, 1, LIGHTGRAY);
-        lineY += lineSpacing;
-        DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(
-            u8"\u30B5\u30A4\u30BA: Q/W(\u5E45) A/S(\u9AD8\u3055)  \u30B0\u30EA\u30C3\u30C9: R"),
-            { (float)panelX + 8, (float)lineY }, 11, 1, LIGHTGRAY);
-        lineY += lineSpacing;
-        DrawTextEx(ed.uiFont, reinterpret_cast<const char*>(
-            u8"\u79FB\u52D5: \u2190\u2192\u2191\u2193  \u4FDD\u5B58: Ctrl+S  \u53D6\u6D88: Ctrl+Z"),
-            { (float)panelX + 8, (float)lineY }, 11, 1, LIGHTGRAY);
-    }
-    else {
-        DrawText("EDITOR CONTROLS", panelX + 5, lineY, 11, YELLOW);
-        lineY += lineSpacing + 2;
-        DrawText("Place: LClick  Delete: RClick", panelX + 8, lineY, 10, LIGHTGRAY);
-        lineY += lineSpacing;
-        DrawText("Params: T  Deselect: Esc/Del  Zoom: Wheel", panelX + 8, lineY, 10, LIGHTGRAY);
-        lineY += lineSpacing;
-        DrawText("Size: Q/W  Grid: R  Save: Ctrl+S  Undo: Ctrl+Z", panelX + 8, lineY, 10, LIGHTGRAY);
-    }
 
     float totalW = ed.VISIBLE_BTNS * ed.BTN_W + (ed.VISIBLE_BTNS - 1) * ed.BTN_GAP;
     float barSX = (ed.screenW - totalW) / 2.0f;
@@ -252,39 +295,24 @@ void EditorDrawUI(StageEditor& ed) {
         DrawText("Saved!", ed.screenW / 2 - 30, (int)ed.TOOLBAR_H + 12, 24, ColorAlpha(GREEN, a));
     }
 
-    // ================================================================
-    // === 右下に操作ガイドを表示 ===
-    // ================================================================
-    {
-        const float guideW = 260.0f;
-        const float guideH = 180.0f;
-        const float guideX = ed.screenW - guideW - 10.0f;
-        const float guideY = ed.screenH - guideH - (int)ed.BOTTOM_H - 10.0f;
+    // 常時表示の説明パネルをなくし、必要なときだけ開く「使い方」ボタンにする。
+    const Rectangle helpButton = GetEditorHelpButtonRect(ed);
+    const bool helpHovered = CheckCollisionPointRec(GetMousePosition(), helpButton);
+    DrawRectangleRounded(helpButton, 0.18f, 5,
+        helpHovered ? Color{ 72, 92, 136, 255 } : Color{ 52, 65, 98, 245 });
+    DrawRectangleRoundedLinesEx(helpButton, 0.18f, 5, 2, YELLOW);
+    DrawText("?", (int)helpButton.x + 12, (int)helpButton.y + 8, 21, YELLOW);
+    if (ed.helpFont.texture.id != 0) {
+        DrawTextEx(ed.helpFont, reinterpret_cast<const char*>(u8"使い方"),
+                   { helpButton.x + 40, helpButton.y + 10 }, 18, 1, WHITE);
+    } else {
+        DrawText("HELP", (int)helpButton.x + 43, (int)helpButton.y + 12, 16, WHITE);
+    }
 
-        DrawRectangleRounded({guideX, guideY, guideW, guideH}, 0.08f, 4, ColorAlpha(BLACK, 0.7f));
-        DrawRectangleRoundedLinesEx({guideX, guideY, guideW, guideH}, 0.08f, 4, 1, ColorAlpha(WHITE, 0.3f));
-
-        float gy = guideY + 8.0f;
-        const float lineH = 12.0f;
-
-        // タイトル (常に英語で統一)
-        DrawText("EDITOR CONTROLS", (int)guideX + 8, (int)gy, 10, YELLOW);
-        gy += lineH + 3;
-
-        // 基本操作
-        DrawText("Place: LClick", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
-        DrawText("Select: T  | Delete: RClick/Del", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 1;
-
-        // コピー＆ペースト
-        DrawText("Copy: C  | Paste: P", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
-        DrawText("Size: - / =", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 1;
-
-        // スプライト操作
-        DrawText("Sprite: [ / ]  | Flip: H/J", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
-        DrawText("Rotate: K(CCW) / L(CW)", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH + 1;
-
-        // 保存
-        DrawText("Save: Ctrl+S  | Undo: Ctrl+Z", (int)guideX + 8, (int)gy, 9, LIGHTGRAY); gy += lineH;
+    // ヘルプ表示中は他の編集パネルのクリック処理も止める。
+    if (ed.showHelp) {
+        DrawEditorHelpOverlay(ed);
+        return;
     }
 
     DrawPropertyPanel(ed);        // 通常オブジェクトのパネル（既存）

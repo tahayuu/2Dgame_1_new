@@ -452,6 +452,7 @@ void DrawObjectIcon(int typeIdx, Rectangle r) {
 // 注意: savePath を変更している場合、ここで自動読込される対象も変わる。
 void EditorInit(StageEditor& ed, int screenWidth, int screenHeight, Font uiFont) {
     ed.active = true;
+    ed.showHelp = false;
     ed.objects.clear();
     ed.undoStack.clear();
     ed.currentType = EditorObjectType::PLATFORM;
@@ -485,6 +486,24 @@ void EditorInit(StageEditor& ed, int screenWidth, int screenHeight, Font uiFont)
 //   分岐順を変えると誤入力や同時操作バグが起きやすい。
 void EditorUpdate(StageEditor& ed, float dt) {
     if (!ed.active) return;
+
+    // ヘルプ表示中は背後のオブジェクトやパラメータを操作しない。
+    // 開閉時のクリックもステージに伝わらないように return する。
+    const Vector2 helpMouse = GetMousePosition();
+    const bool helpClicked = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+    if (ed.showHelp) {
+        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_F2) ||
+            (helpClicked && CheckCollisionPointRec(helpMouse, GetEditorHelpCloseRect(ed)))) {
+            ed.showHelp = false;
+        }
+        return;
+    }
+    if (IsKeyPressed(KEY_F2) ||
+        (helpClicked && CheckCollisionPointRec(helpMouse, GetEditorHelpButtonRect(ed)))) {
+        ed.showHelp = true;
+        ed.isDragging = false;
+        return;
+    }
 	if (ed.saveNotifyTimer > 0.0f) ed.saveNotifyTimer -= dt;//保存通知タイマーを減算
 
 	if (ed.propSelectedIdx >= (int)ed.objects.size()) {//選択中のオブジェクトが削除されている場合は、選択を解除する

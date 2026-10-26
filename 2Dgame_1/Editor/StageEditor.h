@@ -132,6 +132,7 @@ struct TexturePaintLayer {
 
 struct StageEditor {
 	bool active = false;// エディタが有効かどうか
+	bool showHelp = false; // 「使い方」画面の表示状態。表示中は編集操作を停止する。
 	EditorObjectType currentType = EditorObjectType::PLATFORM;// 現在選択中のギミックタイプ
 
 
@@ -163,6 +164,7 @@ struct StageEditor {
 
     // Toolbar / UI
     Font uiFont = {};
+    Font helpFont = {}; // 操作説明専用。日本語の全文字を収録した既存フォントを使用する。
     int  screenW = 1280;
     int  screenH = 720;
     float saveNotifyTimer = 0.0f;

@@ -36,6 +36,24 @@ constexpr float PROP_W = 280.0f;
 constexpr float PROP_LINE_H = 28.0f;
 constexpr float PROP_HEADER_H = 58.0f;
 
+// 使い方ボタンとモーダルの位置は、入力判定と描画の双方で共通利用する。
+inline Rectangle GetEditorHelpButtonRect(const StageEditor& ed) {
+    return { (float)ed.screenW - 138.0f,
+             (float)ed.screenH - ed.BOTTOM_H - 50.0f, 124.0f, 38.0f };
+}
+
+inline Rectangle GetEditorHelpPanelRect(const StageEditor& ed) {
+    const float width = (ed.screenW >= 944) ? 900.0f : (float)ed.screenW - 44.0f;
+    const float height = (ed.screenH >= 624) ? 550.0f : (float)ed.screenH - 48.0f;
+    return { ((float)ed.screenW - width) * 0.5f,
+             ((float)ed.screenH - height) * 0.5f, width, height };
+}
+
+inline Rectangle GetEditorHelpCloseRect(const StageEditor& ed) {
+    Rectangle panel = GetEditorHelpPanelRect(ed);
+    return { panel.x + panel.width - 110.0f, panel.y + 17.0f, 86.0f, 34.0f };
+}
+
 // ================================================================
 // 共有ヘルパー関数 (StageEditor.cpp で定義)
 // ================================================================

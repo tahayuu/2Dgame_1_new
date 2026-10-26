@@ -203,6 +203,19 @@ allDialogTextへ追加
 		u8"\u5DE6\u53F3\u5E45\u9AD8\u753B\u9762\u64CD\u4F5C\u53D6\u6D88"; // 左右幅高画面操作取消
 	allDialogText += reinterpret_cast<const char*>(editorChars8);
 
+	// エディタの「使い方」ポップアップ用の日本語文字を読み込み対象に加える。
+	const char8_t* editorHelpChars8 =
+		u8"エディタの使い方使いたい操作を選んで、ショートカットを確認できます。閉じる"
+		u8"基本操作ギミックを配置カーソル位置の物を削除選択選択中の物を移動"
+		u8"ギミックの種類を切替画面を移動画面と配置サイズ拡大・縮小"
+		u8"グリッド間隔を切替配置時の幅を変更配置時の高さを変更"
+		u8"選択中の物のサイズを変更編集と見た目選択中の物をコピー"
+		u8"コピーした物を貼付スプライトの切替左右・上下反転左右に90度回転"
+		u8"値をクリックして編集パラメータを確定保存と画面切り替え"
+		u8"CSV・JSONを保存CSVから読み込み削除の取り消しプレイテスト開始"
+		u8"エディタを終了F2またはEscでこの画面を閉じられます。";
+	allDialogText += reinterpret_cast<const char*>(editorHelpChars8);
+
 	// @キーシステム & コメントブロック入力用:
 	// 半角ASCII印刷可能文字（@a-zA-Z0-9 など DrawTextEx で表示するために必要）
 	allDialogText +=
@@ -429,11 +442,14 @@ allDialogTextへ追加
     // Release : エディタステージ(currentStage == 100)のみ使用可能
    // ================================================================
 	auto CanUseStageEditor = [&]() ->bool {
-#ifdef _DEBUG
+		// Release版でもDebug版と同様にエディタ機能を使用できるようにするため、
+		// ステージ判定による制限をコメントアウトし、常にtrueを返すようにする。
 		return true;
-#else
-		return currentStage == 100;
-#endif
+//#ifdef _DEBUG
+//		return true;
+//#else
+//		return currentStage == 100;
+//#endif
 		};
 
 
@@ -446,6 +462,8 @@ allDialogTextへ追加
 			? ResolveStageSaveBasePath("stage_editor_output")
 			: ResolveStageSaveBasePath(GetStageSaveName(currentStage));
 		EditorInit(stageEditor, screenWidth, screenHeight, jpFont);
+		// titlefont.ttf は多くの漢字を含まないため、操作説明だけ日本語対応の既存フォントにする。
+		stageEditor.helpFont = ojisanFont;
 		if (stageEditor.objects.empty()) {
 			EditorImportFromStage(stageEditor, stage);
 		}
@@ -554,7 +572,7 @@ allDialogTextへ追加
 			EditorUpdate(stageEditor, dt);
 
 			// F5: エディタ内容を適用してプレイテスト開始
-			if (IsKeyPressed(KEY_C)) {
+			if (!stageEditor.showHelp && IsKeyPressed(KEY_F5)) {
 				EditorSaveCSV(stageEditor, (stageEditor.savePath + ".csv").c_str());
 				EditorExportToStage(stageEditor, stage, enemyManager);
 				StageReset(stage);
@@ -579,7 +597,7 @@ allDialogTextへ追加
 				gameState = GameState::PLAYING;
 			}
 
-			if ((IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1)) && editorKeyBlockTimer <= 0.0f) {
+			if (!stageEditor.showHelp && (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_F1)) && editorKeyBlockTimer <= 0.0f) {
 				EditorSaveCSV(stageEditor, (stageEditor.savePath + ".csv").c_str());
 				stageEditor.active = false;
 				editorExitInvTimer = editorExitInvDuration;
