@@ -196,8 +196,6 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	for(int i= 0; i < stage.moveHazardRightCount; i++) {
 		stage.moveHazardsRightInit[i] = stage.moveHazardsRight[i];
 	}	
-	
-	
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		stage.switchplatformsInit[i] = stage.switchPlatforms[i];
 	}
