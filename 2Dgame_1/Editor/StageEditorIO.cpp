@@ -130,17 +130,30 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             block.hasSpawned = false;
             if (stage.itemBlocks.Add(block)) ++c[t];
         }break;
+
         case EditorObjectType::ICE_PLATFORM:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++; auto& p = stage.icePlatforms[i];
-                p.rect = o.rect; p.friction = o.params[0]; p.iceAccel = o.params[1]; p.maxSlideSpeed = o.params[2];
-                stage.iceplatformsInit[i] = p;
-            }break;
-        case EditorObjectType::MOVE_DOWN_PLATFORM:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++; stage.moveDownPlatforms[i].rect = o.rect;
-                stage.moveDownplatformsInit[i] = stage.moveDownPlatforms[i];
-            }break;
+        {
+            IcePlatform ice{};
+
+            ice.rect = o.rect;
+            ice.friction = o.params[0];
+            ice.iceAccel = o.params[1];
+            ice.maxSlideSpeed = o.params[2];
+            if (stage.icePlatforms.Add(ice)) {
+                ++c[t];
+            }
+            break;
+        }
+
+        case EditorObjectType::MOVE_DOWN_PLATFORM: {
+            MoveDownPlatform moveDown{};
+            moveDown.rect = o.rect;
+            if (stage.moveDownPlatforms.Add(moveDown)) {
+                ++c[t];
+            }
+            break;
+        }
+       
         case EditorObjectType::MOVE_UP_PLATFORM:
             if (c[t] < MAX_PLATFORMS) {
                 int i = c[t]++; stage.moveUpPlatforms[i].rect = o.rect;
@@ -708,8 +721,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     stage.platformCount = c[0];  stage.backPlatformCount = c[1];
     stage.hazardCount = c[2]; 
     stage.elevatorCount = c[6];
-    stage.icePlatformCount = c[10]; stage.moveDownPlatformCount = c[11]
-        ;
+        
     stage.moveUpPlatformCount = c[12]; stage.jumpPlatfromCount = c[13];
     stage.batteryHumanCount = c[14]; stage.cursorPlatformCount = c[15];
     stage.knockBackWallCount = c[17];
@@ -845,7 +857,14 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
             o.params[0] = static_cast<float>(block.spawnType);
             ed.objects.push_back(o);
         }
-        IMPORT_RECT_P(MOVE_DOWN_PLATFORM, s.moveDownPlatforms, s.moveDownPlatformCount)
+
+        for (std::size_t i = 0; i < s.moveDownPlatforms.Size(); ++i) {
+            const auto& moveDown = s.moveDownPlatforms.Get(i);
+            PlacedObject o = { EditorObjectType::MOVE_DOWN_PLATFORM,s.moveDownPlatforms.Get(i).rect };
+            InitDefaultParams(o);
+            ed.objects.push_back(o);
+        }
+
         IMPORT_RECT_P(MOVE_UP_PLATFORM, s.moveUpPlatforms, s.moveUpPlatformCount)
         for (std::size_t i = 0; i < s.clearBlocks.Size(); ++i) {
             PlacedObject o = { EditorObjectType::CLEAR_BLOCK, s.clearBlocks.Get(i).rect };
@@ -884,11 +903,14 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
             o.params[1] = sb.bounceVelosity.y;
             ed.objects.push_back(o);
         }
-    for (int i = 0; i < s.icePlatformCount; i++) {
-        PlacedObject o = { EditorObjectType::ICE_PLATFORM,s.icePlatforms[i].rect };
-        o.params[0] = s.icePlatforms[i].friction; o.params[1] = s.icePlatforms[i].iceAccel;
-        o.params[2] = s.icePlatforms[i].maxSlideSpeed; ed.objects.push_back(o);
+    for (std::size_t i = 0; i < s.icePlatforms.Size(); i++) {
+        const auto& ice = s.icePlatforms.Get(i);
+        PlacedObject o = { EditorObjectType::ICE_PLATFORM,ice.rect };
+
+        o.params[0] = ice.friction; o.params[1] = ice.iceAccel;
+        o.params[2] = ice.maxSlideSpeed; ed.objects.push_back(o);
     }
+
     for (int i = 0; i < s.jumpPlatfromCount; i++) {
         PlacedObject o = { EditorObjectType::JUMP_PLATFORM,s.jumpPlatfroms[i].rect };
         o.params[0] = s.jumpPlatfroms[i].jumpVelocity.x;

@@ -95,6 +95,9 @@ struct Stage {
 	GimmickGroup<SpikeBouncer, MAX_SPIKE_BOUNCERS> spikeBouncers;
 	//追尾するとげ
 	GimmickGroup<TrackingHazard, MAX_HAZARDS> trackingHazards;
+	//氷床
+	GimmickGroup<IcePlatform, MAX_PLATFORMS> icePlatforms;
+	GimmickGroup<MoveDownPlatform, MAX_PLATFORMS> moveDownPlatforms;
 	// ================================================================
 
 	//エレベーター
@@ -114,15 +117,7 @@ struct Stage {
 	int springCount;
 	int heldSpringIndex = -1;
 
-	//氷床
-	IcePlatform icePlatforms[MAX_PLATFORMS];
-	IcePlatform iceplatformsInit[MAX_PLATFORMS];
-	int icePlatformCount;
-
-	//移動低下床
-	MoveDownPlatform moveDownPlatforms[MAX_PLATFORMS];
-	MoveDownPlatform moveDownplatformsInit[MAX_PLATFORMS];
-	int moveDownPlatformCount;
+	
 
 	//ジャンプ台
 	JumpPlatfrom jumpPlatfroms[MAX_PLATFORMS];

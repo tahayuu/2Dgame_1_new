@@ -77,7 +77,7 @@ static bool IsGimmickDrawnInline(const Stage& stage, const Rectangle& rect) {
 	// 乗ると上昇する床
 	for (int i = 0; i < stage.moveUpPlatformCount; i++) if (IsSameRect(stage.moveUpplatformsInit[i].rect, rect)) return true;
 	// 移動低下床
-	for (int i = 0; i < stage.moveDownPlatformCount; i++) if (IsSameRect(stage.moveDownplatformsInit[i].rect, rect)) return true;
+	for (size_t i = 0; i < stage.moveDownPlatforms.Size(); i++) if (IsSameRect(stage.moveDownPlatforms.Get(i).rect, rect)) return true;
 	// Y → X → Y 移動床
 	for (int i = 0; i < stage.movePlatformCountYXY; i++) {if (IsSameRect(stage.movePlatformsYXYInit[i].rect, rect)) {return true;}}
 	// カーソル追従床
@@ -239,18 +239,19 @@ void StageDraw(
 	}
 
 	//氷床
-	for (int i = 0; i < stage.icePlatformCount; i++) {
-		const auto& ice = stage.icePlatforms[i];
+	for (std::size_t i = 0; i < stage.icePlatforms.Size(); i++) {
+		const auto& ice = stage.icePlatforms.Get(i);
 		if (HasSpriteOverride(stage, ice.rect)) continue;
-		DrawRectangleRec(stage.icePlatforms[i].rect, SKYBLUE);
+		DrawRectangleRec(ice.rect, SKYBLUE);
 		DrawLineEx(
 			{ ice.rect.x + 5, ice.rect.y + 3 },
 			{ ice.rect.x + ice.rect.width - 5, ice.rect.y + 3 },
 			2.0f, WHITE
 		);
 		// 枠線
-		DrawRectangleLinesEx(stage.icePlatforms[i].rect, 2, DARKBLUE);
+		DrawRectangleLinesEx(ice.rect, 2, DARKBLUE);
 	}
+
 	//アイテムブロック
 	for (std::size_t i = 0; i < stage.itemBlocks.Size(); i++) {
 		const auto& ib = stage.itemBlocks.Get(i);
@@ -285,9 +286,10 @@ void StageDraw(
 	}
 
 	//移動低下床
-	for (int i = 0; i < stage.moveDownPlatformCount; i++) {
-		const auto& md = stage.moveDownPlatforms[i];
-		if (!TryDrawMovingGimmickSprite(stage, stage.moveDownplatformsInit[i].rect, md.rect)) {
+	for (size_t i = 0; i < stage.moveDownPlatforms.Size(); i++) {
+		const auto& md = stage.moveDownPlatforms.Get(i);
+
+		if (!TryDrawMovingGimmickSprite(stage, md.rect, md.rect)) {
 			DrawRectangleRec(md.rect, BROWN);
 			DrawLineEx(
 				{ md.rect.x + 5, md.rect.y + 3 },

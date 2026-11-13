@@ -789,8 +789,15 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 	//氷床 
-	for (int i = 0; i < stage.icePlatformCount; i++) {
-		ResolveSolidX(stage.icePlatforms[i].rect, player, velocity, prevPlayer);
+	for (std::size_t i = 0; i < stage.icePlatforms.Size(); i++) {
+		const auto& ice = stage.icePlatforms.Get(i);
+		ResolveSolidX(ice.rect, player, velocity, prevPlayer);
+	}
+
+	//移動低下床
+	for (size_t i = 0; i < stage.moveDownPlatforms.Size(); i++) {
+		const auto& MoveDown = stage.moveDownPlatforms.Get(i);
+		ResolveSolidX(MoveDown.rect, player, velocity, prevPlayer);
 	}
 
 	//ボタンブロック
@@ -931,10 +938,7 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 
-	//移動低下床
-	for (int i = 0; i < stage.moveDownPlatformCount; i++) {
-		ResolveSolidX(stage.moveDownPlatforms[i].rect,player,velocity, prevPlayer);
-	}
+
 	//移動上昇床
 	for (int i = 0; i < stage.moveUpPlatformCount; i++) {
 		ResolveSolidX(stage.moveUpPlatforms[i].rect,player,velocity, prevPlayer);
@@ -1165,8 +1169,9 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//氷床
-	for (int i = 0; i < stage.icePlatformCount; i++) {
-		if(ResolveSolidYPlayer(stage.icePlatforms[i].rect,player,velocity, prev, stage.gravityReversed)){
+	for (std::size_t i = 0; i < stage.icePlatforms.Size(); i++) {
+		const auto& ice = stage.icePlatforms.Get(i);
+		if(ResolveSolidYPlayer(ice.rect,player,velocity, prev, stage.gravityReversed)){
 			onGround=true;
 		}
 	}
@@ -1178,8 +1183,9 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//移動低下床
-	for (int i = 0; i < stage.moveDownPlatformCount; i++) {
-		if(ResolveSolidYPlayer(stage.moveDownPlatforms[i].rect,player,velocity, prev, stage.gravityReversed)){
+	for (size_t i = 0; i < stage.moveDownPlatforms.Size(); i++) {
+		const auto& moveDown = stage.moveDownPlatforms.Get(i);
+		if(ResolveSolidYPlayer(moveDown.rect,player,velocity, prev, stage.gravityReversed)){
 			onGround=true;
 		}
 	}
@@ -1754,24 +1760,26 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		}
 
 // 目的: 氷床の上に立っているかを判定し、Player側の移動制御切替に使う。
-bool IsOnIcePlatform(const Stage& stage,const Rectangle player){
-	for (int i = 0; i < stage.icePlatformCount; i++) {
-		auto& ip = stage.icePlatforms[i];
-		float playerBottom = player.y + player.height;
-		float iceTop = ip.rect.y;
-		float tolerance = 5.0f;//許容値
-		bool onTop = (playerBottom >= iceTop - tolerance)&&(playerBottom <= iceTop + tolerance);
-		bool overlapX = CheckOverlapX(player, ip.rect);
-		if (onTop && overlapX) {
-			return true;
+		bool IsOnIcePlatform(const Stage& stage, const Rectangle player) {
+			for (std::size_t i = 0; i < stage.icePlatforms.Size(); i++) {
+				const auto& ice = stage.icePlatforms.Get(i);
+				float playerBottom = player.y + player.height;
+				float iceTop = ice.rect.y;
+				float tolerance = 5.0f;
+				bool onTop =
+					(playerBottom >= iceTop - tolerance) &&
+					(playerBottom <= iceTop + tolerance);
+				bool overlapX = CheckOverlapX(player, ice.rect);
+				if (onTop && overlapX) {
+					return true;
+				}
+			}
+			return false;
 		}
-	}
-	return false;
-}
 //プレイヤーが移動低下床に乗っているか判定
 bool IsOnMoveDownPlatform(const Stage& stage,const Rectangle player){
-	for (int i = 0; i < stage.moveDownPlatformCount; i++) {
-		auto& md = stage.moveDownPlatforms[i];
+	for (size_t i = 0; i < stage.moveDownPlatforms.Size(); i++) {
+		auto& md = stage.moveDownPlatforms.Get(i);
 		float playerBottom = player.y + player.height;
 		float platformTop = md.rect.y;
 		float tolerance = 5.0f;//許容値

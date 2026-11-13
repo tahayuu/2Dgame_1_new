@@ -855,6 +855,7 @@ void StageReset(Stage& stage) {
 	stage.cursorBottoms.Reset();
 	stage.tempFloors.Reset();
 	stage.tempFloorSwitches.Reset();
+	stage.icePlatforms.Reset();
 	// ================================================================
 
 	for (int i = 0; i < stage.fallingCount; i++) {
@@ -957,6 +958,8 @@ void StageClear(Stage& stage) {
 	stage.tempFloors.Clear();
 	stage.tempFloorSwitches.Clear();
 	stage.decorArrows.Clear();
+	stage.icePlatforms.Clear();
+	stage.moveDownPlatforms.Clear();
 	// ================================================================
 
 	stage.springCount = 0;
@@ -981,10 +984,8 @@ void StageClear(Stage& stage) {
 	stage.batteryHumanCount = 0;
 	stage.jumpPlatfromCount = 0;
 	stage.switchPlatformCount = 0;
-	stage.icePlatformCount = 0;
 	stage.cursorPlatformCount = 0;
 	stage.moveUpPlatformCount = 0;
-	stage.moveDownPlatformCount = 0;
 	stage.circlePlatformCount = 0;
 	stage.movePlatformCountX = 0;
 	stage.moveHazardRightCount = 0;
