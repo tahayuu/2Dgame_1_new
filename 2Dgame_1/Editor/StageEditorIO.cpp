@@ -718,13 +718,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     stage.batteryHumanCount = c[14]; stage.cursorPlatformCount = c[15];
 
     stage.splitPlatformCount = c[18]; stage.circlePlatformCount = c[19];
-    stage.movePlatformCountX = c[20]; 
-     
-    
-    
-     
-      
-       stage.switchPlatformCount = c[35];
+    stage.movePlatformCountX = c[20];
+    stage.switchPlatformCount = c[35];
     stage.exitDoorCount = c[37];
     stage.layerDoorCount = c[38];
     stage.springCount = c[45];
