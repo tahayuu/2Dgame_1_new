@@ -834,8 +834,8 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 
 
 	//吹っ飛ばし壁
-	for (int i = 0; i < stage.knockBackWallCount; i++) {
-		auto& kbw = stage.knockBackWalls[i];
+	for (int i = 0; i < stage.knockBackWalls.Size(); i++) {
+		auto& kbw = stage.knockBackWalls.Get(i);
 
 		const float knockBackMargin = 50.0f;
 		Rectangle extendedRect = {
@@ -953,8 +953,8 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 	}
 
 	//ジャンプ台
-	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
-		ResolveSolidX(stage.jumpPlatfroms[i].rect, player, velocity, prevPlayer);
+	for (int i = 0; i < stage.jumpPlatfroms.Size(); i++) {
+		ResolveSolidX(stage.jumpPlatfroms.Get(i).rect, player, velocity, prevPlayer);
 	}
 	//上昇床
 	for (int i = 0; i < stage.upRisingCount; i++) {
@@ -1176,8 +1176,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 		}
 	}
 	//吹っ飛ばし壁
-	for (int i = 0; i < stage.knockBackWallCount; i++) {
-		if(ResolveSolidYPlayer(stage.knockBackWalls[i].rect,player,velocity, prev, stage.gravityReversed)){
+	for (int i = 0; i < stage.knockBackWalls.Size(); i++) {
+		if(ResolveSolidYPlayer(stage.knockBackWalls.Get(i).rect,player,velocity, prev, stage.gravityReversed)){
 			onGround=true;
 		}
 	}
@@ -1198,9 +1198,9 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//ジャンプ台
-	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
-		bool landed = ResolveSolidYPlayer(stage.jumpPlatfroms[i].rect, player, velocity, prev, stage.gravityReversed);
-		auto& jp = stage.jumpPlatfroms[i];
+	for (int i = 0; i < stage.jumpPlatfroms.Size(); i++) {
+		bool landed = ResolveSolidYPlayer(stage.jumpPlatfroms.Get(i).rect, player, velocity, prev, stage.gravityReversed);
+		auto& jp = stage.jumpPlatfroms.Get(i);
 		if (!landed) continue;
 		if (jp.twiceTouch) {
 			velocity.y = jp.jumpVelocity.y;
@@ -1720,8 +1720,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 }
 	}
 
-	for (int i = 0; i < stage.craneLaunchPadCount; i++) {
-		auto& cl = stage.craneLaunchPads[i];
+	for (int i = 0; i < stage.craneLaunchPads.Size(); i++) {
+		auto& cl = stage.craneLaunchPads.Get(i);
 		bool landed = ResolveSolidYPlayer(cl.rect, player, velocity, prev, stage.gravityReversed);
 
 			if (landed) {

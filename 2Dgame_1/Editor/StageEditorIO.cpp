@@ -36,7 +36,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     // 見た目専用データ(SpriteId)の書き出し先をリセット
 // （StageClear がゼロ初期化していない可能性があるため念のため明示的に初期化）
     stage.spriteInstanceCount = 0;
-    stage.eventChangerCount = 0;// eventChangerCount もリセット
+    stage.eventChangers.Clear(); // StageClear also clears this group
     stage.currentJumpMode = 0;
     // SWITCH_BUTTON を配置順に収集 → SWITCH_PLATFORM と 1:1 で ペアリング
     std::vector<Rectangle> switchBtnRects;
@@ -193,13 +193,15 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
                 stage.elevatorsInit[i] = e;
             }break;
         case EditorObjectType::JUMP_PLATFORM:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++; auto& j = stage.jumpPlatfroms[i];
+        {
+            JumpPlatfrom j{};
+
+                
                 j.rect = o.rect; j.jumpVelocity = { o.params[0],o.params[1] }; j.startY = o.rect.y;
                 j.stopTimer = o.params[2]; j.delay = o.params[3];
                 j.withdraw = o.params[4]; j.jumpSpeed = o.params[5];
-                stage.jumpPlatfromsInit[i] = j;
-            }break;
+            if (stage.jumpPlatfroms.Add(j)) ++c[t];
+        }break;
         case EditorObjectType::BATTERY_HUMAN:
             if (c[t] < MAX_PLATFORMS) {
                 int i = c[t]++; auto& b = stage.batteryHumans[i];
@@ -208,12 +210,14 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
                 stage.batteryHumansInit[i] = b;
             }break;
         case EditorObjectType::KNOCKBACK_WALL:
-            if (c[t] < MAX_PLATFORMS) {
-                int i = c[t]++; auto& w = stage.knockBackWalls[i];
+        {
+            KnockBackWall w{};
+
+                
                 w.rect = o.rect; w.startX = o.rect.x; w.knockBackVelocity = { o.params[0],o.params[1] };
                 w.withdraw = o.params[2]; w.delay = o.params[3]; w.limitStop = o.params[4];
-                stage.knockBackWallsInit[i] = w;
-            }break;
+            if (stage.knockBackWalls.Add(w)) ++c[t];
+        }break;
         case EditorObjectType::SPLIT_PLATFORM:
             if (c[t] < MAX_SPLITPLATFORM) {
                 int i = c[t]++; auto& s = stage.splitPlatforms[i];
@@ -492,13 +496,15 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             }break;
 
         case EditorObjectType::CRANE_LAUNCH_PAD:
-            if (c[t] < Stage::MAX_CRANES) {
-                int i = c[t]++; auto& cl = stage.craneLaunchPads[i];
+        {
+            CraneLaunchPad cl{};
+
+                
                 cl.rect = o.rect;
                 cl.launchVelY = o.params[0];
                 cl.triggered = false;
-                stage.craneLaunchPadsInit[i] = cl;
-            }break;
+            if (stage.craneLaunchPads.Add(cl)) ++c[t];
+        }break;
 
         case EditorObjectType::CRANE:
             if (c[t] < Stage::MAX_CRANES) {
@@ -570,10 +576,10 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             }
             break;
         case EditorObjectType::EVENT_CHANGER:
-            if (stage.eventChangerCount < Stage::MAX_EVENT_CHANGERS) {
-                EventChanger& ec = stage.eventChangers[stage.eventChangerCount++];
+        {
+            EventChanger ec{};
 
-                ec = {};
+                
                 ec.rect = o.rect;
                 ec.targetEventId = static_cast<int>(o.params[0]);
                 ec.changedSpriteId = static_cast<SpriteId>(static_cast<int>(o.params[1]));
@@ -588,8 +594,9 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
                 ec.originalSpriteId = SpriteId::None;
                 ec.originalJumpMode = 0;
                 ec.originalStateSaved = false;
-            }
-            break;
+            if (stage.eventChangers.Add(ec)) ++c[t];
+        }
+        break;
 
         case EditorObjectType::DRAG_PIECE:
             if (c[t] < Stage::MAX_DRAG_PIECES) {
@@ -722,9 +729,9 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     stage.hazardCount = c[2]; 
     stage.elevatorCount = c[6];
         
-    stage.moveUpPlatformCount = c[12]; stage.jumpPlatfromCount = c[13];
+    stage.moveUpPlatformCount = c[12];
     stage.batteryHumanCount = c[14]; stage.cursorPlatformCount = c[15];
-    stage.knockBackWallCount = c[17];
+    
     stage.splitPlatformCount = c[18]; stage.circlePlatformCount = c[19];
     stage.movePlatformCountX = c[20]; stage.moveCount = c[21];
     stage.moveExtYCount = c[22]; stage.moveDownHazardExtYCount = c[23];
@@ -736,7 +743,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     stage.exitDoorCount = c[37];
     stage.layerDoorCount = c[38];
     stage.springCount = c[45];
-    stage.craneLaunchPadCount = c[46];
+    
     stage.craneCount = c[47];
     stage.ojisanPunchAreaCount = c[48];
     stage.warpCount = c[49];
@@ -911,14 +918,14 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.params[2] = ice.maxSlideSpeed; ed.objects.push_back(o);
     }
 
-    for (int i = 0; i < s.jumpPlatfromCount; i++) {
-        PlacedObject o = { EditorObjectType::JUMP_PLATFORM,s.jumpPlatfroms[i].rect };
-        o.params[0] = s.jumpPlatfroms[i].jumpVelocity.x;
-        o.params[1] = s.jumpPlatfroms[i].jumpVelocity.y;
-        o.params[2] = s.jumpPlatfroms[i].stopTimer;
-        o.params[3] = s.jumpPlatfroms[i].delay;
-        o.params[4] = s.jumpPlatfroms[i].withdraw;
-        o.params[5] = s.jumpPlatfroms[i].jumpSpeed;
+    for (int i = 0; i < s.jumpPlatfroms.Size(); i++) {
+        PlacedObject o = { EditorObjectType::JUMP_PLATFORM,s.jumpPlatfroms.Get(i).rect };
+        o.params[0] = s.jumpPlatfroms.Get(i).jumpVelocity.x;
+        o.params[1] = s.jumpPlatfroms.Get(i).jumpVelocity.y;
+        o.params[2] = s.jumpPlatfroms.Get(i).stopTimer;
+        o.params[3] = s.jumpPlatfroms.Get(i).delay;
+        o.params[4] = s.jumpPlatfroms.Get(i).withdraw;
+        o.params[5] = s.jumpPlatfroms.Get(i).jumpSpeed;
         ed.objects.push_back(o);
     }
     for (int i = 0; i < s.batteryHumanCount; i++) {
@@ -939,13 +946,13 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.params[0] = m.Force; o.params[1] = m.maxDistance;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.knockBackWallCount; i++) {
-        PlacedObject o = { EditorObjectType::KNOCKBACK_WALL,s.knockBackWalls[i].rect };
-        o.params[0] = s.knockBackWalls[i].knockBackVelocity.x;
-        o.params[1] = s.knockBackWalls[i].knockBackVelocity.y;
-        o.params[2] = s.knockBackWalls[i].withdraw;
-        o.params[3] = s.knockBackWalls[i].delay;
-        o.params[4] = s.knockBackWalls[i].limitStop;
+    for (int i = 0; i < s.knockBackWalls.Size(); i++) {
+        PlacedObject o = { EditorObjectType::KNOCKBACK_WALL,s.knockBackWalls.Get(i).rect };
+        o.params[0] = s.knockBackWalls.Get(i).knockBackVelocity.x;
+        o.params[1] = s.knockBackWalls.Get(i).knockBackVelocity.y;
+        o.params[2] = s.knockBackWalls.Get(i).withdraw;
+        o.params[3] = s.knockBackWalls.Get(i).delay;
+        o.params[4] = s.knockBackWalls.Get(i).limitStop;
         ed.objects.push_back(o);
     }
     for (std::size_t i = 0; i < s.cursorBottoms.Size(); i++) {
@@ -1169,8 +1176,8 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         ed.objects.push_back(o);
     }
 
-    for (int i = 0; i < s.eventChangerCount; i++) {
-        const auto& ec = s.eventChangers[i];
+    for (int i = 0; i < s.eventChangers.Size(); i++) {
+        const auto& ec = s.eventChangers.Get(i);
         PlacedObject o;
         o.type = EditorObjectType::EVENT_CHANGER;
         o.rect = ec.rect;

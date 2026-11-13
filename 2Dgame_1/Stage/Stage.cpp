@@ -371,8 +371,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//当たると吹っ飛ばす壁
-	for (int i = 0; i < stage.knockBackWallCount; i++) {
-		auto& kbw = stage.knockBackWalls[i];
+	for (int i = 0; i < stage.knockBackWalls.Size(); i++) {
+		auto& kbw = stage.knockBackWalls.Get(i);
 
 		// タッチ後、遅延時間待機中
 		if (kbw.onTouch && !kbw.iswithdraw && !kbw.isRetrun && !kbw.twiceTouch) {
@@ -457,8 +457,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 		}
 	}
 	//ジャンプ台
-	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
-		auto& jp = stage.jumpPlatfroms[i];
+	for (int i = 0; i < stage.jumpPlatfroms.Size(); i++) {
+		auto& jp = stage.jumpPlatfroms.Get(i);
 		//タッチ後、遅延時間待機中
 		if (jp.onTouch && !jp.isWithdraw && !jp.twiceTouch && !jp.isReturn) {
 			jp.timer += dt;
@@ -862,9 +862,7 @@ void StageReset(Stage& stage) {
 		stage.fallingPlatforms[i] = stage.fallingPlatformsInit[i];
 	}
 
-	for (int i = 0; i < stage.knockBackWallCount; i++) {
-		stage.knockBackWalls[i] = stage.knockBackWallsInit[i];
-	}
+	stage.knockBackWalls.Reset();
 	for (int i = 0; i < stage.upRisingCount; i++) {
 		stage.upRisingPlatforms[i] = stage.upRisingPlatformsInit[i];
 	}
@@ -903,9 +901,8 @@ void StageReset(Stage& stage) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 
-	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
-		stage.jumpPlatfroms[i] = stage.jumpPlatfromsInit[i];
-	}
+	stage.jumpPlatfroms.Reset();
+	stage.craneLaunchPads.Reset();
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		stage.switchPlatforms[i] = stage.switchplatformsInit[i];
 	}
@@ -980,9 +977,9 @@ void StageClear(Stage& stage) {
 	stage.upRisingCount = 0;
 	stage.upDownCount = 0;
 	stage.splitPlatformCount = 0;
-	stage.knockBackWallCount = 0;
+	stage.knockBackWalls.Clear();
 	stage.batteryHumanCount = 0;
-	stage.jumpPlatfromCount = 0;
+	stage.jumpPlatfroms.Clear();
 	stage.switchPlatformCount = 0;
 	stage.cursorPlatformCount = 0;
 	stage.moveUpPlatformCount = 0;
@@ -1013,7 +1010,8 @@ void StageClear(Stage& stage) {
 	stage.snapMouseCaptured = false;
 	stage.distanceTriggerPieceCount = 0;
 	stage.draggingDistanceTriggerPieceIndex = -1; stage.distanceTriggerMouseCaptured = false;
-	stage.eventChangerCount = 0;
+	stage.eventChangers.Clear();
+	stage.craneLaunchPads.Clear();
 	stage.currentJumpMode = 0;
 	stage.spriteInstanceCount = 0;
 	stage.savePointCount = 0;
