@@ -94,9 +94,9 @@ void StageInit_3(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
     stage.bottomBreakBlocks.Add({ {200.0f, 650.0f, 150.0f, 70.0f}, false, 0.3f });
     stage.bottomBreakBlocks.Add({ {2100.0f, 1380.0f, 150.0f, 150.0f}, false, 0.7f });
     //でてくるとげ
-    // Previously assigned to uncounted moveHazards[0]; leave inactive as before.
-    // moveHazards.Add({ { 1050,2100,70,50 },false,false,50.0f,2100.0f,800.0f });
-    //while (stage.moveHazards.Size() < 1) stage.moveHazards.Add({}); // Preserve legacy slot count
+    // 旧実装では配置データのみ設定され、moveCountが0のため有効化されていなかった。
+    // 意図しない難易度変更を避けるため、移行後も未配置のままにする。
+    // stage.moveHazards.Add({ {1050,2100,70,50}, false,false,50.0f,2100.0f,800.0f });
 
 	//追尾床
     stage.cursorPlatforms[1] = {
