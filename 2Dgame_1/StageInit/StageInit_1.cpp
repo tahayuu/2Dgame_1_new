@@ -67,7 +67,8 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 		stage.splitplatformsInit[i] = stage.splitPlatforms[i];
 	}
 
-	for (int i = 0; i < stage.moveHazards.Size(); i++) {
+	// この配列は未移行のMovePlatformXに属するため専用カウンタを使用する。
+	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 	// itemBlocksInit コピーは削除（GimmickGroup::Add()が自動保存）
