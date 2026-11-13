@@ -62,28 +62,15 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.ojisanPunchDrawFront[0] = false;
 	stage.ojisanPunchApproachDuration[0] = 0.85f;
 
-	//復活用	
-	for (int i = 0; i < stage.moveHazardsExtY.Size(); i++) {
-		stage.moveHazardsExtY.GetInitial(i) = stage.moveHazardsExtY.Get(i);
-	}
-	for (int i = 0; i < stage.moveHazards.Size(); i++) {
-		stage.moveHazards.GetInitial(i) = stage.moveHazards.Get(i);
-	}
-	for (int i = 0; i < stage.fallingPlatforms.Size(); i++) {
-		stage.fallingPlatforms.GetInitial(i) = stage.fallingPlatforms.Get(i);
-	}
+	// Add() が初期状態を保存するため、移行済みギミックの個別コピーは不要。
 	for (int i = 0; i < stage.splitPlatformCount; i++) {
 		stage.splitplatformsInit[i] = stage.splitPlatforms[i];
 	}
-	for (int i = 0; i < stage.upRisingPlatforms.Size(); i++) {
-		stage.upRisingPlatforms.GetInitial(i) = stage.upRisingPlatforms.Get(i);
-	}
+
 	for (int i = 0; i < stage.moveHazards.Size(); i++) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 	// itemBlocksInit コピーは削除（GimmickGroup::Add()が自動保存）
-	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
-		stage.upDouwnPlatforms.GetInitial(i) = stage.upDouwnPlatforms.Get(i);
-	}
+
 }
 
