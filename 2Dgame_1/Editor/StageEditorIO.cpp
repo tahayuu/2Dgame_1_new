@@ -195,11 +195,9 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
         case EditorObjectType::JUMP_PLATFORM:
         {
             JumpPlatfrom j{};
-
-                
-                j.rect = o.rect; j.jumpVelocity = { o.params[0],o.params[1] }; j.startY = o.rect.y;
-                j.stopTimer = o.params[2]; j.delay = o.params[3];
-                j.withdraw = o.params[4]; j.jumpSpeed = o.params[5];
+            j.rect = o.rect; j.jumpVelocity = { o.params[0],o.params[1] }; j.startY = o.rect.y;
+            j.stopTimer = o.params[2]; j.delay = o.params[3];
+            j.withdraw = o.params[4]; j.jumpSpeed = o.params[5];
             if (stage.jumpPlatfroms.Add(j)) ++c[t];
         }break;
         case EditorObjectType::BATTERY_HUMAN:
@@ -212,10 +210,8 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
         case EditorObjectType::KNOCKBACK_WALL:
         {
             KnockBackWall w{};
-
-                
-                w.rect = o.rect; w.startX = o.rect.x; w.knockBackVelocity = { o.params[0],o.params[1] };
-                w.withdraw = o.params[2]; w.delay = o.params[3]; w.limitStop = o.params[4];
+            w.rect = o.rect; w.startX = o.rect.x; w.knockBackVelocity = { o.params[0],o.params[1] };
+            w.withdraw = o.params[2]; w.delay = o.params[3]; w.limitStop = o.params[4];
             if (stage.knockBackWalls.Add(w)) ++c[t];
         }break;
         case EditorObjectType::SPLIT_PLATFORM:
@@ -498,11 +494,9 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
         case EditorObjectType::CRANE_LAUNCH_PAD:
         {
             CraneLaunchPad cl{};
-
-                
-                cl.rect = o.rect;
-                cl.launchVelY = o.params[0];
-                cl.triggered = false;
+            cl.rect = o.rect;
+            cl.launchVelY = o.params[0];
+            cl.triggered = false;
             if (stage.craneLaunchPads.Add(cl)) ++c[t];
         }break;
 
@@ -578,22 +572,20 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
         case EditorObjectType::EVENT_CHANGER:
         {
             EventChanger ec{};
+            ec.rect = o.rect;
+            ec.targetEventId = static_cast<int>(o.params[0]);
+            ec.changedSpriteId = static_cast<SpriteId>(static_cast<int>(o.params[1]));
+            ec.jumpMode = static_cast<int>(o.params[2]);
+            ec.restoreOnExit = o.params[3] != 0.0f;
+            ec.oneShot = o.params[4] != 0.0f;
+            ec.inputSignalId = static_cast<int>(o.params[5]);
 
-                
-                ec.rect = o.rect;
-                ec.targetEventId = static_cast<int>(o.params[0]);
-                ec.changedSpriteId = static_cast<SpriteId>(static_cast<int>(o.params[1]));
-                ec.jumpMode = static_cast<int>(o.params[2]);
-                ec.restoreOnExit = o.params[3] != 0.0f;
-                ec.oneShot = o.params[4] != 0.0f;
-                ec.inputSignalId = static_cast<int>(o.params[5]);
-
-                ec.triggered = false;
-                ec.playerWasInside = false;
-                ec.signalWasActive = false;
-                ec.originalSpriteId = SpriteId::None;
-                ec.originalJumpMode = 0;
-                ec.originalStateSaved = false;
+            ec.triggered = false;
+            ec.playerWasInside = false;
+            ec.signalWasActive = false;
+            ec.originalSpriteId = SpriteId::None;
+            ec.originalJumpMode = 0;
+            ec.originalStateSaved = false;
             if (stage.eventChangers.Add(ec)) ++c[t];
         }
         break;
@@ -731,7 +723,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
         
     stage.moveUpPlatformCount = c[12];
     stage.batteryHumanCount = c[14]; stage.cursorPlatformCount = c[15];
-    
+
     stage.splitPlatformCount = c[18]; stage.circlePlatformCount = c[19];
     stage.movePlatformCountX = c[20]; stage.moveCount = c[21];
     stage.moveExtYCount = c[22]; stage.moveDownHazardExtYCount = c[23];
@@ -743,7 +735,7 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     stage.exitDoorCount = c[37];
     stage.layerDoorCount = c[38];
     stage.springCount = c[45];
-    
+
     stage.craneCount = c[47];
     stage.ojisanPunchAreaCount = c[48];
     stage.warpCount = c[49];
