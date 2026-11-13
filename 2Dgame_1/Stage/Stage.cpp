@@ -106,15 +106,15 @@ static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom&
 	bool activatedAny = false;
 
 	// targetRollingBall が有効な番号なら、その1個だけを起動する
-	if (cb.targetRollingBall >= 0 && cb.targetRollingBall < stage.rollingBallCount) {
-		ActivateOne(stage.rollingBalls[cb.targetRollingBall]);
+	if (cb.targetRollingBall >= 0 && cb.targetRollingBall < stage.rollingBalls.Size()) {
+		ActivateOne(stage.rollingBalls.Get(cb.targetRollingBall));
 		activatedAny = true;
 	}
 	else {
 		// targetRollingBall が無効なら、
 		// waitForCursorClick が true のRollingBallを探して起動する
-		for (int i = 0; i < stage.rollingBallCount; i++) {
-			auto& rb = stage.rollingBalls[i];
+		for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+			auto& rb = stage.rollingBalls.Get(i);
 
 			// カーソルクリック待ちのRollingBallだけ起動する
 			if (rb.waitForCursorClick) {
@@ -126,8 +126,8 @@ static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom&
 		// ここまでで1つも起動していない場合は、
 		// 念のためすべてのRollingBallを起動する
 		if (!activatedAny) {
-			for (int i = 0; i < stage.rollingBallCount; i++) {
-				ActivateOne(stage.rollingBalls[i]);
+			for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+				ActivateOne(stage.rollingBalls.Get(i));
 			}
 		}
 	}
@@ -257,8 +257,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//落下床
-	for (int i = 0; i < stage.fallingCount; i++) {
-		auto& fp = stage.fallingPlatforms[i];//短縮名..毎回stage.fallingPlatforms[i]と書くのは面倒 &はコピー防ぐため
+	for (int i = 0; i < stage.fallingPlatforms.Size(); i++) {
+		auto& fp = stage.fallingPlatforms.Get(i);//短縮名..毎回stage.fallingPlatforms.Get(i)と書くのは面倒 &はコピー防ぐため
 		if (fp.triggered && !fp.isfalling) {//「踏まれている かつ まだ落ちていない」
 			fp.timer += dt;
 			if (fp.timer >= fp.fallDelay) {
@@ -532,8 +532,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	D --> E["MoveWithCirclePlatform で<br/>プレイヤーを vel 分動かす"]*/
 
 	//回転する鉄球
-	for (int i = 0; i < stage.rotatingBallCount; i++) {
-		auto& rb = stage.rotatingBalls[i];
+	for (int i = 0; i < stage.rotatingBalls.Size(); i++) {
+		auto& rb = stage.rotatingBalls.Get(i);
 		rb.angle += rb.angularSpeed * dt;
 		// 0〜2πの範囲に収める（角度の正規化）
 		if (rb.angle > 2.0f * PI)rb.angle -= 2.0f * PI;
@@ -541,8 +541,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//アームを中心に回転しする鉄球
-	for (int i = 0; i < stage.moveRotatingBallCount; i++) {
-		auto& mrb = stage.moveRotatingBalls[i];
+	for (int i = 0; i < stage.moveRotatingBalls.Size(); i++) {
+		auto& mrb = stage.moveRotatingBalls.Get(i);
 
 		//回転処理
 		if (!mrb.reverse) {
@@ -560,8 +560,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//床の上を転がる鉄球
-	for (int i = 0; i < stage.rollingBallCount; i++) {
-		auto& rb = stage.rollingBalls[i];
+	for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+		auto& rb = stage.rollingBalls.Get(i);
 		//waitForCursorClickがtrueのローリングボールは、activatedがtrueになるまでは動かない
 		if (rb.waitForCursorClick && !rb.activated) {
 			continue;
@@ -605,8 +605,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//上昇床
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		auto& ur = stage.upRisingPlatforms[i];
+	for (int i = 0; i < stage.upRisingPlatforms.Size(); i++) {
+		auto& ur = stage.upRisingPlatforms.Get(i);
 		if (ur.triggered && !ur.isrising) {
 			ur.timer += dt;
 			if (ur.timer >= ur.riseDelay) {
@@ -621,8 +621,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//往復上昇床
-	for (int i = 0; i < stage.upDownCount; i++) {
-		auto& ud = stage.upDouwnPlatforms[i];
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
+		auto& ud = stage.upDouwnPlatforms.Get(i);
 		if (ud.isrising) {
 
 			if (ud.goingUp) {
@@ -858,32 +858,20 @@ void StageReset(Stage& stage) {
 	stage.icePlatforms.Reset();
 	// ================================================================
 
-	for (int i = 0; i < stage.fallingCount; i++) {
-		stage.fallingPlatforms[i] = stage.fallingPlatformsInit[i];
-	}
+		stage.fallingPlatforms.Reset();
 
 	stage.knockBackWalls.Reset();
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		stage.upRisingPlatforms[i] = stage.upRisingPlatformsInit[i];
-	}
-	for (int i = 0; i < stage.upDownCount; i++) {
-		stage.upDouwnPlatforms[i] = stage.upDouwnPlatformsInit[i];
-	}
+		stage.upRisingPlatforms.Reset();
+		stage.upDouwnPlatforms.Reset();
 	stage.gravityCooldown = 0.0f;
 	stage.gravityReversed = false;
 
 	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
 		stage.movePlatformsYXY[i] = stage.movePlatformsYXYInit[i];
 	}
-	for (int i = 0; i < stage.rotatingBallCount; i++) {
-		stage.rotatingBalls[i] = stage.rotatingBallsInit[i];
-	}
-	for (int i = 0; i < stage.moveRotatingBallCount; i++) {
-		stage.moveRotatingBalls[i] = stage.moveRotatingBallsInit[i];
-	}
-	for (int i = 0; i < stage.rollingBallCount; i++) {
-		stage.rollingBalls[i] = stage.rollingBallsInit[i];
-	}
+		stage.rotatingBalls.Reset();
+		stage.moveRotatingBalls.Reset();
+		stage.rollingBalls.Reset();
 	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		stage.movePlatformsX[i] = stage.moveplatformsXInit[i];
 	}
@@ -971,11 +959,11 @@ void StageClear(Stage& stage) {
 	stage.gravityCooldown = 0.0f;
 	stage.platformCount = 0;
 	stage.hazardCount = 0;
-	stage.moveCount = 0;
-	stage.moveExtYCount = 0;
-	stage.fallingCount = 0;
-	stage.upRisingCount = 0;
-	stage.upDownCount = 0;
+	stage.moveHazards.Clear();
+	stage.moveHazardsExtY.Clear();
+	stage.fallingPlatforms.Clear();
+	stage.upRisingPlatforms.Clear();
+	stage.upDouwnPlatforms.Clear();
 	stage.splitPlatformCount = 0;
 	stage.knockBackWalls.Clear();
 	stage.batteryHumanCount = 0;
@@ -985,11 +973,11 @@ void StageClear(Stage& stage) {
 	stage.moveUpPlatformCount = 0;
 	stage.circlePlatformCount = 0;
 	stage.movePlatformCountX = 0;
-	stage.moveHazardRightCount = 0;
-	stage.moveDownHazardExtYCount = 0;
-	stage.rotatingBallCount = 0;
-	stage.moveRotatingBallCount = 0;
-	stage.rollingBallCount = 0;
+	stage.moveHazardsRight.Clear();
+	stage.moveDownHazardsExtY.Clear();
+	stage.rotatingBalls.Clear();
+	stage.moveRotatingBalls.Clear();
+	stage.rollingBalls.Clear();
 	stage.movePlatformCountYXY = 0;
 	stage.exitDoorCount = 0;
 	stage.warpCount = 0;

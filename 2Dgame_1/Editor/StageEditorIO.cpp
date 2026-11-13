@@ -251,39 +251,39 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             }break;
 
         case EditorObjectType::MOVE_HAZARD:
-            if (c[t] < MAX_MOVEHAZARD) {
-                int i = c[t]++; auto& h = stage.moveHazards[i];
-                h.rect = o.rect; h.ismoved = false; h.triggerd = false;
-                h.raiseHeight = o.params[0]; h.startY = o.rect.y; h.moveSpeed = o.params[1];
-                stage.moveHazardsInit[i] = h;
-            }break;
+        {
+            MoveHazard h{};
+            h.rect = o.rect; h.ismoved = false; h.triggerd = false;
+            h.raiseHeight = o.params[0]; h.startY = o.rect.y; h.moveSpeed = o.params[1];
+            if (stage.moveHazards.Add(h)) ++c[t];
+        } break;
         case EditorObjectType::MOVE_HAZARD_EXT_Y:
-            if (c[t] < MAX_MOVEHAZARD) {
-                int i = c[t]++; auto& h = stage.moveHazardsExtY[i];
-                h.rect = o.rect; h.ismoved = false; h.triggerd = false;
-                h.raiseHeight = o.params[0]; h.startY = o.rect.y; h.moveSpeed = o.params[1];
-                h.dir = (o.params[2] < 0.0f) ? -1 : 1; // 負値=下向き, 正値=上向き
-                stage.moveHazardsExtYInit[i] = h;
-            }break;
+        {
+            MoveHazardExtentionY h{};
+            h.rect = o.rect; h.ismoved = false; h.triggerd = false;
+            h.raiseHeight = o.params[0]; h.startY = o.rect.y; h.moveSpeed = o.params[1];
+            h.dir = (o.params[2] < 0.0f) ? -1 : 1; // 負値=下向き, 正値=上向き
+            if (stage.moveHazardsExtY.Add(h)) ++c[t];
+        } break;
         case EditorObjectType::MOVE_DOWN_HAZARD_EXT_Y:
-            if (c[t] < MAX_MOVEHAZARD) {
-                int i = c[t]++; auto& h = stage.moveDownHazardsExtY[i];
-                h.rect = o.rect; h.ismoved = false; h.triggerd = false;
-                h.raiseHeight = o.params[0]; h.startY = o.rect.y; h.moveSpeed = o.params[1]; h.dir = 1;
-                h.tolelance = o.params[2];
-                stage.moveDownHazardsExtYInit[i] = h;
-            }break;
+        {
+            MoveDownHazardExtentionY h{};
+            h.rect = o.rect; h.ismoved = false; h.triggerd = false;
+            h.raiseHeight = o.params[0]; h.startY = o.rect.y; h.moveSpeed = o.params[1]; h.dir = 1;
+            h.tolelance = o.params[2];
+            if (stage.moveDownHazardsExtY.Add(h)) ++c[t];
+        } break;
         case EditorObjectType::MOVE_HAZARD_RIGHT_X:
-            if (c[t] < MAX_MOVEHAZARD) {
-                int i = c[t]++; auto& h = stage.moveHazardsRight[i];
-                h.rect = o.rect; h.ismoved = false; h.triggerd = false;
-                h.raiseWidth = o.params[0]; h.startX = o.rect.x; h.moveSpeed = o.params[1];
-                h.timer = 0; h.delay = o.params[2];
-                h.dir = (o.params[3] < 0.0f) ? -1 : 1; // 負値=左向き, 正値=右向き
-                h.toleranceX = o.params[4]; // 感知するX方向の許容範囲（エディタで編集可能に）
-                h.toleranceY = o.params[5]; // 感知するY方向の許容範囲（エディタで編集可能に）
-                stage.moveHazardsRightInit[i] = h;
-            }break;
+        {
+            MoveHazardRightX h{};
+            h.rect = o.rect; h.ismoved = false; h.triggerd = false;
+            h.raiseWidth = o.params[0]; h.startX = o.rect.x; h.moveSpeed = o.params[1];
+            h.timer = 0; h.delay = o.params[2];
+            h.dir = (o.params[3] < 0.0f) ? -1 : 1; // 負値=左向き, 正値=右向き
+            h.toleranceX = o.params[4]; // 感知するX方向の許容範囲（エディタで編集可能に）
+            h.toleranceY = o.params[5]; // 感知するY方向の許容範囲（エディタで編集可能に）
+            if (stage.moveHazardsRight.Add(h)) ++c[t];
+        } break;
         case EditorObjectType::MOVE_HAZARD_EXT_X:
             // 旧機能。moveHazardsRight に統合されたため、読み込みはスキップ（互換性のためcaseのみ残す）
             break;
@@ -297,72 +297,65 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
             if (stage.trackingHazards.Add(h)) ++c[t];
         }break;
         case EditorObjectType::ROTATING_BALL:
-            if (c[t] < MAX_HAZARDS) {
-                int i = c[t]++; auto& b = stage.rotatingBalls[i];
-                b.center = { o.rect.x + o.rect.width / 2, o.rect.y + o.rect.height / 2 };
-                b.radius = o.params[0]; b.angle = 0; b.angularSpeed = o.params[1];
-                b.armLength = (o.params[2] > 0.0f) ? o.params[2] : o.rect.width / 2.0f;
-                stage.rotatingBallsInit[i] = b;
-            }break;
+        {
+            RotatingBall b{};
+            b.center = { o.rect.x + o.rect.width / 2, o.rect.y + o.rect.height / 2 };
+            b.radius = o.params[0]; b.angle = 0; b.angularSpeed = o.params[1];
+            b.armLength = (o.params[2] > 0.0f) ? o.params[2] : o.rect.width / 2.0f;
+            if (stage.rotatingBalls.Add(b)) ++c[t];
+        } break;
         case EditorObjectType::MOVE_ROTATING_BALL:
-            if (c[t] < MAX_HAZARDS) {
-                int i = c[t]++; auto& b = stage.moveRotatingBalls[i];
-                b.center = { o.rect.x + o.rect.width / 2, o.rect.y + o.rect.height / 2 };
-                b.radius = o.params[0]; b.angle = 0; b.angularSpeed = o.params[1]; b.armLength = (o.params[4] > 0.0f) ? o.params[4] : o.rect.width / 2.0f;
-                b.gravity = o.params[2]; b.reverse = (o.params[3] != 0.0f);
-                stage.moveRotatingBallsInit[i] = b;
-            }break;
+        {
+            MoveRotatingBall b{};
+            b.center = { o.rect.x + o.rect.width / 2, o.rect.y + o.rect.height / 2 };
+            b.radius = o.params[0]; b.angle = 0; b.angularSpeed = o.params[1]; b.armLength = (o.params[4] > 0.0f) ? o.params[4] : o.rect.width / 2.0f;
+            b.gravity = o.params[2]; b.reverse = (o.params[3] != 0.0f);
+            if (stage.moveRotatingBalls.Add(b)) ++c[t];
+        } break;
         case EditorObjectType::ROLLING_BALL:
-            if (c[t] < MAX_HAZARDS) {
-                int i = c[t]++;
-                auto& b = stage.rollingBalls[i];
-
-                b = RollingBall{};
-
-                float r = (o.params[0] > 0.0f) ? o.params[0] : 15.0f;
-                b.center = { o.rect.x + o.rect.width / 2, o.rect.y + o.rect.height / 2 };
-                b.radius = r;
-                b.rollSpeed = o.params[1];
-                b.rollDerection = (fabsf(o.params[2]) < 0.001f) ? -1.0f : o.params[2];
-
-                b.angle = 0.0f;
-                b.vel = { 0.0f, 0.0f };
-                b.onGround = false;
-
-                b.waitForCursorClick = (o.params[3] != 0.0f); // ★
-                b.activated = !b.waitForCursorClick;          // ★ 待機なら非アクティブ
-
-                stage.rollingBallsInit[i] = b;
-            } break;
+        {
+            RollingBall b{};
+            float r = (o.params[0] > 0.0f) ? o.params[0] : 15.0f;
+            b.center = { o.rect.x + o.rect.width / 2, o.rect.y + o.rect.height / 2 };
+            b.radius = r;
+            b.rollSpeed = o.params[1];
+            b.rollDerection = (fabsf(o.params[2]) < 0.001f) ? -1.0f : o.params[2];
+            b.angle = 0.0f;
+            b.vel = { 0.0f, 0.0f };
+            b.onGround = false;
+            b.waitForCursorClick = (o.params[3] != 0.0f); // ★
+            b.activated = !b.waitForCursorClick;          // ★ 待機なら非アクティブ
+            if (stage.rollingBalls.Add(b)) ++c[t];
+        } break;
         case EditorObjectType::FALLING_PLATFORM:
-            if (c[t] < MAX_FALLING) {
-                int i = c[t]++; auto& f = stage.fallingPlatforms[i];
-                f.rect = o.rect; f.isfalling = false; f.triggered = false;
-                f.fallDelay = o.params[0];
-                f.timer = 0;
-                f.fallSpeed = o.params[1];
-                f.detectMode = (int)o.params[2];
-                if (f.detectMode < 0 || f.detectMode > 2) f.detectMode = 0;
-                stage.fallingPlatformsInit[i] = f;
-            }break;
+        {
+            FallingPlatform f{};
+            f.rect = o.rect; f.isfalling = false; f.triggered = false;
+            f.fallDelay = o.params[0];
+            f.timer = 0;
+            f.fallSpeed = o.params[1];
+            f.detectMode = (int)o.params[2];
+            if (f.detectMode < 0 || f.detectMode > 2) f.detectMode = 0;
+            if (stage.fallingPlatforms.Add(f)) ++c[t];
+        } break;
 
 
         case EditorObjectType::UPRISING_PLATFORM:
-            if (c[t] < MAX_UPRISING) {
-                int i = c[t]++; auto& u = stage.upRisingPlatforms[i];
-                u.rect = o.rect; u.isrising = false; u.triggered = false;
-                u.riseDelay = o.params[0]; u.timer = 0; u.riseSpeed = o.params[1]; u.timeOnUpRising = 0;
-                stage.upRisingPlatformsInit[i] = u;
-            }break;
+        {
+            UpRisingPlatform u{};
+            u.rect = o.rect; u.isrising = false; u.triggered = false;
+            u.riseDelay = o.params[0]; u.timer = 0; u.riseSpeed = o.params[1]; u.timeOnUpRising = 0;
+            if (stage.upRisingPlatforms.Add(u)) ++c[t];
+        } break;
         case EditorObjectType::UP_DOWN_PLATFORM:
-            if (c[t] < MAX_UPRISING) {
-                int i = c[t]++; auto& u = stage.upDouwnPlatforms[i];
-                u.rect = o.rect; u.isrising = false;
-                u.riseHeight = o.params[0]; u.riseSpeed = o.params[1];
-                u.fallSpeed = o.params[2]; u.upperY = u.rect.y - u.riseHeight; u.lowerY = u.rect.y;
-                u.timer = 0; u.stopTimer = o.params[3]; u.goingUp = true; u.onUpDownPlatform = false;
-                stage.upDouwnPlatformsInit[i] = u;
-            }break;
+        {
+            UpDownPlatform u{};
+            u.rect = o.rect; u.isrising = false;
+            u.riseHeight = o.params[0]; u.riseSpeed = o.params[1];
+            u.fallSpeed = o.params[2]; u.upperY = u.rect.y - u.riseHeight; u.lowerY = u.rect.y;
+            u.timer = 0; u.stopTimer = o.params[3]; u.goingUp = true; u.onUpDownPlatform = false;
+            if (stage.upDouwnPlatforms.Add(u)) ++c[t];
+        } break;
         case EditorObjectType::SWITCH_PLATFORM:
             if (c[t] < MAX_PLATFORMS) {
                 int i = c[t]++; auto& s = stage.switchPlatforms[i];
@@ -725,13 +718,13 @@ void EditorExportToStage(const StageEditor& ed, Stage& stage, EnemyManager& enem
     stage.batteryHumanCount = c[14]; stage.cursorPlatformCount = c[15];
 
     stage.splitPlatformCount = c[18]; stage.circlePlatformCount = c[19];
-    stage.movePlatformCountX = c[20]; stage.moveCount = c[21];
-    stage.moveExtYCount = c[22]; stage.moveDownHazardExtYCount = c[23];
-    stage.moveHazardRightCount = c[24];
-    stage.rotatingBallCount = c[27];
-    stage.moveRotatingBallCount = c[28]; stage.rollingBallCount = c[29];
-    stage.fallingCount = c[30];  stage.upRisingCount = c[31];
-    stage.upDownCount = c[32];   stage.switchPlatformCount = c[35];
+    stage.movePlatformCountX = c[20]; 
+     
+    
+    
+     
+      
+       stage.switchPlatformCount = c[35];
     stage.exitDoorCount = c[37];
     stage.layerDoorCount = c[38];
     stage.springCount = c[45];
@@ -977,9 +970,9 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.params[0] = s.movePlatformsX[i].moveSpeed; o.params[1] = s.movePlatformsX[i].moveDistance;
         o.params[2] = s.movePlatformsX[i].delay; ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.moveCount; i++) {
-        PlacedObject o = { EditorObjectType::MOVE_HAZARD,s.moveHazards[i].rect };
-        o.params[0] = s.moveHazards[i].raiseHeight; o.params[1] = s.moveHazards[i].moveSpeed;
+    for (int i = 0; i < s.moveHazards.Size(); i++) {
+        PlacedObject o = { EditorObjectType::MOVE_HAZARD,s.moveHazards.Get(i).rect };
+        o.params[0] = s.moveHazards.Get(i).raiseHeight; o.params[1] = s.moveHazards.Get(i).moveSpeed;
         ed.objects.push_back(o);
     }
     for (int i = 0; i < s.movePlatformCountYXY; i++) {
@@ -993,25 +986,25 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         ed.objects.push_back(o);
     }
     // ★ MOVE_HAZARD_EXT_Y: dir を params[2] に保存
-    for (int i = 0; i < s.moveExtYCount; i++) {
-        PlacedObject o = { EditorObjectType::MOVE_HAZARD_EXT_Y, s.moveHazardsExtY[i].rect };
-        o.params[0] = s.moveHazardsExtY[i].raiseHeight;
-        o.params[1] = s.moveHazardsExtY[i].moveSpeed;
-        o.params[2] = (float)s.moveHazardsExtY[i].dir; // 1=上向き, -1=下向き
+    for (int i = 0; i < s.moveHazardsExtY.Size(); i++) {
+        PlacedObject o = { EditorObjectType::MOVE_HAZARD_EXT_Y, s.moveHazardsExtY.Get(i).rect };
+        o.params[0] = s.moveHazardsExtY.Get(i).raiseHeight;
+        o.params[1] = s.moveHazardsExtY.Get(i).moveSpeed;
+        o.params[2] = (float)s.moveHazardsExtY.Get(i).dir; // 1=上向き, -1=下向き
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.moveDownHazardExtYCount; i++) {
-        PlacedObject o = { EditorObjectType::MOVE_DOWN_HAZARD_EXT_Y,s.moveDownHazardsExtY[i].rect };
-        o.params[0] = s.moveDownHazardsExtY[i].raiseHeight;
-        o.params[1] = s.moveDownHazardsExtY[i].moveSpeed;
-        o.params[2] = s.moveDownHazardsExtY[i].tolelance;
+    for (int i = 0; i < s.moveDownHazardsExtY.Size(); i++) {
+        PlacedObject o = { EditorObjectType::MOVE_DOWN_HAZARD_EXT_Y,s.moveDownHazardsExtY.Get(i).rect };
+        o.params[0] = s.moveDownHazardsExtY.Get(i).raiseHeight;
+        o.params[1] = s.moveDownHazardsExtY.Get(i).moveSpeed;
+        o.params[2] = s.moveDownHazardsExtY.Get(i).tolelance;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.moveHazardRightCount; i++) {
-        PlacedObject o = { EditorObjectType::MOVE_HAZARD_RIGHT_X,s.moveHazardsRight[i].rect };
-        o.params[0] = s.moveHazardsRight[i].raiseWidth; o.params[1] = s.moveHazardsRight[i].moveSpeed;
-        o.params[2] = s.moveHazardsRight[i].delay;
-        o.params[3] = (float)s.moveHazardsRight[i].dir;
+    for (int i = 0; i < s.moveHazardsRight.Size(); i++) {
+        PlacedObject o = { EditorObjectType::MOVE_HAZARD_RIGHT_X,s.moveHazardsRight.Get(i).rect };
+        o.params[0] = s.moveHazardsRight.Get(i).raiseWidth; o.params[1] = s.moveHazardsRight.Get(i).moveSpeed;
+        o.params[2] = s.moveHazardsRight.Get(i).delay;
+        o.params[3] = (float)s.moveHazardsRight.Get(i).dir;
         ed.objects.push_back(o);
     }
     // moveHazardsExtX は廃止済み（moveHazardsRight に統合）。旧データは書き出さない。
@@ -1025,8 +1018,8 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         ed.objects.push_back(o);
     }
     // ★ ROTATING_BALL: armLen を params[2] から適用
-    for (int i = 0; i < s.rotatingBallCount; i++) {
-        auto& b = s.rotatingBalls[i];
+    for (int i = 0; i < s.rotatingBalls.Size(); i++) {
+        auto& b = s.rotatingBalls.Get(i);
         PlacedObject o = { EditorObjectType::ROTATING_BALL,
             { b.center.x - b.armLength, b.center.y - b.armLength, b.armLength * 2, b.armLength * 2 } };
         o.params[0] = b.radius;
@@ -1035,8 +1028,8 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         ed.objects.push_back(o);
     }
     // ★ MOVE_ROTATING_BALL: armLength を params[4] に保存
-    for (int i = 0; i < s.moveRotatingBallCount; i++) {
-        auto& b = s.moveRotatingBalls[i];
+    for (int i = 0; i < s.moveRotatingBalls.Size(); i++) {
+        auto& b = s.moveRotatingBalls.Get(i);
         PlacedObject o = { EditorObjectType::MOVE_ROTATING_BALL,
             { b.center.x - b.armLength, b.center.y - b.armLength, b.armLength * 2, b.armLength * 2 } };
         o.params[0] = b.radius;
@@ -1046,32 +1039,32 @@ void EditorImportFromStage(StageEditor& ed, const Stage& s) {
         o.params[4] = b.armLength; // ★
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.rollingBallCount; i++) {
-        float r = s.rollingBalls[i].radius > 0 ? s.rollingBalls[i].radius : 15.0f;
+    for (int i = 0; i < s.rollingBalls.Size(); i++) {
+        float r = s.rollingBalls.Get(i).radius > 0 ? s.rollingBalls.Get(i).radius : 15.0f;
         PlacedObject o = { EditorObjectType::ROLLING_BALL,
-            { s.rollingBalls[i].center.x - r, s.rollingBalls[i].center.y - r, r * 2, r * 2 } };
+            { s.rollingBalls.Get(i).center.x - r, s.rollingBalls.Get(i).center.y - r, r * 2, r * 2 } };
         o.params[0] = r;
-        o.params[1] = s.rollingBalls[i].rollSpeed;
-        o.params[2] = s.rollingBalls[i].rollDerection;
-        o.params[3] = s.rollingBalls[i].waitForCursorClick ? 1.0f : 0.0f; // ★
+        o.params[1] = s.rollingBalls.Get(i).rollSpeed;
+        o.params[2] = s.rollingBalls.Get(i).rollDerection;
+        o.params[3] = s.rollingBalls.Get(i).waitForCursorClick ? 1.0f : 0.0f; // ★
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.fallingCount; i++) {
-        PlacedObject o = { EditorObjectType::FALLING_PLATFORM, s.fallingPlatforms[i].rect };
-        o.params[0] = s.fallingPlatforms[i].fallDelay;
-        o.params[1] = s.fallingPlatforms[i].fallSpeed;
-        o.params[2] = (float)s.fallingPlatforms[i].detectMode;
+    for (int i = 0; i < s.fallingPlatforms.Size(); i++) {
+        PlacedObject o = { EditorObjectType::FALLING_PLATFORM, s.fallingPlatforms.Get(i).rect };
+        o.params[0] = s.fallingPlatforms.Get(i).fallDelay;
+        o.params[1] = s.fallingPlatforms.Get(i).fallSpeed;
+        o.params[2] = (float)s.fallingPlatforms.Get(i).detectMode;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.upRisingCount; i++) {
-        PlacedObject o = { EditorObjectType::UPRISING_PLATFORM,s.upRisingPlatforms[i].rect };
-        o.params[0] = s.upRisingPlatforms[i].riseDelay; o.params[1] = s.upRisingPlatforms[i].riseSpeed;
+    for (int i = 0; i < s.upRisingPlatforms.Size(); i++) {
+        PlacedObject o = { EditorObjectType::UPRISING_PLATFORM,s.upRisingPlatforms.Get(i).rect };
+        o.params[0] = s.upRisingPlatforms.Get(i).riseDelay; o.params[1] = s.upRisingPlatforms.Get(i).riseSpeed;
         ed.objects.push_back(o);
     }
-    for (int i = 0; i < s.upDownCount; i++) {
-        PlacedObject o = { EditorObjectType::UP_DOWN_PLATFORM,s.upDouwnPlatforms[i].rect };
-        o.params[0] = s.upDouwnPlatforms[i].riseHeight; o.params[1] = s.upDouwnPlatforms[i].riseSpeed;
-        o.params[2] = s.upDouwnPlatforms[i].fallSpeed;  o.params[3] = s.upDouwnPlatforms[i].stopTimer;
+    for (int i = 0; i < s.upDouwnPlatforms.Size(); i++) {
+        PlacedObject o = { EditorObjectType::UP_DOWN_PLATFORM,s.upDouwnPlatforms.Get(i).rect };
+        o.params[0] = s.upDouwnPlatforms.Get(i).riseHeight; o.params[1] = s.upDouwnPlatforms.Get(i).riseSpeed;
+        o.params[2] = s.upDouwnPlatforms.Get(i).fallSpeed;  o.params[3] = s.upDouwnPlatforms.Get(i).stopTimer;
         ed.objects.push_back(o);
     }
     // SWITCH_PLATFORM: 移動床 + 対応するボタンをセットでインポート

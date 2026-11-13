@@ -50,7 +50,7 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.hazards[0] = { 1500, 470, 90, 30 };
 	stage.hazardCount = 4;
 	stage.movePlatformCountX = 1;
-	stage.upDownCount = 1;
+	while (stage.upDouwnPlatforms.Size() < 1) stage.upDouwnPlatforms.Add({}); // Preserve legacy slot count
 	// itemBlockCount は削除（GimmickGroup::Size()を使用）
 	//カウント設定
 	stage.platformCount = 10;
@@ -63,27 +63,27 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.ojisanPunchApproachDuration[0] = 0.85f;
 
 	//復活用	
-	for (int i = 0; i < stage.moveExtYCount; i++) {
-		stage.moveHazardsExtYInit[i] = stage.moveHazardsExtY[i];
+	for (int i = 0; i < stage.moveHazardsExtY.Size(); i++) {
+		stage.moveHazardsExtY.GetInitial(i) = stage.moveHazardsExtY.Get(i);
 	}
-	for (int i = 0; i < stage.moveCount; i++) {
-		stage.moveHazardsInit[i] = stage.moveHazards[i];
+	for (int i = 0; i < stage.moveHazards.Size(); i++) {
+		stage.moveHazards.GetInitial(i) = stage.moveHazards.Get(i);
 	}
-	for (int i = 0; i < stage.fallingCount; i++) {
-		stage.fallingPlatformsInit[i] = stage.fallingPlatforms[i];
+	for (int i = 0; i < stage.fallingPlatforms.Size(); i++) {
+		stage.fallingPlatforms.GetInitial(i) = stage.fallingPlatforms.Get(i);
 	}
 	for (int i = 0; i < stage.splitPlatformCount; i++) {
 		stage.splitplatformsInit[i] = stage.splitPlatforms[i];
 	}
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		stage.upRisingPlatformsInit[i] = stage.upRisingPlatforms[i];
+	for (int i = 0; i < stage.upRisingPlatforms.Size(); i++) {
+		stage.upRisingPlatforms.GetInitial(i) = stage.upRisingPlatforms.Get(i);
 	}
-	for (int i = 0; i < stage.moveCount; i++) {
+	for (int i = 0; i < stage.moveHazards.Size(); i++) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 	// itemBlocksInit コピーは削除（GimmickGroup::Add()が自動保存）
-	for (int i = 0; i < stage.upDownCount; i++) {
-		stage.upDouwnPlatformsInit[i] = stage.upDouwnPlatforms[i];
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
+		stage.upDouwnPlatforms.GetInitial(i) = stage.upDouwnPlatforms.Get(i);
 	}
 }
 

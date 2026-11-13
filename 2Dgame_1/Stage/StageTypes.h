@@ -174,56 +174,47 @@ struct Stage {
     disableSignalId
     → 距離トリガーなどの信号で無効化*/
 	int hazardCount;
-	int moveCount;
-	int moveExtYCount;
+
 
     //動くとげ
-    MoveHazard moveHazards[MAX_MOVEHAZARD];
-    MoveHazard moveHazardsInit[MAX_MOVEHAZARD];//初期化のために保存しとく
+    GimmickGroup<MoveHazard, MAX_MOVEHAZARD> moveHazards;
+
 	//上に上がるとげ
-	MoveHazardExtentionY moveHazardsExtY[MAX_MOVEHAZARD];
-	MoveHazardExtentionY moveHazardsExtYInit[MAX_MOVEHAZARD];
+	GimmickGroup<MoveHazardExtentionY, MAX_MOVEHAZARD> moveHazardsExtY;
+
 	//下に下がるとげ
-	MoveDownHazardExtentionY moveDownHazardsExtY[MAX_MOVEHAZARD];
-	MoveDownHazardExtentionY moveDownHazardsExtYInit[MAX_MOVEHAZARD];
-	int moveDownHazardExtYCount;
+	GimmickGroup<MoveDownHazardExtentionY, MAX_MOVEHAZARD> moveDownHazardsExtY;
+
 	//左右どちらかに出るとげ
-	MoveHazardRightX moveHazardsRight[MAX_MOVEHAZARD];
-	MoveHazardRightX moveHazardsRightInit[MAX_MOVEHAZARD];
-	int moveHazardRightCount;
+	GimmickGroup<MoveHazardRightX, MAX_MOVEHAZARD> moveHazardsRight;
+
 	//追尾するとげ 
 	//スパイク型トランポリン
 	//回転する鉄球
-	RotatingBall rotatingBalls[MAX_HAZARDS];
-	RotatingBall rotatingBallsInit[MAX_HAZARDS];
-	int rotatingBallCount;
+	GimmickGroup<RotatingBall, MAX_HAZARDS> rotatingBalls;
+
 
 	//ワイヤーあり回転する鉄球
-    MoveRotatingBall moveRotatingBalls[MAX_HAZARDS];
-    MoveRotatingBall moveRotatingBallsInit[MAX_HAZARDS];
-    int moveRotatingBallCount;
+    GimmickGroup<MoveRotatingBall, MAX_HAZARDS> moveRotatingBalls;
+
 	//転がる鉄球
-	RollingBall rollingBalls[MAX_HAZARDS];
-	RollingBall rollingBallsInit[MAX_HAZARDS];
-    int rollingBallCount;
+	GimmickGroup<RollingBall, MAX_HAZARDS> rollingBalls;
+
 
     //落下床
-    FallingPlatform fallingPlatforms[MAX_FALLING];
-    FallingPlatform fallingPlatformsInit[MAX_FALLING];
-    int fallingCount;
+    GimmickGroup<FallingPlatform, MAX_FALLING> fallingPlatforms;
+
     float stageWidth;
 
 	//上昇床
-	UpRisingPlatform upRisingPlatforms[MAX_UPRISING];
-	UpRisingPlatform upRisingPlatformsInit[MAX_UPRISING];
-	int upRisingCount;
+	GimmickGroup<UpRisingPlatform, MAX_UPRISING> upRisingPlatforms;
+
 	float stageHeight;
 	bool playerOnUpRising = false; 
 	
 	//往復上昇床
-	UpDownPlatform upDouwnPlatforms[MAX_UPRISING];
-	UpDownPlatform upDouwnPlatformsInit[MAX_UPRISING];
-	int upDownCount;
+	GimmickGroup<UpDownPlatform, MAX_UPRISING> upDouwnPlatforms;
+
 
 	//スイッチによって動く床
 	SwitchPlatform switchPlatforms[MAX_PLATFORMS];
