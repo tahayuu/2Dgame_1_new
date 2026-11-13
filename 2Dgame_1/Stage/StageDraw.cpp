@@ -83,7 +83,7 @@ static bool IsGimmickDrawnInline(const Stage& stage, const Rectangle& rect) {
 	// カーソル追従床
 	for (int i = 0; i < stage.cursorPlatformCount; i++) if (IsSameRect(stage.cursorplatformsInit[i].rect, rect)) return true;
 	// 吹っ飛ばし壁
-	for (int i = 0; i < stage.knockBackWallCount; i++) if (IsSameRect(stage.knockBackWallsInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.knockBackWalls.Size(); i++) if (IsSameRect(stage.knockBackWalls.GetInitial(i).rect, rect)) return true;
 	// 乗ると動く床X
 	for (int i = 0; i < stage.movePlatformCountX; i++) if (IsSameRect(stage.moveplatformsXInit[i].rect, rect)) return true;
 	// スイッチ床
@@ -310,16 +310,16 @@ void StageDraw(
 	}
 
 	//ジャンプ台
-	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
-		const auto& jp = stage.jumpPlatfroms[i];
+	for (int i = 0; i < stage.jumpPlatfroms.Size(); i++) {
+		const auto& jp = stage.jumpPlatfroms.Get(i);
 		if (HasSpriteOverride(stage, jp.rect)) continue;
 		DrawRectangleRec(jp.rect, GREEN);
 	}
 
 	//ふっとばし壁
-	for (int i = 0; i < stage.knockBackWallCount; i++) {
-		const auto& kbw = stage.knockBackWalls[i];
-		if (!TryDrawMovingGimmickSprite(stage, stage.knockBackWallsInit[i].rect, kbw.rect)) {
+	for (int i = 0; i < stage.knockBackWalls.Size(); i++) {
+		const auto& kbw = stage.knockBackWalls.Get(i);
+		if (!TryDrawMovingGimmickSprite(stage, stage.knockBackWalls.GetInitial(i).rect, kbw.rect)) {
 			DrawRectangleRec(kbw.rect, ORANGE);
 		}
 	}
@@ -765,8 +765,8 @@ void StageDraw(
 	}
 
 	//クレーン発射台の描画
-	for (int i = 0; i < stage.craneLaunchPadCount; i++) {
-		const auto& clp = stage.craneLaunchPads[i];
+	for (int i = 0; i < stage.craneLaunchPads.Size(); i++) {
+		const auto& clp = stage.craneLaunchPads.Get(i);
 		if (HasSpriteOverride(stage, clp.rect)) continue;
 		DrawRectangleRec(clp.rect, DARKGREEN);
 		DrawRectangleLinesEx(clp.rect, 2, GREEN);

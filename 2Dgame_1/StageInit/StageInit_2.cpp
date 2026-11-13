@@ -101,10 +101,12 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.fallingPlatforms[0] = { {2500,580,300,400},false,false,5.0f,0.0f,450.0f };
 	//stage.fallingPlatforms[1] = { {700,500,150,50},false,false,0.2f,0.0f,450.0f };
 	//吹っ飛ばし壁
-	stage.knockBackWalls[0] = { { 2380,400,50,200 },2380.0f, { 900.0f, -700.0f },false,false ,false,false,0.0f,
-								0.1f,50.0f,0.0f,0.3f };
-	stage.knockBackWalls[1] = { { 2850,500,50,200 }, 2850.0f, { 200.0f, -300.0f }, false, false, false, false, 0.0f,
-							   0.1f, -20.0f, 0.0f, 0.3f };
+	stage.knockBackWalls.Add({ { 2380,400,50,200 },2380.0f, { 900.0f, -700.0f },false,false ,false,false,0.0f,
+								0.1f,50.0f,0.0f,0.3f });
+	stage.knockBackWalls.Add({ { 2850,500,50,200 }, 2850.0f, { 200.0f, -300.0f }, false, false, false, false, 0.0f,
+							   0.1f, -20.0f, 0.0f, 0.3f });
+	// Preserve the former count of 6, including four default-initialized slots.
+	for (int i = 0; i < 4; ++i) stage.knockBackWalls.Add({});
 	//人を発射する砲台
 	stage.batteryHumans[0].rect = { 3650.0f, 350.0f, 50.0f, 50.0f };
 	stage.batteryHumans[0].BatteryVelocity = { -300.0f, -800.0f };
@@ -114,10 +116,13 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.batteryHumans[1].delay = 3.0f;
 
 	//ジャンプ台
-	stage.jumpPlatfroms[0].rect = { 3600.0f,600.0f,200.0f,200.0f };
-	stage.jumpPlatfroms[0].jumpVelocity = { 0.0f,-1500 };
-	stage.jumpPlatfroms[0].startY = 600.0f;
-	stage.jumpPlatfroms[0].delay = 4.0f;
+	JumpPlatfrom jumpPlatform{};
+	jumpPlatform.rect = { 3600.0f,600.0f,200.0f,200.0f };
+	jumpPlatform.jumpVelocity = { 0.0f,-1500 };
+	jumpPlatform.startY = 600.0f;
+	jumpPlatform.delay = 4.0f;
+	stage.jumpPlatfroms.Add(jumpPlatform);
+	stage.jumpPlatfroms.Add({}); // Preserve the former count of 2
 
 	//スイッチによって動作する床
 	//stage.switchPlatforms[0] = { {3600.0f,700.0f,200.0f,20.0f},{4020,350,300,300 },{1000,0 },200,3600,false };
@@ -135,7 +140,6 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	//カウント設定
 	stage.stageWidth = 6400.0f;      // ← 追加：ゴール判定の右端
 	stage.batteryHumanCount = 3;
-	stage.knockBackWallCount = 6;
 	stage.fallingCount = 3;
 	stage.upRisingCount = 5;
 	stage.moveCount = 1;
@@ -148,7 +152,6 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.moveDownHazardExtYCount = 2;
 	stage.moveHazardRightCount = 1;
 	stage.splitPlatformCount = 1;
-	stage.jumpPlatfromCount = 2;
 	stage.switchPlatformCount = 2;  // 3→2（初期化されているのは[0][1]だけ）
 
 	for (int i = 0; i < stage.splitPlatformCount; i++) {
@@ -193,12 +196,6 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	for(int i= 0; i < stage.moveHazardRightCount; i++) {
 		stage.moveHazardsRightInit[i] = stage.moveHazardsRight[i];
 	}	
-	for (int i = 0; i < stage.knockBackWallCount; i++) {
-		stage.knockBackWallsInit[i] = stage.knockBackWalls[i];
-	}
-	for (int i = 0; i < stage.jumpPlatfromCount; i++) {
-		stage.jumpPlatfromsInit[i] = stage.jumpPlatfroms[i];
-	}
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		stage.switchplatformsInit[i] = stage.switchPlatforms[i];
 	}

@@ -120,9 +120,7 @@ struct Stage {
 	
 
 	//ジャンプ台
-	JumpPlatfrom jumpPlatfroms[MAX_PLATFORMS];
-	JumpPlatfrom jumpPlatfromsInit[MAX_PLATFORMS];
-	int jumpPlatfromCount;
+	GimmickGroup<JumpPlatfrom, MAX_PLATFORMS> jumpPlatfroms;
 	bool playerJumped = false; // ジャンプ台で跳ねたか
 	
 	//人を発射する砲台
@@ -142,9 +140,7 @@ struct Stage {
 	MoveUpPlatform moveUpplatformsInit[MAX_PLATFORMS];
 
 	//吹っ飛ばし壁
-	KnockBackWall knockBackWalls[MAX_PLATFORMS];
-	KnockBackWall knockBackWallsInit[MAX_PLATFORMS];
-	int knockBackWallCount;
+	GimmickGroup<KnockBackWall, MAX_PLATFORMS> knockBackWalls;
 	bool playerKnockedBack = false;  // 吹っ飛ばされたか
 
 	int moveUpPlatformCount;
@@ -254,9 +250,7 @@ struct Stage {
 
 	// クレーン発射台
 	static constexpr int MAX_CRANES = 8;
-	CraneLaunchPad craneLaunchPads[MAX_CRANES];
-	CraneLaunchPad craneLaunchPadsInit[MAX_CRANES];
-	int craneLaunchPadCount = 0;
+	GimmickGroup<CraneLaunchPad, MAX_CRANES> craneLaunchPads;
 
 	// クレーン（天井ギミック）
 	Crane cranes[MAX_CRANES];
@@ -325,8 +319,7 @@ struct Stage {
 	int decoSpriteCount = 0;
 
 	static constexpr int MAX_EVENT_CHANGERS = 16;
-	EventChanger eventChangers[MAX_EVENT_CHANGERS];
-	int eventChangerCount = 0;
+	GimmickGroup<EventChanger, MAX_EVENT_CHANGERS> eventChangers;
 
 	// 0：SPACE/W/UP
 	// 1：Nのみ

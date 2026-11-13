@@ -11,9 +11,9 @@ void StageInit_debug(Stage& stage,EnemyManager& enemyManager,ItemManager& itemMa
 		"assets/images/stage/stage_1/ground4.png",
 		50.0f);
 
-	stage.knockBackWallCount = 1;
+	stage.knockBackWalls.Add({}); // Preserve legacy debug placeholder
 
-	stage.jumpPlatfromCount = 1;
+	stage.jumpPlatfroms.Add({}); // Preserve legacy debug placeholder
 
 	stage.batteryHumanCount = 1;
 

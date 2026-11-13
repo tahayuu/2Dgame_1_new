@@ -99,11 +99,11 @@ void UpdateEventChangers(
     const Rectangle& playerRect
 ) {
     for (int i = 0;
-        i < stage.eventChangerCount;
+        i < stage.eventChangers.Size();
         i++) {
 
         EventChanger& event =
-            stage.eventChangers[i];
+            stage.eventChangers.Get(i);
 
         // inputSignalIdが1以上なら信号型
         // 0なら従来のプレイヤー接触型
@@ -188,11 +188,11 @@ void ResetEventChangers(Stage& stage) {
     }
 
     for (int i = 0;
-        i < stage.eventChangerCount;
+        i < stage.eventChangers.Size();
         i++) {
 
         EventChanger& event =
-            stage.eventChangers[i];
+            stage.eventChangers.Get(i);
 
         event.triggered = false;
         event.playerWasInside = false;
