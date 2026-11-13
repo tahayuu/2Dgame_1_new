@@ -61,19 +61,19 @@ static void DrawMovingSpikeWithOverride(const Stage& stage, const Rectangle& cur
 // spriteInstancesの末尾ループで二重描画しないよう、動くギミックの初期rectかどうかを判定する
 static bool IsGimmickDrawnInline(const Stage& stage, const Rectangle& rect) {
 	// 動く針系
-	for (int i = 0; i < stage.moveCount; i++) if (IsSameRect(stage.moveHazardsInit[i].rect, rect)) return true;
-	for (int i = 0; i < stage.moveExtYCount; i++) if (IsSameRect(stage.moveHazardsExtYInit[i].rect, rect)) return true;
-	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) if (IsSameRect(stage.moveDownHazardsExtYInit[i].rect, rect)) return true;
-	for (int i = 0; i < stage.moveHazardRightCount; i++) if (IsSameRect(stage.moveHazardsRightInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.moveHazards.Size(); i++) if (IsSameRect(stage.moveHazards.GetInitial(i).rect, rect)) return true;
+	for (int i = 0; i < stage.moveHazardsExtY.Size(); i++) if (IsSameRect(stage.moveHazardsExtY.GetInitial(i).rect, rect)) return true;
+	for (int i = 0; i < stage.moveDownHazardsExtY.Size(); i++) if (IsSameRect(stage.moveDownHazardsExtY.GetInitial(i).rect, rect)) return true;
+	for (int i = 0; i < stage.moveHazardsRight.Size(); i++) if (IsSameRect(stage.moveHazardsRight.GetInitial(i).rect, rect)) return true;
 	for (std::size_t i = 0; i < stage.trackingHazards.Size(); i++) if (IsSameRect(stage.trackingHazards.GetInitial(i).rect, rect)) return true;
 	// エレベーター
 	for (int i = 0; i < stage.elevatorCount; i++) if (IsSameRect(stage.elevatorsInit[i].rect, rect)) return true;
 	// 落下床
-	for (int i = 0; i < stage.fallingCount; i++) if (IsSameRect(stage.fallingPlatformsInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.fallingPlatforms.Size(); i++) if (IsSameRect(stage.fallingPlatforms.GetInitial(i).rect, rect)) return true;
 	// 上昇床
-	for (int i = 0; i < stage.upRisingCount; i++) if (IsSameRect(stage.upRisingPlatformsInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.upRisingPlatforms.Size(); i++) if (IsSameRect(stage.upRisingPlatforms.GetInitial(i).rect, rect)) return true;
 	// 往復上昇床
-	for (int i = 0; i < stage.upDownCount; i++) if (IsSameRect(stage.upDouwnPlatformsInit[i].rect, rect)) return true;
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) if (IsSameRect(stage.upDouwnPlatforms.GetInitial(i).rect, rect)) return true;
 	// 乗ると上昇する床
 	for (int i = 0; i < stage.moveUpPlatformCount; i++) if (IsSameRect(stage.moveUpplatformsInit[i].rect, rect)) return true;
 	// 移動低下床
@@ -363,9 +363,9 @@ void StageDraw(
 		}
 	}
 	//往復上昇床
-	for (int i = 0; i < stage.upDownCount; i++) {
-		const auto& ud = stage.upDouwnPlatforms[i];
-		if (!TryDrawMovingGimmickSprite(stage, stage.upDouwnPlatformsInit[i].rect, ud.rect)) {
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
+		const auto& ud = stage.upDouwnPlatforms.Get(i);
+		if (!TryDrawMovingGimmickSprite(stage, stage.upDouwnPlatforms.GetInitial(i).rect, ud.rect)) {
 			DrawRectangleRec(ud.rect, PURPLE);
 			DrawRectangleLinesEx(ud.rect, 2, GREEN);
 		}
@@ -403,9 +403,9 @@ void StageDraw(
 		}
 	}
 	//落下床
-	for (int i = 0; i < stage.fallingCount; i++) {
-		const auto& fp = stage.fallingPlatforms[i];
-		if (!TryDrawMovingGimmickSprite(stage, stage.fallingPlatformsInit[i].rect, fp.rect)) {
+	for (int i = 0; i < stage.fallingPlatforms.Size(); i++) {
+		const auto& fp = stage.fallingPlatforms.Get(i);
+		if (!TryDrawMovingGimmickSprite(stage, stage.fallingPlatforms.GetInitial(i).rect, fp.rect)) {
 			DrawRectangleRec(fp.rect, GRAY);
 		}
 	}
@@ -415,23 +415,23 @@ void StageDraw(
 		DrawSpikes(stage.hazards[i], spikeW);
 	}
 	//移動拡張とげY
-	for (int i = 0; i < stage.moveExtYCount; i++) {
-		const auto& mhY = stage.moveHazardsExtY[i];
-		DrawMovingSpikeWithOverride(stage, mhY.rect, stage.moveHazardsExtYInit[i].rect, spikeW);
+	for (int i = 0; i < stage.moveHazardsExtY.Size(); i++) {
+		const auto& mhY = stage.moveHazardsExtY.Get(i);
+		DrawMovingSpikeWithOverride(stage, mhY.rect, stage.moveHazardsExtY.GetInitial(i).rect, spikeW);
 	}
 	//下に下がるとげY
-	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) {
-		const auto& mdhY = stage.moveDownHazardsExtY[i];
-		DrawMovingSpikeWithOverride(stage, mdhY.rect, stage.moveDownHazardsExtYInit[i].rect, spikeW);
+	for (int i = 0; i < stage.moveDownHazardsExtY.Size(); i++) {
+		const auto& mdhY = stage.moveDownHazardsExtY.Get(i);
+		DrawMovingSpikeWithOverride(stage, mdhY.rect, stage.moveDownHazardsExtY.GetInitial(i).rect, spikeW);
 	}
-	for (int i = 0; i < stage.moveHazardRightCount; i++) {
-		const auto& mhr = stage.moveHazardsRight[i];
-		DrawMovingSpikeWithOverride(stage, mhr.rect, stage.moveHazardsRightInit[i].rect, spikeW);
+	for (int i = 0; i < stage.moveHazardsRight.Size(); i++) {
+		const auto& mhr = stage.moveHazardsRight.Get(i);
+		DrawMovingSpikeWithOverride(stage, mhr.rect, stage.moveHazardsRight.GetInitial(i).rect, spikeW);
 	}
 	//動くとげ
-	for (int i = 0; i < stage.moveCount; i++) {
-		const auto& mh = stage.moveHazards[i];
-		DrawMovingSpikeWithOverride(stage, mh.rect, stage.moveHazardsInit[i].rect, spikeW);
+	for (int i = 0; i < stage.moveHazards.Size(); i++) {
+		const auto& mh = stage.moveHazards.Get(i);
+		DrawMovingSpikeWithOverride(stage, mh.rect, stage.moveHazards.GetInitial(i).rect, spikeW);
 	}
 	//追尾するとげ
 	for (std::size_t i = 0; i < stage.trackingHazards.Size(); i++) {
@@ -458,9 +458,9 @@ void StageDraw(
 		}
 	}
 	//上昇床
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		const auto& ur = stage.upRisingPlatforms[i];
-		if (!TryDrawMovingGimmickSprite(stage, stage.upRisingPlatformsInit[i].rect, ur.rect)) {
+	for (int i = 0; i < stage.upRisingPlatforms.Size(); i++) {
+		const auto& ur = stage.upRisingPlatforms.Get(i);
+		if (!TryDrawMovingGimmickSprite(stage, stage.upRisingPlatforms.GetInitial(i).rect, ur.rect)) {
 			DrawRectangleRec(ur.rect, DARKGRAY);
 		}
 	}
@@ -491,8 +491,8 @@ void StageDraw(
 	DrawSnapPuzzles(stage);
 	DrawDistanceTriggerPieces(stage);
 	// 回転する鉄球
-	for (int i = 0; i < stage.rotatingBallCount; i++) {
-		const auto& rb = stage.rotatingBalls[i];
+	for (int i = 0; i < stage.rotatingBalls.Size(); i++) {
+		const auto& rb = stage.rotatingBalls.Get(i);
 		Vector2 ballPos = rb.GetBallPosition();
 		// 腕（鎖）を描画
 		DrawLineEx(rb.center, ballPos, 3.0f, GREEN);
@@ -507,8 +507,8 @@ void StageDraw(
 
 
 	// 回転して落ちる鉄球
-	for (int i = 0; i < stage.moveRotatingBallCount; i++) {
-		const auto& mrb = stage.moveRotatingBalls[i];
+	for (int i = 0; i < stage.moveRotatingBalls.Size(); i++) {
+		const auto& mrb = stage.moveRotatingBalls.Get(i);
 		Vector2 ballPos = mrb.GetBallPosition();
 		// 腕（鎖）を描画
 		DrawLineEx(mrb.center, ballPos, 3.0f, GREEN);
@@ -522,8 +522,8 @@ void StageDraw(
 	}
 
 	//床の上を転がる鉄球
-	for (int i = 0; i < stage.rollingBallCount; i++) {
-		const auto& rb = stage.rollingBalls[i];
+	for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+		const auto& rb = stage.rollingBalls.Get(i);
 
 		DrawCircleV(rb.center, rb.radius, DARKGRAY);
 		DrawCircleV(rb.center, rb.radius - 3.0f, GRAY);

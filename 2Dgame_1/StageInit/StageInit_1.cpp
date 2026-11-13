@@ -50,7 +50,7 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.hazards[0] = { 1500, 470, 90, 30 };
 	stage.hazardCount = 4;
 	stage.movePlatformCountX = 1;
-	stage.upDownCount = 1;
+	while (stage.upDouwnPlatforms.Size() < 1) stage.upDouwnPlatforms.Add({}); // Preserve legacy slot count
 	// itemBlockCount は削除（GimmickGroup::Size()を使用）
 	//カウント設定
 	stage.platformCount = 10;
@@ -62,28 +62,16 @@ void StageInit_1(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.ojisanPunchDrawFront[0] = false;
 	stage.ojisanPunchApproachDuration[0] = 0.85f;
 
-	//復活用	
-	for (int i = 0; i < stage.moveExtYCount; i++) {
-		stage.moveHazardsExtYInit[i] = stage.moveHazardsExtY[i];
-	}
-	for (int i = 0; i < stage.moveCount; i++) {
-		stage.moveHazardsInit[i] = stage.moveHazards[i];
-	}
-	for (int i = 0; i < stage.fallingCount; i++) {
-		stage.fallingPlatformsInit[i] = stage.fallingPlatforms[i];
-	}
+	// Add() が初期状態を保存するため、移行済みギミックの個別コピーは不要。
 	for (int i = 0; i < stage.splitPlatformCount; i++) {
 		stage.splitplatformsInit[i] = stage.splitPlatforms[i];
 	}
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		stage.upRisingPlatformsInit[i] = stage.upRisingPlatforms[i];
-	}
-	for (int i = 0; i < stage.moveCount; i++) {
+
+	// この配列は未移行のMovePlatformXに属するため専用カウンタを使用する。
+	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 	// itemBlocksInit コピーは削除（GimmickGroup::Add()が自動保存）
-	for (int i = 0; i < stage.upDownCount; i++) {
-		stage.upDouwnPlatformsInit[i] = stage.upDouwnPlatforms[i];
-	}
+
 }
 
