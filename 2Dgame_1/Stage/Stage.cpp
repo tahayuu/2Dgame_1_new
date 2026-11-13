@@ -858,20 +858,20 @@ void StageReset(Stage& stage) {
 	stage.icePlatforms.Reset();
 	// ================================================================
 
-		stage.fallingPlatforms.Reset();
+	stage.fallingPlatforms.Reset();
 
 	stage.knockBackWalls.Reset();
-		stage.upRisingPlatforms.Reset();
-		stage.upDouwnPlatforms.Reset();
+	stage.upRisingPlatforms.Reset();
+	stage.upDouwnPlatforms.Reset();
 	stage.gravityCooldown = 0.0f;
 	stage.gravityReversed = false;
 
 	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
 		stage.movePlatformsYXY[i] = stage.movePlatformsYXYInit[i];
 	}
-		stage.rotatingBalls.Reset();
-		stage.moveRotatingBalls.Reset();
-		stage.rollingBalls.Reset();
+	stage.rotatingBalls.Reset();
+	stage.moveRotatingBalls.Reset();
+	stage.rollingBalls.Reset();
 	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		stage.movePlatformsX[i] = stage.moveplatformsXInit[i];
 	}
