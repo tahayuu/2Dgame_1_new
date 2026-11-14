@@ -97,7 +97,17 @@ struct Stage {
 	GimmickGroup<TrackingHazard, MAX_HAZARDS> trackingHazards;
 	//氷床
 	GimmickGroup<IcePlatform, MAX_PLATFORMS> icePlatforms;
+	//移動床
 	GimmickGroup<MoveDownPlatform, MAX_PLATFORMS> moveDownPlatforms;
+	//吹っ飛ばし壁
+	GimmickGroup<KnockBackWall, MAX_PLATFORMS> knockBackWalls;
+	bool playerKnockedBack = false;  // 吹っ飛ばされたか	
+	//ジャンプ台
+	GimmickGroup<JumpPlatfrom, MAX_PLATFORMS> jumpPlatfroms;
+	bool playerJumped = false; // ジャンプ台で跳ねたか
+	// クレーン発射台
+	static constexpr int MAX_CRANES = 8;
+	GimmickGroup<CraneLaunchPad, MAX_CRANES> craneLaunchPads;
 	// ================================================================
 
 	//エレベーター
@@ -117,11 +127,7 @@ struct Stage {
 	int springCount;
 	int heldSpringIndex = -1;
 
-	
 
-	//ジャンプ台
-	GimmickGroup<JumpPlatfrom, MAX_PLATFORMS> jumpPlatfroms;
-	bool playerJumped = false; // ジャンプ台で跳ねたか
 	
 	//人を発射する砲台
 	BatteryHuman batteryHumans[MAX_PLATFORMS];
@@ -139,9 +145,7 @@ struct Stage {
 	MoveUpPlatform moveUpPlatforms[MAX_PLATFORMS];
 	MoveUpPlatform moveUpplatformsInit[MAX_PLATFORMS];
 
-	//吹っ飛ばし壁
-	GimmickGroup<KnockBackWall, MAX_PLATFORMS> knockBackWalls;
-	bool playerKnockedBack = false;  // 吹っ飛ばされたか
+	
 
 	int moveUpPlatformCount;
     //わかれる床
@@ -248,9 +252,7 @@ struct Stage {
 	bool hasRespawnPoint = false;
 	CameraConfig cameraConfig;
 
-	// クレーン発射台
-	static constexpr int MAX_CRANES = 8;
-	GimmickGroup<CraneLaunchPad, MAX_CRANES> craneLaunchPads;
+	
 
 	// クレーン（天井ギミック）
 	Crane cranes[MAX_CRANES];
