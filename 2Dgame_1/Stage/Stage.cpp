@@ -865,8 +865,7 @@ void StageReset(Stage& stage) {
 	stage.jumpPlatfroms.Reset();
 	stage.craneLaunchPads.Reset();
 
-	// ================================================================
-
+	// GimmickGroup に未移行の配列・その他の状態は従来の方法で復元する。
 	stage.gravityCooldown = 0.0f;
 	stage.gravityReversed = false;
 
@@ -917,9 +916,10 @@ void StageReset(Stage& stage) {
 
 
 // 目的: ステージ切替前にカウント類を安全に初期化する。
-// 目的: ステージ切替前にカウント類を安全に初期化する。
 void StageClear(Stage& stage) {
-	// 移行済みの全GimmickGroupをまとめて初期化（34種類）。
+	StageThemeUnload(stage.theme);
+
+	// 移行済みの全GimmickGroupの登録件数をまとめてクリア（34種類）。
 	// ブロック・スイッチ系
 	stage.touchBreakBlocks.Clear();
 	stage.bottomBreakBlocks.Clear();
@@ -959,8 +959,7 @@ void StageClear(Stage& stage) {
 	stage.decorArrows.Clear();
 	stage.eventChangers.Clear();
 
-	StageThemeUnload(stage.theme);
-	// ================================================================
+	// 未移行の配列やその他のステージ状態もリセットする。
 
 	stage.springCount = 0;
 	stage.heldSpringIndex = -1;
