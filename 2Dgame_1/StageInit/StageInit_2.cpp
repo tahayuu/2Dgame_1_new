@@ -83,23 +83,23 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	stage.clearBlocks.Add({ {4050,150,300,50} });
 	stage.clearBlocks.Add({ {3600,150,100,50} });
 	//動くトゲ
-	stage.moveHazardsExtY[0] = { { 1500,470,90,30 },false,false,400.0f,470.0f,1000.0f,-1 };
+	stage.moveHazardsExtY.Add({ { 1500,470,90,30 },false,false,400.0f,470.0f,1000.0f,-1 });
 	//下に下がるとげw
-	stage.moveDownHazardsExtY[0] = { { 1400,-60,90,30 },false,false,300.0f,-60.0f,1500.0f,1,100.0f };
-	stage.moveDownHazardsExtY[1] = { { 3200,-30,400,30 },false,false,500.0f,-60.0f,1500.0f,1,200.0f };
+	stage.moveDownHazardsExtY.Add({ { 1400,-60,90,30 },false,false,300.0f,-60.0f,1500.0f,1,100.0f });
+	stage.moveDownHazardsExtY.Add({ { 3200,-30,400,30 },false,false,500.0f,-60.0f,1500.0f,1,200.0f });
 
 	//出てくるトゲ
-	stage.moveHazards[0] = { { 1420,520,70,50 },false,false,50.0f,520.0f,200.0f };
+	stage.moveHazards.Add({ { 1420,520,70,50 },false,false,50.0f,520.0f,200.0f });
 	//動くとげ右
 	//stage.moveHazardsExtX[0] = { { 1310,470,90,30 }, false, false, 300.0f, 1900.0f, 300.0f,0.0f,1.0f };
 	//動くとげ右（Y軸厳密）
-	stage.moveHazardsRight[0] = { { 1310,470,90,30 }, false, false, 300.0f, 1900.0f, 800.0f,0.0f,1.0f };
+	stage.moveHazardsRight.Add({ { 1310,470,90,30 }, false, false, 300.0f, 1900.0f, 800.0f,0.0f,1.0f });
 	//上昇床
-	stage.upRisingPlatforms[0] = { {0,599,500,200},false,false,2.0f,0.0f,1500.0f };
-	stage.upRisingPlatforms[1] = { {3200,599,150,200},false,false,2.0f,0.0f,1300.0f };
+	stage.upRisingPlatforms.Add({ {0,599,500,200},false,false,2.0f,0.0f,1500.0f });
+	stage.upRisingPlatforms.Add({ {3200,599,150,200},false,false,2.0f,0.0f,1300.0f });
 	//落下床                            
-	stage.fallingPlatforms[0] = { {2500,580,300,400},false,false,5.0f,0.0f,450.0f };
-	//stage.fallingPlatforms[1] = { {700,500,150,50},false,false,0.2f,0.0f,450.0f };
+	stage.fallingPlatforms.Add({ {2500,580,300,400},false,false,5.0f,0.0f,450.0f });
+	//stage.fallingPlatforms.Get(1) = { {700,500,150,50},false,false,0.2f,0.0f,450.0f };
 	//吹っ飛ばし壁
 	stage.knockBackWalls.Add({ { 2380,400,50,200 },2380.0f, { 900.0f, -700.0f },false,false ,false,false,0.0f,
 								0.1f,50.0f,0.0f,0.3f });
@@ -140,17 +140,17 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	//カウント設定
 	stage.stageWidth = 6400.0f;      // ← 追加：ゴール判定の右端
 	stage.batteryHumanCount = 3;
-	stage.fallingCount = 3;
-	stage.upRisingCount = 5;
-	stage.moveCount = 1;
-	stage.moveExtYCount = 1;
+	while (stage.fallingPlatforms.Size() < 3) stage.fallingPlatforms.Add({}); // Preserve legacy slot count
+	while (stage.upRisingPlatforms.Size() < 5) stage.upRisingPlatforms.Add({}); // Preserve legacy slot count
+	while (stage.moveHazards.Size() < 1) stage.moveHazards.Add({}); // Preserve legacy slot count
+	while (stage.moveHazardsExtY.Size() < 1) stage.moveHazardsExtY.Add({}); // Preserve legacy slot count
 	stage.platformCount = 16;
 	stage.hazardCount = 4;
 	stage.movePlatformCountX = 1;
-	stage.upDownCount = 1;
+	while (stage.upDouwnPlatforms.Size() < 1) stage.upDouwnPlatforms.Add({}); // Preserve legacy slot count
 	// itemBlockCount は削除（GimmickGroup::Size()を使用）
-	stage.moveDownHazardExtYCount = 2;
-	stage.moveHazardRightCount = 1;
+	while (stage.moveDownHazardsExtY.Size() < 2) stage.moveDownHazardsExtY.Add({}); // Preserve legacy slot count
+	while (stage.moveHazardsRight.Size() < 1) stage.moveHazardsRight.Add({}); // Preserve legacy slot count
 	stage.splitPlatformCount = 1;
 	stage.switchPlatformCount = 2;  // 3→2（初期化されているのは[0][1]だけ）
 
@@ -167,35 +167,18 @@ void StageInit_2(Stage& stage, EnemyManager& enemyManager, ItemManager& itemMana
 	}
 
 
-	//復活用	
-	for (int i = 0; i < stage.moveExtYCount; i++) {
-		stage.moveHazardsExtYInit[i] = stage.moveHazardsExtY[i];
-	}
-	for (int i = 0; i < stage.moveCount; i++) {
-		stage.moveHazardsInit[i] = stage.moveHazards[i];
-	}
-	for (int i = 0; i < stage.fallingCount; i++) {
-		stage.fallingPlatformsInit[i] = stage.fallingPlatforms[i];
-	}
+	// Add() が初期状態を保存するため、移行済みギミックの個別コピーは不要。
 	for (int i = 0; i < stage.splitPlatformCount; i++) {
 		stage.splitplatformsInit[i] = stage.splitPlatforms[i];
 	}
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		stage.upRisingPlatformsInit[i] = stage.upRisingPlatforms[i];
-	}
-	for (int i = 0; i < stage.moveCount; i++) {
+
+	// この配列は未移行のMovePlatformXに属するため専用カウンタを使用する。
+	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 	// itemBlocksInit コピーは削除（GimmickGroup::Add()が自動保存）
-	for (int i = 0; i < stage.upDownCount; i++) {
-		stage.upDouwnPlatformsInit[i] = stage.upDouwnPlatforms[i];
-	}
-	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) {
-		stage.moveDownHazardsExtYInit[i] = stage.moveDownHazardsExtY[i];
-	}
-	for(int i= 0; i < stage.moveHazardRightCount; i++) {
-		stage.moveHazardsRightInit[i] = stage.moveHazardsRight[i];
-	}	
+
+	
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		stage.switchplatformsInit[i] = stage.switchPlatforms[i];
 	}

@@ -106,15 +106,15 @@ static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom&
 	bool activatedAny = false;
 
 	// targetRollingBall が有効な番号なら、その1個だけを起動する
-	if (cb.targetRollingBall >= 0 && cb.targetRollingBall < stage.rollingBallCount) {
-		ActivateOne(stage.rollingBalls[cb.targetRollingBall]);
+	if (cb.targetRollingBall >= 0 && cb.targetRollingBall < stage.rollingBalls.Size()) {
+		ActivateOne(stage.rollingBalls.Get(cb.targetRollingBall));
 		activatedAny = true;
 	}
 	else {
 		// targetRollingBall が無効なら、
 		// waitForCursorClick が true のRollingBallを探して起動する
-		for (int i = 0; i < stage.rollingBallCount; i++) {
-			auto& rb = stage.rollingBalls[i];
+		for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+			auto& rb = stage.rollingBalls.Get(i);
 
 			// カーソルクリック待ちのRollingBallだけ起動する
 			if (rb.waitForCursorClick) {
@@ -126,8 +126,8 @@ static void ActivateRollingBallsByCursorBottom(Stage& stage, const CursorBottom&
 		// ここまでで1つも起動していない場合は、
 		// 念のためすべてのRollingBallを起動する
 		if (!activatedAny) {
-			for (int i = 0; i < stage.rollingBallCount; i++) {
-				ActivateOne(stage.rollingBalls[i]);
+			for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+				ActivateOne(stage.rollingBalls.Get(i));
 			}
 		}
 	}
@@ -257,8 +257,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//落下床
-	for (int i = 0; i < stage.fallingCount; i++) {
-		auto& fp = stage.fallingPlatforms[i];//短縮名..毎回stage.fallingPlatforms[i]と書くのは面倒 &はコピー防ぐため
+	for (int i = 0; i < stage.fallingPlatforms.Size(); i++) {
+		auto& fp = stage.fallingPlatforms.Get(i);//短縮名..毎回stage.fallingPlatforms.Get(i)と書くのは面倒 &はコピー防ぐため
 		if (fp.triggered && !fp.isfalling) {//「踏まれている かつ まだ落ちていない」
 			fp.timer += dt;
 			if (fp.timer >= fp.fallDelay) {
@@ -532,8 +532,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	D --> E["MoveWithCirclePlatform で<br/>プレイヤーを vel 分動かす"]*/
 
 	//回転する鉄球
-	for (int i = 0; i < stage.rotatingBallCount; i++) {
-		auto& rb = stage.rotatingBalls[i];
+	for (int i = 0; i < stage.rotatingBalls.Size(); i++) {
+		auto& rb = stage.rotatingBalls.Get(i);
 		rb.angle += rb.angularSpeed * dt;
 		// 0〜2πの範囲に収める（角度の正規化）
 		if (rb.angle > 2.0f * PI)rb.angle -= 2.0f * PI;
@@ -541,8 +541,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//アームを中心に回転しする鉄球
-	for (int i = 0; i < stage.moveRotatingBallCount; i++) {
-		auto& mrb = stage.moveRotatingBalls[i];
+	for (int i = 0; i < stage.moveRotatingBalls.Size(); i++) {
+		auto& mrb = stage.moveRotatingBalls.Get(i);
 
 		//回転処理
 		if (!mrb.reverse) {
@@ -560,8 +560,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//床の上を転がる鉄球
-	for (int i = 0; i < stage.rollingBallCount; i++) {
-		auto& rb = stage.rollingBalls[i];
+	for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+		auto& rb = stage.rollingBalls.Get(i);
 		//waitForCursorClickがtrueのローリングボールは、activatedがtrueになるまでは動かない
 		if (rb.waitForCursorClick && !rb.activated) {
 			continue;
@@ -605,8 +605,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//上昇床
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		auto& ur = stage.upRisingPlatforms[i];
+	for (int i = 0; i < stage.upRisingPlatforms.Size(); i++) {
+		auto& ur = stage.upRisingPlatforms.Get(i);
 		if (ur.triggered && !ur.isrising) {
 			ur.timer += dt;
 			if (ur.timer >= ur.riseDelay) {
@@ -621,8 +621,8 @@ void StageUpdate(Stage& stage, float dt, ItemManager& itemManager, Camera2D came
 	}
 
 	//往復上昇床
-	for (int i = 0; i < stage.upDownCount; i++) {
-		auto& ud = stage.upDouwnPlatforms[i];
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
+		auto& ud = stage.upDouwnPlatforms.Get(i);
 		if (ud.isrising) {
 
 			if (ud.goingUp) {
@@ -840,9 +840,8 @@ void UpdateSavePoints(Stage& stage, PlayerState& playerState, AudioManager& audi
 //ステージリセット
 // 目的: ステージ内の可変ギミックを初期状態へ戻す。
 void StageReset(Stage& stage) {
-	// ================================================================
-	// GimmickGroup<T,N> 移行済みギミックのリセットをまとめて実行
-	// ================================================================
+	// GimmickGroup に移行済みのステージ系ギミックをまとめて復元。
+	// 動くトゲ・落下文字・追尾トゲは HazardReset() 側で別に復元する。
 	stage.touchBreakBlocks.Reset();
 	stage.gravityBlocks.Reset();
 	stage.itemBlocks.Reset();
@@ -856,33 +855,22 @@ void StageReset(Stage& stage) {
 	stage.tempFloors.Reset();
 	stage.tempFloorSwitches.Reset();
 	stage.icePlatforms.Reset();
-	// ================================================================
-
-	for (int i = 0; i < stage.fallingCount; i++) {
-		stage.fallingPlatforms[i] = stage.fallingPlatformsInit[i];
-	}
-
+	stage.fallingPlatforms.Reset();
 	stage.knockBackWalls.Reset();
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		stage.upRisingPlatforms[i] = stage.upRisingPlatformsInit[i];
-	}
-	for (int i = 0; i < stage.upDownCount; i++) {
-		stage.upDouwnPlatforms[i] = stage.upDouwnPlatformsInit[i];
-	}
+	stage.upRisingPlatforms.Reset();
+	stage.upDouwnPlatforms.Reset();
+	stage.rotatingBalls.Reset();
+	stage.moveRotatingBalls.Reset();
+	stage.rollingBalls.Reset();
+	stage.jumpPlatfroms.Reset();
+	stage.craneLaunchPads.Reset();
+
+	// GimmickGroup に未移行の配列・その他の状態は従来の方法で復元する。
 	stage.gravityCooldown = 0.0f;
 	stage.gravityReversed = false;
 
 	for (int i = 0; i < stage.movePlatformCountYXY; i++) {
 		stage.movePlatformsYXY[i] = stage.movePlatformsYXYInit[i];
-	}
-	for (int i = 0; i < stage.rotatingBallCount; i++) {
-		stage.rotatingBalls[i] = stage.rotatingBallsInit[i];
-	}
-	for (int i = 0; i < stage.moveRotatingBallCount; i++) {
-		stage.moveRotatingBalls[i] = stage.moveRotatingBallsInit[i];
-	}
-	for (int i = 0; i < stage.rollingBallCount; i++) {
-		stage.rollingBalls[i] = stage.rollingBallsInit[i];
 	}
 	for (int i = 0; i < stage.movePlatformCountX; i++) {
 		stage.movePlatformsX[i] = stage.moveplatformsXInit[i];
@@ -901,8 +889,6 @@ void StageReset(Stage& stage) {
 		stage.moveplatformsXInit[i] = stage.movePlatformsX[i];
 	}
 
-	stage.jumpPlatfroms.Reset();
-	stage.craneLaunchPads.Reset();
 	for (int i = 0; i < stage.switchPlatformCount; i++) {
 		stage.switchPlatforms[i] = stage.switchplatformsInit[i];
 	}
@@ -929,35 +915,51 @@ void StageReset(Stage& stage) {
 }
 
 
-
-// 目的: ステージ切替前にカウント類を安全に初期化する。
 // 目的: ステージ切替前にカウント類を安全に初期化する。
 void StageClear(Stage& stage) {
 	StageThemeUnload(stage.theme);
-	// ================================================================
-	// GimmickGroup<T,N> 移行済みギミックのクリアをまとめて実行
-	// ================================================================
+
+	// 移行済みの全GimmickGroupの登録件数をまとめてクリア（34種類）。
+	// ブロック・スイッチ系
 	stage.touchBreakBlocks.Clear();
 	stage.bottomBreakBlocks.Clear();
 	stage.gravityBlocks.Clear();
 	stage.buttonBlocks.Clear();
+	stage.itemBlocks.Clear();
+	stage.deathBlocks.Clear();
+	stage.breakableBlocks.Clear();
 	stage.clearBlocks.Clear();
 	stage.clearBlocksX.Clear();
-	stage.itemBlocks.Clear();
-	stage.breakableBlocks.Clear();
-	stage.magnets.Clear();
-	stage.trackingHazards.Clear();
-	stage.fallingTexts.Clear();
 	stage.commentBlocks.Clear();
-	stage.cursorBottoms.Clear();
-	stage.deathBlocks.Clear();
-	stage.spikeBouncers.Clear();
+	// 床・移動ギミック系
 	stage.tempFloors.Clear();
 	stage.tempFloorSwitches.Clear();
-	stage.decorArrows.Clear();
 	stage.icePlatforms.Clear();
 	stage.moveDownPlatforms.Clear();
-	// ================================================================
+	stage.jumpPlatfroms.Clear();
+	stage.knockBackWalls.Clear();
+	stage.fallingPlatforms.Clear();
+	stage.upRisingPlatforms.Clear();
+	stage.upDouwnPlatforms.Clear();
+	stage.craneLaunchPads.Clear();
+	stage.spikeBouncers.Clear();
+	// トゲ・鉄球系
+	stage.moveHazards.Clear();
+	stage.moveHazardsExtY.Clear();
+	stage.moveDownHazardsExtY.Clear();
+	stage.moveHazardsRight.Clear();
+	stage.trackingHazards.Clear();
+	stage.rotatingBalls.Clear();
+	stage.moveRotatingBalls.Clear();
+	stage.rollingBalls.Clear();
+	// その他（演出・連動・装飾）
+	stage.cursorBottoms.Clear();
+	stage.magnets.Clear();
+	stage.fallingTexts.Clear();
+	stage.decorArrows.Clear();
+	stage.eventChangers.Clear();
+
+	// 未移行の配列やその他のステージ状態もリセットする。
 
 	stage.springCount = 0;
 	stage.heldSpringIndex = -1;
@@ -971,25 +973,13 @@ void StageClear(Stage& stage) {
 	stage.gravityCooldown = 0.0f;
 	stage.platformCount = 0;
 	stage.hazardCount = 0;
-	stage.moveCount = 0;
-	stage.moveExtYCount = 0;
-	stage.fallingCount = 0;
-	stage.upRisingCount = 0;
-	stage.upDownCount = 0;
 	stage.splitPlatformCount = 0;
-	stage.knockBackWalls.Clear();
 	stage.batteryHumanCount = 0;
-	stage.jumpPlatfroms.Clear();
 	stage.switchPlatformCount = 0;
 	stage.cursorPlatformCount = 0;
 	stage.moveUpPlatformCount = 0;
 	stage.circlePlatformCount = 0;
 	stage.movePlatformCountX = 0;
-	stage.moveHazardRightCount = 0;
-	stage.moveDownHazardExtYCount = 0;
-	stage.rotatingBallCount = 0;
-	stage.moveRotatingBallCount = 0;
-	stage.rollingBallCount = 0;
 	stage.movePlatformCountYXY = 0;
 	stage.exitDoorCount = 0;
 	stage.warpCount = 0;
@@ -1002,7 +992,6 @@ void StageClear(Stage& stage) {
 		stage.ojisanPunchDrawFront[i] = false;
 		stage.ojisanPunchApproachDuration[i] = 0.85f;
 	}
-	stage.decorArrows.Clear();
 	stage.decoSpriteCount = 0;
 	stage.dragPieceCount = 0;
 	stage.snapSlotCount = 0;
@@ -1010,8 +999,6 @@ void StageClear(Stage& stage) {
 	stage.snapMouseCaptured = false;
 	stage.distanceTriggerPieceCount = 0;
 	stage.draggingDistanceTriggerPieceIndex = -1; stage.distanceTriggerMouseCaptured = false;
-	stage.eventChangers.Clear();
-	stage.craneLaunchPads.Clear();
 	stage.currentJumpMode = 0;
 	stage.spriteInstanceCount = 0;
 	stage.savePointCount = 0;
@@ -1026,7 +1013,6 @@ void StageClear(Stage& stage) {
 	ClearGimmickSignals(stage);//ギミック信号の初期化
 }
 // （新規追加）
-
 
 void LoadSelectedStage(int selectStage, int& currentStage,
 	Stage& stage, EnemyManager& em, ItemManager& im,

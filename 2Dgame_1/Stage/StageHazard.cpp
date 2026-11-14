@@ -132,8 +132,8 @@ static bool CheckPlayerNearX(const Rectangle& player, const Rectangle& obj, floa
 
 //とげが出てくる(triggerd中はせりあがる)
 static void UpMoveHazard(Stage& stage, const Rectangle& player, float dt) {
-	for (int i = 0; i < stage.moveCount; i++) {
-		auto& mh = stage.moveHazards[i];
+	for (int i = 0; i < stage.moveHazards.Size(); i++) {
+		auto& mh = stage.moveHazards.Get(i);
 
 		//プレイヤーが動くとげに来たら起動
 		if (!mh.triggerd && CheckMoveHazard(player, mh.rect, stage)) {
@@ -154,8 +154,8 @@ static void UpMoveHazard(Stage& stage, const Rectangle& player, float dt) {
 
 //とげが出てくる(y軸延長)
 static void UpMoveHazardExtY(Stage& stage, const Rectangle& player, float dt) {
-	for (int i = 0; i < stage.moveExtYCount; i++) {
-		auto& mhY = stage.moveHazardsExtY[i];
+	for (int i = 0; i < stage.moveHazardsExtY.Size(); i++) {
+		auto& mhY = stage.moveHazardsExtY.Get(i);
 
 		//プレイヤーが動くとげに来たら起動
 		if (!mhY.triggerd && CheckMoveHazardExtY(player, mhY.rect)) {
@@ -175,8 +175,8 @@ static void UpMoveHazardExtY(Stage& stage, const Rectangle& player, float dt) {
 }
 //とげが下に下がる
 static void DownMoveHazardExtY(Stage& stage, const Rectangle& player, float dt) {
-	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) {
-		auto& mhd = stage.moveDownHazardsExtY[i];
+	for (int i = 0; i < stage.moveDownHazardsExtY.Size(); i++) {
+		auto& mhd = stage.moveDownHazardsExtY.Get(i);
 
 		//プレイヤーが動くとげに来たら起動
 		if (!mhd.triggerd && CheckPlayerNearBelow(player, mhd.rect, mhd.tolelance)) {
@@ -197,8 +197,8 @@ static void DownMoveHazardExtY(Stage& stage, const Rectangle& player, float dt) 
 
 //とげが出てくる(左右どちらか、dir対応、Yもあってるとき)
 static void MoveHazarardX(Stage& stage, const Rectangle& player, float dt) {
-	for (int i = 0; i < stage.moveHazardRightCount; i++) {
-		auto& mhR = stage.moveHazardsRight[i];
+	for (int i = 0; i < stage.moveHazardsRight.Size(); i++) {
+		auto& mhR = stage.moveHazardsRight.Get(i);
 
 		// プレイヤーがdir方向側の近くに来たら起動（dir=1:右側判定, dir=-1:左側判定）
 		// toleranceX: X方向（dir側）の感知範囲, toleranceY: Y方向（高さのずれ）の感知範囲
@@ -311,8 +311,8 @@ static void StageSenseFallingTexts(Stage& stage, const Rectangle& player, float 
 //===========================================
 
 bool StageHitRisingSpike(const Stage& stage, const Rectangle& player) {
-	for (int i = 0; i < stage.moveExtYCount; i++) {
-		if (CheckCollisionRecs(player, stage.moveHazardsExtY[i].rect)) {
+	for (int i = 0; i < stage.moveHazardsExtY.Size(); i++) {
+		if (CheckCollisionRecs(player, stage.moveHazardsExtY.Get(i).rect)) {
 			return true;
 		}
 	}
@@ -358,8 +358,8 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 	}
 
 	//動くとげをみる
-	for (int i = 0; i < stage.moveCount; i++) {
-		const auto& mh = stage.moveHazards[i];
+	for (int i = 0; i < stage.moveHazards.Size(); i++) {
+		const auto& mh = stage.moveHazards.Get(i);
 		if (CheckCollisionRecs(player, mh.rect)) {
 			return true;
 		}
@@ -372,16 +372,16 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 	}
 
 	//下に下がるとげY拡張をみる
-	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) {
-		const auto& mdhY = stage.moveDownHazardsExtY[i];
+	for (int i = 0; i < stage.moveDownHazardsExtY.Size(); i++) {
+		const auto& mdhY = stage.moveDownHazardsExtY.Get(i);
 		if (CheckCollisionRecs(player,mdhY.rect)){
 			return true;
 		}
 	}
 
 	//動くとげ右をみる(Yもあってるとき)
-	for (int i = 0; i < stage.moveHazardRightCount; i++) {
-		const auto& mhr = stage.moveHazardsRight[i];
+	for (int i = 0; i < stage.moveHazardsRight.Size(); i++) {
+		const auto& mhr = stage.moveHazardsRight.Get(i);
 		if (CheckCollisionRecs(player, mhr.rect)) {
 			return true;
 		}
@@ -405,8 +405,8 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 	}
 
 	//回転する鉄球をみる
-	for (int i = 0; i < stage.rotatingBallCount; i++) {
-		const auto& rb = stage.rotatingBalls[i];
+	for (int i = 0; i < stage.rotatingBalls.Size(); i++) {
+		const auto& rb = stage.rotatingBalls.Get(i);
 		Vector2 ballpos = rb.GetBallPosition();
 		Vector2 playerCenter = { player.x + player.width / 2,
 			player.y + player.height / 2 };
@@ -420,8 +420,8 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 	}
 
 	//動く回転する鉄球をみる
-	for (int i = 0; i < stage.moveRotatingBallCount; i++) {
-		const auto& mrb = stage.moveRotatingBalls[i];
+	for (int i = 0; i < stage.moveRotatingBalls.Size(); i++) {
+		const auto& mrb = stage.moveRotatingBalls.Get(i);
 		Vector2 ballpos = mrb.GetBallPosition();
 
 		if (CheckCollisionCircleRec(ballpos, mrb.radius, player))
@@ -429,8 +429,8 @@ bool StageHitHazard(const Stage& stage, const Rectangle& player) {//const Stage&
 	}
 
 	//転がる鉄球をみる
-	for (int i = 0; i < stage.rollingBallCount; i++) {
-		const auto& rb = stage.rollingBalls[i];
+	for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+		const auto& rb = stage.rollingBalls.Get(i);
 
 		if (CheckCollisionCircleRec(rb.center, rb.radius, player))
 			return true;
@@ -461,18 +461,11 @@ void HazardUpdate(Stage& stage, const Rectangle& player, float dt) {
 }
 
 void HazardReset(Stage& stage) {
+	// ハザード系の復元は StageReset() と分けて呼び出す既存構造を維持。
 	stage.fallingTexts.Reset();
-	for (int i = 0; i < stage.moveCount; i++) {
-		stage.moveHazards[i] = stage.moveHazardsInit[i];
-	}
-	for (int i = 0; i < stage.moveExtYCount; i++) {
-		stage.moveHazardsExtY[i] = stage.moveHazardsExtYInit[i];
-	}
+	stage.moveHazards.Reset();
+	stage.moveHazardsExtY.Reset();
 	stage.trackingHazards.Reset();
-	for (int i = 0; i < stage.moveDownHazardExtYCount; i++) {
-		stage.moveDownHazardsExtY[i] = stage.moveDownHazardsExtYInit[i];
-	}
-	for (int i = 0; i < stage.moveHazardRightCount; i++) {
-		stage.moveHazardsRight[i] = stage.moveHazardsRightInit[i];
-	}
+	stage.moveDownHazardsExtY.Reset();
+	stage.moveHazardsRight.Reset();
 }

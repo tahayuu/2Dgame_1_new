@@ -693,8 +693,8 @@ static void MoveWithPlayerYXY(const Stage& stage, Rectangle& player, Vector2& ve
 }
 //プレイヤーが往復上昇床に乗っているときの処理プレイヤーも一緒に動かす
 static void MoveWithUpDownPlatform(const Stage& stage, Rectangle& player, Vector2& velocity, float dt) {
-	for (int i = 0; i < stage.upDownCount; i++) {
-		const auto& ud = stage.upDouwnPlatforms[i];
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
+		const auto& ud = stage.upDouwnPlatforms.Get(i);
 		if (ud.onUpDownPlatform && ud.isrising) {
 			if (ud.goingUp && ud.rect.y > ud.upperY) {
 				player.y -= ud.riseSpeed * dt;
@@ -944,12 +944,12 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 		ResolveSolidX(stage.moveUpPlatforms[i].rect,player,velocity, prevPlayer);
 	}
     //往復上昇床
-	for (int i = 0; i < stage.upDownCount; i++) {
-		ResolveSolidX(stage.upDouwnPlatforms[i].rect,player,velocity, prevPlayer);
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
+		ResolveSolidX(stage.upDouwnPlatforms.Get(i).rect,player,velocity, prevPlayer);
 	}
 	//落下床
-	for (int i = 0; i < stage.fallingCount; i++) {
-		ResolveSolidX(stage.fallingPlatforms[i].rect, player, velocity, prevPlayer);
+	for (int i = 0; i < stage.fallingPlatforms.Size(); i++) {
+		ResolveSolidX(stage.fallingPlatforms.Get(i).rect, player, velocity, prevPlayer);
 	}
 
 	//ジャンプ台
@@ -957,8 +957,8 @@ void StageResolveX(Stage& stage, Rectangle& player, Vector2& velocity, float dt,
 		ResolveSolidX(stage.jumpPlatfroms.Get(i).rect, player, velocity, prevPlayer);
 	}
 	//上昇床
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		auto& ur = stage.upRisingPlatforms[i];
+	for (int i = 0; i < stage.upRisingPlatforms.Size(); i++) {
+		auto& ur = stage.upRisingPlatforms.Get(i);
 		Rectangle prevSolid = ur.rect;
 		if (ur.isrising) prevSolid.y += ur.riseSpeed * dt;
 		ResolveSolidXForMovingSolid(ur.rect, prevSolid, player, velocity, prevPlayer);
@@ -1269,8 +1269,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//ばねに乗った状態でローリングボールが近づいてきたときの処理
-	for (int b = 0; b < stage.rollingBallCount; b++) {
-		auto& rb = stage.rollingBalls[b];
+	for (int b = 0; b < stage.rollingBalls.Size(); b++) {
+		auto& rb = stage.rollingBalls.Get(b);
 		for (int i = 0; i < stage.springCount; i++) {
 			auto& sp = stage.springs[i];
 			if (!sp.isActive) continue;
@@ -1326,8 +1326,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//落下床
-	for (int i = 0; i < stage.fallingCount; i++) {
-		auto& fp = stage.fallingPlatforms[i];
+	for (int i = 0; i < stage.fallingPlatforms.Size(); i++) {
+		auto& fp = stage.fallingPlatforms.Get(i);
 		bool landed = ResolveSolidYPlayer(fp.rect, player, velocity, prev, stage.gravityReversed);
 		if (landed) {
 			onGround = true;
@@ -1368,8 +1368,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//上昇床
-	for (int i = 0; i < stage.upRisingCount; i++) {
-		auto& ur = stage.upRisingPlatforms[i];
+	for (int i = 0; i < stage.upRisingPlatforms.Size(); i++) {
+		auto& ur = stage.upRisingPlatforms.Get(i);
 		Rectangle prevSolid = ur.rect;
 		if (ur.isrising) prevSolid.y += ur.riseSpeed * dt;
 		bool landed = ResolveSolidYForMovingSolid(ur.rect, prevSolid, player, velocity, prev);
@@ -1402,12 +1402,12 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	// 往復上昇床のフラグをリセット
-	for (int i = 0; i < stage.upDownCount; i++) {
-		stage.upDouwnPlatforms[i].onUpDownPlatform = false;
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
+		stage.upDouwnPlatforms.Get(i).onUpDownPlatform = false;
 	}
 	//往復上昇床
-	for (int i = 0; i < stage.upDownCount; i++) {
-		auto& ud = stage.upDouwnPlatforms[i];
+	for (int i = 0; i < stage.upDouwnPlatforms.Size(); i++) {
+		auto& ud = stage.upDouwnPlatforms.Get(i);
 		Rectangle prevSolid = ud.rect;
 		if (ud.goingUp || ud.isrising) prevSolid.y += ud.riseSpeed * dt;
 		bool landed = ResolveSolidYForMovingSolid(ud.rect, prevSolid, player, velocity, prev);
@@ -1620,8 +1620,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//アームつき鉄球の床判定
-	for (int i = 0; i < stage.moveRotatingBallCount; i++) {
-		auto& mrb = stage.moveRotatingBalls[i];
+	for (int i = 0; i < stage.moveRotatingBalls.Size(); i++) {
+		auto& mrb = stage.moveRotatingBalls.Get(i);
 		bool wasOnGround = mrb.onGround;
 		mrb.onGround = false;
 
@@ -1638,8 +1638,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 	}
 
 	//転がる鉄球の床判定 + 壊せるブロック破壊
-	for (int i = 0; i < stage.rollingBallCount; i++) {
-		auto& rb = stage.rollingBalls[i];
+	for (int i = 0; i < stage.rollingBalls.Size(); i++) {
+		auto& rb = stage.rollingBalls.Get(i);
 
 		// ボタン待機中はまだ動かさない（破壊もしない）
 		if (rb.waitForCursorClick && !rb.activated) {
@@ -1706,8 +1706,8 @@ bool StageResolveY(Stage& stage, const Rectangle& prevPlayer, Rectangle& player,
 			}
 		}
 		// 落下床との当たり判定（鉄球が触れたら落下開始）
-		for (int f = 0; f < stage.fallingCount; f++) {
-    auto& fp = stage.fallingPlatforms[f];
+		for (int f = 0; f < stage.fallingPlatforms.Size(); f++) {
+    auto& fp = stage.fallingPlatforms.Get(f);
     if (fp.triggered || fp.isfalling) continue;
 
     // detectMode: 0=両方, 1=プレイヤーのみ, 2=ボールのみ
