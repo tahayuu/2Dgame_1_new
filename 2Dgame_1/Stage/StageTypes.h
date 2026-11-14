@@ -48,57 +48,11 @@ struct Stage {
 	//ステージテーマ（床テクスチャなど）
 	StageTheme theme;
 
-	// ================================================================
-	// GimmickGroup<T,N> 移行済みギミック（実体・初期状態・登録数を一元管理）
-	// ---------------------------------------------------------------
-	// Add()で実体とinitialObjectsへ同時保存し、Get()/Size()/Reset()/Clear()を提供。
-	// 見通しを良くするため、移行済みのものはここにまとめている。
-	// ================================================================
+	// GimmickGroup に使う固定容量。
 	static constexpr int MAX_COMMENT_BLOCKS = 16;
 	static constexpr int MAX_TEMP_FLOORS = 16;
 	static constexpr int MAX_DECOR_ARROWS = 16;
 	static constexpr int MAX_SPIKE_BOUNCERS = 16;
-
-	//触れると壊れるブロック
-	GimmickGroup<TouchBreakBlock, MAX_PLATFORMS> touchBreakBlocks;
-	//下から触れただけで壊れるブロック
-	GimmickGroup<BottomBreakBlock, MAX_HAZARDS> bottomBreakBlocks;
-	//重力反転ブロック
-	GimmickGroup<GravityBlock, MAX_PLATFORMS> gravityBlocks;
-	// ボタンブロック
-	GimmickGroup<ButtonBlock, MAX_PLATFORMS> buttonBlocks;
-	//アイテムブロック
-	GimmickGroup<ItemBlock, MAX_PLATFORMS> itemBlocks;
-	//カーソルによって動作するギミック
-	GimmickGroup<CursorBottom, MAX_PLATFORMS> cursorBottoms;
-	//磁石（引き寄せ）
-	GimmickGroup<Magnet, MAX_PLATFORMS> magnets;
-	//死ぬブロック
-	GimmickGroup<Rectangle, MAX_HAZARDS> deathBlocks;
-	//壊せるブロック
-	GimmickGroup<BreakableBlock, MAX_HAZARDS> breakableBlocks;
-	//コメントブロック
-	GimmickGroup<CommentBlock, MAX_COMMENT_BLOCKS> commentBlocks;
-	// 一時的に消える床
-	GimmickGroup<TempFloor, MAX_TEMP_FLOORS> tempFloors;
-	// 一時的に消える床のスイッチ
-	GimmickGroup<TempFloorSwitch, MAX_TEMP_FLOORS> tempFloorSwitches;
-	//デコレーション矢印
-	GimmickGroup<DecorArrow, MAX_DECOR_ARROWS> decorArrows;
-	//透明ブロック
-	GimmickGroup<ClearBlock, MAX_CLEAR> clearBlocks;
-	//X方向透明ブロック
-	GimmickGroup<ClearBlockX, MAX_CLEAR> clearBlocksX;
-	//落下文字
-	GimmickGroup<FallingText, MAX_FALLINGTEXT> fallingTexts;
-	//スパイク型トランポリン
-	GimmickGroup<SpikeBouncer, MAX_SPIKE_BOUNCERS> spikeBouncers;
-	//追尾するとげ
-	GimmickGroup<TrackingHazard, MAX_HAZARDS> trackingHazards;
-	//氷床
-	GimmickGroup<IcePlatform, MAX_PLATFORMS> icePlatforms;
-	GimmickGroup<MoveDownPlatform, MAX_PLATFORMS> moveDownPlatforms;
-	// ================================================================
 
 	//エレベーター
 	static constexpr int MAX_ELEVATORS = 8;
@@ -117,10 +71,7 @@ struct Stage {
 	int springCount;
 	int heldSpringIndex = -1;
 
-	
-
-	//ジャンプ台
-	GimmickGroup<JumpPlatfrom, MAX_PLATFORMS> jumpPlatfroms;
+	// ジャンプ台のプレイヤー状態（ギミック本体は下部に集約）
 	bool playerJumped = false; // ジャンプ台で跳ねたか
 	
 	//人を発射する砲台
@@ -139,8 +90,7 @@ struct Stage {
 	MoveUpPlatform moveUpPlatforms[MAX_PLATFORMS];
 	MoveUpPlatform moveUpplatformsInit[MAX_PLATFORMS];
 
-	//吹っ飛ばし壁
-	GimmickGroup<KnockBackWall, MAX_PLATFORMS> knockBackWalls;
+	// 吹っ飛ばし壁のプレイヤー状態（ギミック本体は下部に集約）
 	bool playerKnockedBack = false;  // 吹っ飛ばされたか
 
 	int moveUpPlatformCount;
@@ -175,46 +125,9 @@ struct Stage {
     → 距離トリガーなどの信号で無効化*/
 	int hazardCount;
 
-
-    //動くとげ
-    GimmickGroup<MoveHazard, MAX_MOVEHAZARD> moveHazards;
-
-	//上に上がるとげ
-	GimmickGroup<MoveHazardExtentionY, MAX_MOVEHAZARD> moveHazardsExtY;
-
-	//下に下がるとげ
-	GimmickGroup<MoveDownHazardExtentionY, MAX_MOVEHAZARD> moveDownHazardsExtY;
-
-	//左右どちらかに出るとげ
-	GimmickGroup<MoveHazardRightX, MAX_MOVEHAZARD> moveHazardsRight;
-
-	//追尾するとげ 
-	//スパイク型トランポリン
-	//回転する鉄球
-	GimmickGroup<RotatingBall, MAX_HAZARDS> rotatingBalls;
-
-
-	//ワイヤーあり回転する鉄球
-    GimmickGroup<MoveRotatingBall, MAX_HAZARDS> moveRotatingBalls;
-
-	//転がる鉄球
-	GimmickGroup<RollingBall, MAX_HAZARDS> rollingBalls;
-
-
-    //落下床
-    GimmickGroup<FallingPlatform, MAX_FALLING> fallingPlatforms;
-
-    float stageWidth;
-
-	//上昇床
-	GimmickGroup<UpRisingPlatform, MAX_UPRISING> upRisingPlatforms;
-
+	float stageWidth;
 	float stageHeight;
 	bool playerOnUpRising = false; 
-	
-	//往復上昇床
-	GimmickGroup<UpDownPlatform, MAX_UPRISING> upDouwnPlatforms;
-
 
 	//スイッチによって動く床
 	SwitchPlatform switchPlatforms[MAX_PLATFORMS];
@@ -239,9 +152,8 @@ struct Stage {
 	bool hasRespawnPoint = false;
 	CameraConfig cameraConfig;
 
-	// クレーン発射台
+	// クレーンとクレーン発射台に使う共通上限
 	static constexpr int MAX_CRANES = 8;
-	GimmickGroup<CraneLaunchPad, MAX_CRANES> craneLaunchPads;
 
 	// クレーン（天井ギミック）
 	Crane cranes[MAX_CRANES];
@@ -310,7 +222,6 @@ struct Stage {
 	int decoSpriteCount = 0;
 
 	static constexpr int MAX_EVENT_CHANGERS = 16;
-	GimmickGroup<EventChanger, MAX_EVENT_CHANGERS> eventChangers;
 
 	// 0：SPACE/W/UP
 	// 1：Nのみ
@@ -320,6 +231,53 @@ struct Stage {
 	savePoint savePointsInit[MAX_SAVEPOINT];
 	bool isSaved;
 	int savePointCount = 0;
+
+	// ================================================================
+	// GimmickGroup に移行済みの全ギミック（34種類）
+	// 種類ごとに定義を集約。実体・初期状態・登録数を各グループが保持する。
+	// ================================================================
+	// ブロック・スイッチ系
+	GimmickGroup<TouchBreakBlock, MAX_PLATFORMS> touchBreakBlocks;
+	GimmickGroup<BottomBreakBlock, MAX_HAZARDS> bottomBreakBlocks;
+	GimmickGroup<GravityBlock, MAX_PLATFORMS> gravityBlocks;
+	GimmickGroup<ButtonBlock, MAX_PLATFORMS> buttonBlocks;
+	GimmickGroup<ItemBlock, MAX_PLATFORMS> itemBlocks;
+	GimmickGroup<Rectangle, MAX_HAZARDS> deathBlocks;
+	GimmickGroup<BreakableBlock, MAX_HAZARDS> breakableBlocks;
+	GimmickGroup<ClearBlock, MAX_CLEAR> clearBlocks;
+	GimmickGroup<ClearBlockX, MAX_CLEAR> clearBlocksX;
+	GimmickGroup<CommentBlock, MAX_COMMENT_BLOCKS> commentBlocks;
+
+	// 床・移動ギミック系
+	GimmickGroup<TempFloor, MAX_TEMP_FLOORS> tempFloors;
+	GimmickGroup<TempFloorSwitch, MAX_TEMP_FLOORS> tempFloorSwitches;
+	GimmickGroup<IcePlatform, MAX_PLATFORMS> icePlatforms;
+	GimmickGroup<MoveDownPlatform, MAX_PLATFORMS> moveDownPlatforms;
+	GimmickGroup<JumpPlatfrom, MAX_PLATFORMS> jumpPlatfroms;
+	GimmickGroup<KnockBackWall, MAX_PLATFORMS> knockBackWalls;
+	GimmickGroup<FallingPlatform, MAX_FALLING> fallingPlatforms;
+	GimmickGroup<UpRisingPlatform, MAX_UPRISING> upRisingPlatforms;
+	GimmickGroup<UpDownPlatform, MAX_UPRISING> upDouwnPlatforms;
+	GimmickGroup<CraneLaunchPad, MAX_CRANES> craneLaunchPads;
+	GimmickGroup<SpikeBouncer, MAX_SPIKE_BOUNCERS> spikeBouncers;
+
+	// トゲ・鉄球系
+	GimmickGroup<MoveHazard, MAX_MOVEHAZARD> moveHazards;
+	GimmickGroup<MoveHazardExtentionY, MAX_MOVEHAZARD> moveHazardsExtY;
+	GimmickGroup<MoveDownHazardExtentionY, MAX_MOVEHAZARD> moveDownHazardsExtY;
+	GimmickGroup<MoveHazardRightX, MAX_MOVEHAZARD> moveHazardsRight;
+	GimmickGroup<TrackingHazard, MAX_HAZARDS> trackingHazards;
+	GimmickGroup<RotatingBall, MAX_HAZARDS> rotatingBalls;
+	GimmickGroup<MoveRotatingBall, MAX_HAZARDS> moveRotatingBalls;
+	GimmickGroup<RollingBall, MAX_HAZARDS> rollingBalls;
+
+	// その他（演出・連動・装飾）
+	GimmickGroup<CursorBottom, MAX_PLATFORMS> cursorBottoms;
+	GimmickGroup<Magnet, MAX_PLATFORMS> magnets;
+	GimmickGroup<FallingText, MAX_FALLINGTEXT> fallingTexts;
+	GimmickGroup<DecorArrow, MAX_DECOR_ARROWS> decorArrows;
+	GimmickGroup<EventChanger, MAX_EVENT_CHANGERS> eventChangers;
+	// ================================================================
 
 };
 	
