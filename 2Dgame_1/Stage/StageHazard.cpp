@@ -461,10 +461,11 @@ void HazardUpdate(Stage& stage, const Rectangle& player, float dt) {
 }
 
 void HazardReset(Stage& stage) {
+	// ハザード系の復元は StageReset() と分けて呼び出す既存構造を維持。
 	stage.fallingTexts.Reset();
-		stage.moveHazards.Reset();
-		stage.moveHazardsExtY.Reset();
+	stage.moveHazards.Reset();
+	stage.moveHazardsExtY.Reset();
 	stage.trackingHazards.Reset();
-		stage.moveDownHazardsExtY.Reset();
-		stage.moveHazardsRight.Reset();
+	stage.moveDownHazardsExtY.Reset();
+	stage.moveHazardsRight.Reset();
 }
