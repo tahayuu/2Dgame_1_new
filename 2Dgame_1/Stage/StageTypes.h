@@ -71,9 +71,7 @@ struct Stage {
 	int springCount;
 	int heldSpringIndex = -1;
 
-	
-
-	//ジャンプ台
+	// ジャンプ台のプレイヤー状態（ギミック本体は下部に集約）
 	bool playerJumped = false; // ジャンプ台で跳ねたか
 	
 	//人を発射する砲台
@@ -92,7 +90,7 @@ struct Stage {
 	MoveUpPlatform moveUpPlatforms[MAX_PLATFORMS];
 	MoveUpPlatform moveUpplatformsInit[MAX_PLATFORMS];
 
-	//吹っ飛ばし壁
+	// 吹っ飛ばし壁のプレイヤー状態（ギミック本体は下部に集約）
 	bool playerKnockedBack = false;  // 吹っ飛ばされたか
 
 	int moveUpPlatformCount;
@@ -127,26 +125,9 @@ struct Stage {
     → 距離トリガーなどの信号で無効化*/
 	int hazardCount;
 
-
-    //動くとげ
-
-
-
-
-
-
-
-
-
-    //落下床
-
-    float stageWidth;
-
-
+	float stageWidth;
 	float stageHeight;
 	bool playerOnUpRising = false; 
-	
-
 
 	//スイッチによって動く床
 	SwitchPlatform switchPlatforms[MAX_PLATFORMS];
@@ -171,7 +152,7 @@ struct Stage {
 	bool hasRespawnPoint = false;
 	CameraConfig cameraConfig;
 
-	// クレーン発射台
+	// クレーンとクレーン発射台に使う共通上限
 	static constexpr int MAX_CRANES = 8;
 
 	// クレーン（天井ギミック）
